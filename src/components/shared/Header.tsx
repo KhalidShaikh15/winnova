@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, LayoutDashboard, Loader2, ShieldCheck } from "lucide-react";
+import { User, LogOut, Loader2, ShieldCheck } from "lucide-react";
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -75,6 +75,17 @@ export default function Header() {
                     {link.label}
                  </Link>
              ))}
+             {isAdmin && (
+                <Link
+                  href="/admin"
+                  className={cn(
+                    "transition-colors hover:text-foreground/80 font-medium",
+                    pathname.startsWith('/admin') ? "text-foreground" : "text-foreground/60"
+                  )}
+                >
+                  Admin Panel
+                </Link>
+             )}
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
@@ -106,13 +117,9 @@ export default function Header() {
                   </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem asChild>
-                      <Link href="/admin"><ShieldCheck className="mr-2 h-4 w-4" />Admin Panel</Link>
+                      <Link href="/admin"><ShieldCheck className="mr-2 h-4 w-4" />Admin Dashboard</Link>
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem>
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    Dashboard
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
