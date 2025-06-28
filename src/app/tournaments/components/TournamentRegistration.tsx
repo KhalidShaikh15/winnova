@@ -48,6 +48,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     defaultValues: {
       squad_name: "",
       contact_number: "",
+      payment_screenshot: undefined,
       ...defaultPlayerValues
     },
   });
@@ -127,7 +128,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
               {renderPlayerFields()}
             </div>
 
-            <FormField control={form.control} name="payment_screenshot" render={({ field: { onChange, ...fieldProps} }) => (
+            <FormField control={form.control} name="payment_screenshot" render={({ field: { value, onChange, ...fieldProps} }) => (
                 <FormItem>
                     <FormLabel>UPI Payment Screenshot</FormLabel>
                     <FormControl>
