@@ -14,6 +14,8 @@ import { addDoc, collection, Timestamp } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { firestore, storage } from "@/lib/firebase"
 import { Loader2 } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
+import Link from "next/link"
 
 const createSchema = (matchType: 'Solo' | 'Duo' | 'Squad') => {
   let schema = z.object({
@@ -34,6 +36,7 @@ const createSchema = (matchType: 'Solo' | 'Duo' | 'Squad') => {
 export default function TournamentRegistration({ tournament }: { tournament: Tournament }) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const { user, loading: authLoading } = useAuth();
   
   const registrationSchema = createSchema(tournament.match_type);
 
@@ -55,6 +58,17 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   
   async function onSubmit(values: z.infer<typeof registrationSchema>) {
     setLoading(true);
+
+    if (!user) {
+        toast({
+            variant: "destructive",
+            title: "Not Authenticated",
+            description: "You must be logged in to register for a tournament.",
+        });
+        setLoading(false);
+        return;
+    }
+
     const { payment_screenshot, ...registrationData } = values;
 
     try {
@@ -105,6 +119,37 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         </FormItem> 
       )} />
     ));
+  }
+
+  if (authLoading) {
+    return (
+        <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+                <CardTitle>Loading...</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="flex justify-center items-center p-8">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+            </CardContent>
+        </Card>
+    )
+  }
+
+  if (!user) {
+      return (
+        <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+                <CardTitle>Please Log In</CardTitle>
+                <CardDescription>You must be logged in to register for this tournament.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Button asChild className="w-full">
+                    <Link href="/login">Login or Sign Up</Link>
+                </Button>
+            </CardContent>
+        </Card>
+      )
   }
   
   return (
