@@ -9,10 +9,14 @@ import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { moderateImage } from "@/lib/actions"
 import { Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/hooks/use-auth";
+import { updateProfile } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
 
 const profileFormSchema = z.object({
   username: z.string().min(2, {
@@ -27,26 +31,70 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>
 
 export default function ProfilePage() {
   const { toast } = useToast()
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
   const [avatarPreview, setAvatarPreview] = useState("https://placehold.co/100x100.png")
   const [isModerating, setIsModerating] = useState(false)
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      username: 'gamer_user',
-      email: 'user@example.com',
+      username: '',
+      email: '',
     },
     mode: "onChange",
   })
 
-  function onSubmit(data: ProfileFormValues) {
-    toast({
-      title: "Profile Updated",
-      description: "Your profile information has been successfully updated.",
-    })
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        username: user.displayName || '',
+        email: user.email || '',
+      });
+      if (user.photoURL) {
+        setAvatarPreview(user.photoURL);
+      }
+    }
+  }, [user, form]);
+
+  useEffect(() => {
+      if (!authLoading && !user) {
+          router.push('/login');
+          toast({
+              variant: 'destructive',
+              title: 'Not Authenticated',
+              description: 'Please log in to view your profile.',
+          });
+      }
+  }, [user, authLoading, router, toast]);
+
+  async function onSubmit(data: ProfileFormValues) {
+    if (!user) return;
+    setIsUpdatingProfile(true);
+
+    try {
+      await updateProfile(user, {
+        displayName: data.username,
+      });
+      toast({
+        title: "Profile Updated",
+        description: "Your profile information has been successfully updated.",
+      });
+    } catch(error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Update Failed',
+        description: error.message,
+      });
+    } finally {
+      setIsUpdatingProfile(false);
+    }
   }
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user) return;
     const file = event.target.files?.[0]
     if (!file) return;
 
@@ -69,6 +117,9 @@ export default function ProfilePage() {
       try {
         const moderationResult = await moderateImage(base64Image);
         if (moderationResult.isSafe) {
+          // In a real app, you would upload to Firebase Storage and get a URL.
+          // For now, we will just update the profile with the base64 data URI.
+          await updateProfile(user, { photoURL: base64Image });
           setAvatarPreview(base64Image);
           toast({
             title: "Avatar Updated",
@@ -85,7 +136,7 @@ export default function ProfilePage() {
         toast({
           variant: "destructive",
           title: "An Error Occurred",
-          description: "Could not moderate the image. Please try again.",
+          description: "Could not update the avatar. Please try again.",
         });
       } finally {
         setIsModerating(false);
@@ -99,6 +150,14 @@ export default function ProfilePage() {
             description: "Could not read the selected file.",
         });
     }
+  }
+  
+  if (authLoading || !user) {
+    return (
+        <div className="container py-12 flex justify-center items-center min-h-[calc(100vh-8rem)]">
+            <Loader2 className="h-16 w-16 animate-spin text-primary" />
+        </div>
+    );
   }
 
   return (
@@ -121,8 +180,8 @@ export default function ProfilePage() {
               <div className="flex items-center gap-6">
                 <div className="relative">
                   <Avatar className="h-24 w-24">
-                    <AvatarImage src={avatarPreview} alt="User avatar" />
-                    <AvatarFallback>U</AvatarFallback>
+                    <AvatarImage src={avatarPreview} alt={user?.displayName || "User avatar"} />
+                    <AvatarFallback>{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   {isModerating && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
@@ -132,7 +191,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="picture">Profile Picture</Label>
-                  <Input id="picture" type="file" accept="image/*" onChange={handleFileChange} disabled={isModerating} />
+                  <Input id="picture" type="file" accept="image/*" onChange={handleFileChange} disabled={isModerating || isUpdatingProfile} />
                   <p className="text-sm text-muted-foreground">JPG, GIF or PNG. 4MB max. Image will be checked by AI.</p>
                 </div>
               </div>
@@ -157,13 +216,16 @@ export default function ProfilePage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="your@email.com" {...field} />
+                      <Input placeholder="your@email.com" {...field} disabled />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit">Update profile</Button>
+              <Button type="submit" disabled={isModerating || isUpdatingProfile}>
+                {isUpdatingProfile ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {isUpdatingProfile ? 'Updating...' : 'Update profile'}
+              </Button>
             </form>
           </Form>
         </CardContent>

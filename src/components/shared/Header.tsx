@@ -1,11 +1,10 @@
-// A simple client component to manage a simulated auth state
 "use client";
 
 import Link from "next/link";
 import Logo from "./Logo";
 import { Button } from "../ui/button";
 import { ThemeToggle } from "../ThemeToggle";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -15,51 +14,43 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, LayoutDashboard } from "lucide-react";
-import { usePathname } from 'next/navigation';
+import { User, LogOut, LayoutDashboard, Loader2 } from "lucide-react";
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { useToast } from "@/hooks/use-toast";
 
-const useSimulatedAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    // Check local storage for auth state on mount
-    const authState = localStorage.getItem('isAuthenticated');
-    if (authState === 'true') {
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  const login = () => {
-    localStorage.setItem('isAuthenticated', 'true');
-    setIsAuthenticated(true);
-  };
-
-  const logout = () => {
-    localStorage.removeItem('isAuthenticated');
-    setIsAuthenticated(false);
-  };
-  
-  // Expose login on window for demo purposes from login page
-  useEffect(() => {
-    (window as any).login = login;
-    return () => {
-      delete (window as any).login
-    }
-  }, [])
-
-
-  return { isAuthenticated, login, logout };
-};
 
 export default function Header() {
-  const { isAuthenticated, logout } = useSimulatedAuth();
+  const { user, loading } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
+  const { toast } = useToast();
 
   const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/tournaments', label: 'Tournaments' },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+      });
+      router.push('/');
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Logout Failed",
+        description: "An error occurred while logging out.",
+      });
+    }
+  };
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -84,24 +75,26 @@ export default function Header() {
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
-          {isAuthenticated ? (
+          {loading ? (
+             <Loader2 className="h-6 w-6 animate-spin" />
+          ) : user ? (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="https://placehold.co/100x100.png" alt="User" />
-                      <AvatarFallback>U</AvatarFallback>
+                      <AvatarImage src={user.photoURL || "https://placehold.co/100x100.png"} alt={user.displayName || "User"} />
+                      <AvatarFallback>{user.email?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">gamer_user</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        user@example.com
-                      </p>
+                      <p className="text-sm font-medium leading-none">{user.displayName || user.email}</p>
+                      {user.email && <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                      </p>}
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -113,7 +106,7 @@ export default function Header() {
                     Dashboard
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout}>
+                  <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Log out
                   </DropdownMenuItem>
