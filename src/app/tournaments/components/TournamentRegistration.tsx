@@ -35,15 +35,24 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   
-  const form = useForm<z.infer<ReturnType<typeof createSchema>>>({
-    resolver: zodResolver(createSchema(tournament.match_type)),
+  const registrationSchema = createSchema(tournament.match_type);
+
+  const numPlayers = tournament.match_type === 'Solo' ? 1 : tournament.match_type === 'Duo' ? 2 : 4;
+  const defaultPlayerValues: Record<string, string> = {};
+  for (let i = 1; i <= numPlayers; i++) {
+    defaultPlayerValues[`player${i}_id`] = '';
+  }
+
+  const form = useForm<z.infer<typeof registrationSchema>>({
+    resolver: zodResolver(registrationSchema),
     defaultValues: {
       squad_name: "",
       contact_number: "",
+      ...defaultPlayerValues
     },
   });
   
-  async function onSubmit(values: z.infer<ReturnType<typeof createSchema>>) {
+  async function onSubmit(values: z.infer<typeof registrationSchema>) {
     setLoading(true);
     const { payment_screenshot, ...registrationData } = values;
 
