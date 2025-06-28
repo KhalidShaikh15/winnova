@@ -4,7 +4,7 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type LeaderboardEntry } from '@/lib/types';
 import TournamentLeaderboard from '../tournaments/components/TournamentLeaderboard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { type Tournament } from '@/lib/types';
 
@@ -22,21 +22,29 @@ export default function LeaderboardPage() {
             setTournaments(tournamentsList);
             if (tournamentsList.length > 0) {
                 const defaultTournamentId = tournamentsList.find(t => t.status !== 'completed')?.id || tournamentsList[0].id;
-                setSelectedTournament(defaultTournamentId);
+                if (defaultTournamentId) {
+                    setSelectedTournament(defaultTournamentId);
+                } else {
+                    setLoading(false);
+                }
+            } else {
+                 setLoading(false);
             }
         };
         fetchTournaments();
     }, []);
 
     useEffect(() => {
-        if (!selectedTournament) return;
+        if (!selectedTournament) {
+            setLeaderboard([]);
+            return;
+        };
 
         const fetchLeaderboard = async () => {
             setLoading(true);
             const leaderboardCollection = collection(firestore, 'leaderboard');
             const q = query(
                 leaderboardCollection,
-                // where('tournament_id', '==', selectedTournament), // Firestore requires an index for this
                 orderBy('rank', 'asc')
             );
             const leaderboardSnapshot = await getDocs(q);
@@ -50,11 +58,6 @@ export default function LeaderboardPage() {
         };
         fetchLeaderboard();
     }, [selectedTournament]);
-
-    const formattedData = leaderboard.map(entry => ({
-        ...entry,
-        matchesPlayed: entry.matches_played,
-    }));
 
     return (
         <div className="container py-12">
@@ -81,7 +84,7 @@ export default function LeaderboardPage() {
             {loading ? (
                 <Card><CardContent className="p-6 text-center">Loading leaderboard...</CardContent></Card>
             ) : leaderboard.length > 0 ? (
-                <TournamentLeaderboard data={formattedData} />
+                <TournamentLeaderboard data={leaderboard} />
             ) : (
                 <Card><CardContent className="p-6 text-center">No leaderboard data found for this tournament.</CardContent></Card>
             )}

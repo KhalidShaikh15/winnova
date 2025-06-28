@@ -1,13 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-
-interface LeaderboardEntry {
-    rank: number;
-    squadName: string;
-    totalKills: number;
-    matchesPlayed: number;
-    points: number;
-}
+import type { LeaderboardEntry } from "@/lib/types";
 
 export default function TournamentLeaderboard({ data }: { data: LeaderboardEntry[] }) {
     return (
@@ -28,11 +21,11 @@ export default function TournamentLeaderboard({ data }: { data: LeaderboardEntry
                     </TableHeader>
                     <TableBody>
                         {data.map((entry) => (
-                            <TableRow key={entry.rank}>
+                            <TableRow key={entry.id || entry.rank}>
                                 <TableCell className="font-medium text-lg">{entry.rank}</TableCell>
-                                <TableCell className="font-semibold">{entry.squadName}</TableCell>
-                                <TableCell className="text-right">{entry.totalKills}</TableCell>
-                                <TableCell className="text-right">{entry.matchesPlayed}</TableCell>
+                                <TableCell className="font-semibold">{entry.squad_name}</TableCell>
+                                <TableCell className="text-right">{entry.total_kills}</TableCell>
+                                <TableCell className="text-right">{entry.matches_played}</TableCell>
                                 <TableCell className="text-right font-bold text-primary">{entry.points}</TableCell>
                             </TableRow>
                         ))}

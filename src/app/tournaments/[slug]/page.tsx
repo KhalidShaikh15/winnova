@@ -16,7 +16,7 @@ export default function TournamentPage() {
   const params = useParams<{ slug: string }>();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [game, setGame] = useState<Game | null>(null);
-  const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -47,11 +47,12 @@ export default function TournamentPage() {
         // Fetch leaderboard data
         const leaderboardQuery = query(
             collection(firestore, "leaderboard"),
-            where("tournament_id", "==", params.slug),
             orderBy("rank", "asc")
         );
         const leaderboardSnapshot = await getDocs(leaderboardQuery);
-        const leaderboardList = leaderboardSnapshot.docs.map(doc => ({ ...doc.data(), matchesPlayed: doc.data().matches_played }));
+        const leaderboardList = leaderboardSnapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() } as LeaderboardEntry))
+            .filter(entry => entry.tournament_id === params.slug);
         setLeaderboardData(leaderboardList);
 
 
