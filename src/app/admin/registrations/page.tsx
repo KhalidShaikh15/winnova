@@ -73,9 +73,13 @@ export default function AdminRegistrationsPage() {
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            <a href={reg.payment_screenshot_url} target="_blank" rel="noopener noreferrer">
-                                                <Image src={reg.payment_screenshot_url} width={60} height={60} alt="Payment" className="rounded-md" />
-                                            </a>
+                                            {reg.payment_screenshot_url ? (
+                                                <a href={reg.payment_screenshot_url} target="_blank" rel="noopener noreferrer">
+                                                    <Image src={reg.payment_screenshot_url} width={60} height={60} alt="Payment" className="rounded-md" />
+                                                </a>
+                                            ) : (
+                                                <span className="text-xs text-muted-foreground">No image</span>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))

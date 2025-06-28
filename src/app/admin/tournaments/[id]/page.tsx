@@ -90,9 +90,13 @@ export default function ManageTournamentPage({ params }: { params: { id: string 
                     <TableCell>{reg.contact_number}</TableCell>
                     <TableCell><Badge variant={reg.status === 'pending' ? 'secondary' : reg.status === 'confirmed' ? 'default' : 'destructive'}>{reg.status}</Badge></TableCell>
                     <TableCell>
-                      <a href={reg.payment_screenshot_url} target="_blank" rel="noopener noreferrer">
-                        <Image src={reg.payment_screenshot_url} width={80} height={80} alt="Payment" className="rounded-md" />
-                      </a>
+                      {reg.payment_screenshot_url ? (
+                        <a href={reg.payment_screenshot_url} target="_blank" rel="noopener noreferrer">
+                          <Image src={reg.payment_screenshot_url} width={80} height={80} alt="Payment" className="rounded-md" />
+                        </a>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">No image</span>
+                      )}
                     </TableCell>
                     <TableCell className="space-x-2">
                       <Button size="icon" variant="ghost" disabled={reg.status === 'confirmed'} onClick={() => handleRegistrationStatus(reg.id, 'confirmed')}>
