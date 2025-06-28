@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Registration } from '@/lib/types';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -12,13 +12,16 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 
-export default function ManageTournamentPage({ params }: { params: { id: string } }) {
+export default function ManageTournamentPage() {
+  const params = useParams<{ id: string }>();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
+    if (!params.id) return;
+
     const fetchTournamentAndRegistrations = async () => {
       setLoading(true);
       try {

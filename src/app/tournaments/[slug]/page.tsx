@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Game, type LeaderboardEntry } from '@/lib/types';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TournamentDetails from '@/app/tournaments/components/TournamentDetails';
@@ -12,7 +12,8 @@ import TournamentRegistration from '@/app/tournaments/components/TournamentRegis
 import { Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 
-export default function TournamentPage({ params }: { params: { slug: string } }) {
+export default function TournamentPage() {
+  const params = useParams<{ slug: string }>();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [game, setGame] = useState<Game | null>(null);
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
