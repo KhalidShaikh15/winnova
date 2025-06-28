@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useState } from "react"
 import { moderateImage } from "@/lib/actions"
 import { Loader2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
 
 const profileFormSchema = z.object({
   username: z.string().min(2, {
