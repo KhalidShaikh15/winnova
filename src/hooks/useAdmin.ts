@@ -9,31 +9,37 @@ export function useAdmin() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function checkAdminStatus() {
-      if (user) {
-        try {
-          const adminDocRef = doc(firestore, 'admins', user.uid);
-          const adminDocSnap = await getDoc(adminDocRef);
+    const checkAdminStatus = async () => {
+      if (authLoading) {
+        setLoading(true);
+        return;
+      }
+      
+      if (!user) {
+        setIsAdmin(false);
+        setLoading(false);
+        return;
+      }
 
-          if (adminDocSnap.exists() && adminDocSnap.data().role === 'admin') {
-            setIsAdmin(true);
-          } else {
-            setIsAdmin(false);
-          }
-        } catch (error) {
-          console.error("Error checking admin status:", error);
+      try {
+        const adminDocRef = doc(firestore, 'admins', user.uid);
+        const adminDocSnap = await getDoc(adminDocRef);
+        
+        if (adminDocSnap.exists() && adminDocSnap.data().role === 'admin') {
+          setIsAdmin(true);
+        } else {
           setIsAdmin(false);
         }
-      } else {
+      } catch (error) {
+        console.error("Error checking admin status:", error);
         setIsAdmin(false);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }
+    };
 
-    if (!authLoading) {
-      checkAdminStatus();
-    }
+    checkAdminStatus();
   }, [user, authLoading]);
 
-  return { user, isAdmin, loading: authLoading || loading };
+  return { isAdmin, loading: authLoading || loading };
 }
