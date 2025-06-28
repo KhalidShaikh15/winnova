@@ -1,11 +1,56 @@
+'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { featuredGames, keyStats, upcomingTournaments } from '@/lib/data';
+import { keyStats } from '@/lib/data';
 import { Award, Calendar, Gamepad2, Group, Trophy, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { firestore } from '@/lib/firebase';
+import { type Tournament, type Game } from '@/lib/types';
+import { format } from 'date-fns';
 
 export default function Home() {
+  const [featuredGames, setFeaturedGames] = useState<Game[]>([]);
+  const [upcomingTournaments, setUpcomingTournaments] = useState<Tournament[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch Games
+        const gamesCollection = collection(firestore, 'games');
+        const gamesSnapshot = await getDocs(gamesCollection);
+        const gamesList = gamesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Game[];
+        setFeaturedGames(gamesList);
+
+        // Fetch Upcoming Tournaments
+        const tournamentsCollection = collection(firestore, 'tournaments');
+        const q = query(tournamentsCollection, where('status', '==', 'upcoming'), orderBy('tournament_date', 'asc'), limit(3));
+        const tournamentsSnapshot = await getDocs(q);
+        const tournamentsList = tournamentsSnapshot.docs.map(doc => {
+          const data = doc.data() as Tournament;
+          const game = gamesList.find(g => g.name === data.game_name);
+          return {
+            id: doc.id,
+            ...data,
+            gameImage: game?.imageUrl || 'https://placehold.co/150x100.png',
+            gameAiHint: game?.aiHint || 'gaming',
+          };
+        }) as Tournament[];
+        setUpcomingTournaments(tournamentsList);
+
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <div className="flex flex-col min-h-dvh">
       <main className="flex-1">
@@ -71,11 +116,11 @@ export default function Home() {
               {featuredGames.map((game) => (
                 <Card key={game.name} className="overflow-hidden transition-shadow hover:shadow-xl">
                   <Image
-                    src={game.imageUrl}
+                    src={game.imageUrl || 'https://placehold.co/400x300.png'}
                     alt={game.name}
                     width={400}
                     height={300}
-                    data-ai-hint={game.aiHint}
+                    data-ai-hint={game.aiHint || 'gaming'}
                     className="w-full h-48 object-cover"
                   />
                   <CardContent className="p-4">
@@ -92,33 +137,34 @@ export default function Home() {
           <div className="container">
             <h2 className="text-3xl font-bold text-center mb-8 font-headline">Upcoming Tournaments</h2>
             <div className="space-y-8">
-              {upcomingTournaments.map((tournament) => (
+              {loading ? <p className="text-center">Loading tournaments...</p> : 
+              upcomingTournaments.map((tournament) => (
                 <Card key={tournament.id} className="w-full transition-all hover:shadow-md">
-                   <Link href={`/tournaments/${tournament.slug}`}>
+                   <Link href={`/tournaments/${tournament.id}`}>
                     <div className="grid grid-cols-1 md:grid-cols-5 items-center p-4 gap-4">
                         <div className="md:col-span-1">
-                             <Image src={tournament.game.imageUrl} alt={tournament.game.name} width={150} height={100} data-ai-hint={tournament.game.aiHint} className="rounded-lg object-cover w-full h-auto aspect-video"/>
+                             <Image src={tournament.gameImage!} alt={tournament.game_name} width={150} height={100} data-ai-hint={tournament.gameAiHint} className="rounded-lg object-cover w-full h-auto aspect-video"/>
                         </div>
                         <div className="md:col-span-2">
-                            <CardTitle className="text-xl">{tournament.title}</CardTitle>
-                            <CardDescription>{tournament.game.name}</CardDescription>
+                            <CardTitle>{tournament.title}</CardTitle>
+                            <CardDescription>{tournament.game_name}</CardDescription>
                         </div>
                         <div className="md:col-span-2 grid grid-cols-2 gap-4 text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
                                 <Calendar className="w-4 h-4"/>
-                                <span>{tournament.date}</span>
+                                <span>{format(tournament.tournament_date.toDate(), 'PPP')}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Award className="w-4 h-4"/>
-                                <span>{tournament.prizePool}</span>
+                                <span>${tournament.prize_pool.toLocaleString()}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Users className="w-4 h-4"/>
-                                <span>Fee: {tournament.entryFee}</span>
+                                <span>Fee: ${tournament.entry_fee}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Group className="w-4 h-4"/>
-                                <span>{tournament.matchType}</span>
+                                <span>{tournament.match_type}</span>
                             </div>
                         </div>
                     </div>

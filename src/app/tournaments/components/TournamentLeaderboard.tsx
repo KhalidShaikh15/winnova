@@ -1,10 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import type { leaderboardData } from "@/lib/data"
 
-type LeaderboardData = typeof leaderboardData;
+interface LeaderboardEntry {
+    rank: number;
+    squadName: string;
+    totalKills: number;
+    matchesPlayed: number;
+    points: number;
+}
 
-export default function TournamentLeaderboard({ data }: { data: LeaderboardData }) {
+export default function TournamentLeaderboard({ data }: { data: LeaderboardEntry[] }) {
     return (
         <Card>
             <CardHeader>

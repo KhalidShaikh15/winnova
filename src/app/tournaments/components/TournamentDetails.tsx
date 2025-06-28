@@ -1,8 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { Tournament } from "@/lib/data"
 import { Award, Calendar, CheckSquare, Group, Users } from "lucide-react"
 
-export default function TournamentDetails({ tournament }: { tournament: Tournament }) {
+// A simplified tournament type for props to avoid passing complex objects
+export interface TournamentDetailsProps {
+    tournament: {
+        date: string;
+        prizePool: string;
+        entryFee: string;
+        matchType: 'Solo' | 'Duo' | 'Squad';
+        rules: string[];
+    }
+}
+
+export default function TournamentDetails({ tournament }: TournamentDetailsProps) {
     return (
         <Card>
             <CardHeader>

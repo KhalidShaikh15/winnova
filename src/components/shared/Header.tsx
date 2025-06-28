@@ -14,17 +14,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, LayoutDashboard, Loader2 } from "lucide-react";
+import { User, LogOut, LayoutDashboard, Loader2, ShieldCheck } from "lucide-react";
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
+import { useAdmin } from "@/hooks/useAdmin";
 
 
 export default function Header() {
   const { user, loading } = useAuth();
+  const { isAdmin } = useAdmin();
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
@@ -32,6 +34,7 @@ export default function Header() {
   const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/tournaments', label: 'Tournaments' },
+    { href: '/leaderboard', label: 'Leaderboard' },
   ];
 
   const handleLogout = async () => {
@@ -101,6 +104,11 @@ export default function Header() {
                   <DropdownMenuItem asChild>
                     <Link href="/profile"><User className="mr-2 h-4 w-4" />Profile</Link>
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin"><ShieldCheck className="mr-2 h-4 w-4" />Admin Panel</Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem>
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     Dashboard
