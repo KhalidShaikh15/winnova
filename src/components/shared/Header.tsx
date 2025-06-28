@@ -25,8 +25,10 @@ import { useAdmin } from "@/hooks/useAdmin";
 
 
 export default function Header() {
-  const { user, loading } = useAuth();
-  const { isAdmin } = useAdmin();
+  const { user, loading: authLoading } = useAuth();
+  const { isAdmin, loading: adminLoading } = useAdmin();
+  const loading = authLoading || adminLoading;
+
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
