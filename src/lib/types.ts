@@ -27,6 +27,7 @@ export interface Tournament {
 
 export interface Registration {
   id: string;
+  user_id: string;
   tournament_id: string;
   tournament_title?: string;
   game_name: string;

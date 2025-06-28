@@ -81,6 +81,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       // 2. Save registration to Firestore
       const docData = {
         ...registrationData,
+        user_id: user.uid,
         tournament_id: tournament.id,
         game_name: tournament.game_name,
         payment_screenshot_url: screenshotUrl,
@@ -101,7 +102,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       toast({
         variant: 'destructive',
         title: "Registration Failed",
-        description: "An error occurred. Please try again.",
+        description: error instanceof Error ? error.message : "An error occurred. Please try again.",
       });
     } finally {
       setLoading(false);
