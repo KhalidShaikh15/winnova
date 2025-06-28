@@ -6,7 +6,7 @@ import { Award, Calendar, Gamepad2, Group, Trophy, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Game } from '@/lib/types';
 import { format } from 'date-fns';
@@ -28,8 +28,9 @@ export default function Home() {
 
         // Fetch Upcoming Tournaments
         const tournamentsCollection = collection(firestore, 'tournaments');
-        const q = query(tournamentsCollection, where('status', '==', 'upcoming'), orderBy('tournament_date', 'asc'), limit(3));
+        const q = query(tournamentsCollection, where('status', '==', 'upcoming'));
         const tournamentsSnapshot = await getDocs(q);
+        
         const tournamentsList = tournamentsSnapshot.docs.map(doc => {
           const data = doc.data() as Tournament;
           const game = gamesList.find(g => g.name === data.game_name);
@@ -40,7 +41,10 @@ export default function Home() {
             gameAiHint: game?.aiHint || 'gaming',
           };
         }) as Tournament[];
-        setUpcomingTournaments(tournamentsList);
+
+        // Sort by date and take the first 3
+        tournamentsList.sort((a, b) => a.tournament_date.toMillis() - b.tournament_date.toMillis());
+        setUpcomingTournaments(tournamentsList.slice(0, 3));
 
       } catch (error) {
         console.error("Error fetching data:", error);
