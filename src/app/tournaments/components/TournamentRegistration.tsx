@@ -21,7 +21,7 @@ const createSchema = (matchType: 'Solo' | 'Duo' | 'Squad') => {
   let schema = z.object({
     squad_name: z.string().min(3, "Squad name must be at least 3 characters."),
     contact_number: z.string().min(10, "A valid contact number is required."),
-    payment_screenshot: z.instanceof(File).refine(file => file.size > 0, "Screenshot is required."),
+    payment_screenshot: z.instanceof(File, { message: "Screenshot is required." }).refine(file => file.size > 0, "Screenshot is required."),
   });
 
   const playerFields: Record<string, any> = {};
@@ -69,6 +69,17 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         return;
     }
 
+    // Explicitly check for file existence to provide better feedback
+    if (!values.payment_screenshot || !(values.payment_screenshot instanceof File) || values.payment_screenshot.size === 0) {
+        toast({
+            variant: "destructive",
+            title: "Submission Failed",
+            description: "A valid payment screenshot is required.",
+        });
+        setLoading(false);
+        return;
+    }
+
     const { payment_screenshot, ...registrationData } = values;
 
     try {
@@ -99,10 +110,16 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       form.reset();
     } catch (error) {
       console.error("Registration submission error:", error);
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = String(error.message);
+      }
       toast({
         variant: 'destructive',
         title: "Registration Failed",
-        description: error instanceof Error ? error.message : "An unexpected error occurred. Please try again.",
+        description: errorMessage,
       });
     } finally {
       setLoading(false);
