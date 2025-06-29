@@ -38,9 +38,10 @@ export interface Registration {
   player4_id?: string;
   contact_number: string;
   match_slot: string;
-  payment_screenshot_url: string;
+  user_upi_id: string;
   status: 'pending' | 'confirmed' | 'rejected';
   created_at: Timestamp;
+  payment_screenshot_url?: string; // Kept for backwards compatibility if needed, but new forms won't use it.
 }
 
 export interface LeaderboardEntry {

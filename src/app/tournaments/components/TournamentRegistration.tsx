@@ -11,19 +11,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
-import { firestore, storage } from "@/lib/firebase"
-import { Loader2 } from "lucide-react"
+import { firestore } from "@/lib/firebase"
+import { Loader2, QrCode, Send } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
+import Image from "next/image"
+
+const ORGANIZER_UPI_ID = "organizer-upi@bank";
+const ORGANIZER_WHATSAPP = "+919653134660";
+const QR_CODE_URL = "https://placehold.co/200x200.png";
 
 const createSchema = (matchType: 'Solo' | 'Duo' | 'Squad') => {
   let schema = z.object({
     squad_name: z.string().min(3, "Squad name must be at least 3 characters."),
     contact_number: z.string().min(10, "A valid contact number is required."),
-    payment_screenshot: z.any()
-        .refine((file): file is File => file instanceof File, "Screenshot is required.")
-        .refine(file => file.size > 0, "Screenshot cannot be empty."),
+    user_upi_id: z.string().min(3, "Please enter the UPI ID you used for payment."),
   });
 
   const playerFields: Record<string, any> = {};
@@ -35,10 +37,14 @@ const createSchema = (matchType: 'Solo' | 'Duo' | 'Squad') => {
   return schema.extend(playerFields);
 };
 
+type RegistrationFormValues = z.infer<ReturnType<typeof createSchema>>;
+
 export default function TournamentRegistration({ tournament }: { tournament: Tournament }) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const { user, loading: authLoading } = useAuth();
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedData, setSubmittedData] = useState<RegistrationFormValues | null>(null);
   
   const registrationSchema = createSchema(tournament.match_type);
   const numPlayers = tournament.match_type === 'Solo' ? 1 : tournament.match_type === 'Duo' ? 2 : 4;
@@ -46,18 +52,18 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   const defaultValues: Record<string, any> = {
     squad_name: "",
     contact_number: "",
-    payment_screenshot: undefined,
+    user_upi_id: "",
   };
   for (let i = 1; i <= numPlayers; i++) {
     defaultValues[`player${i}_id`] = '';
   }
 
-  const form = useForm<z.infer<typeof registrationSchema>>({
+  const form = useForm<RegistrationFormValues>({
     resolver: zodResolver(registrationSchema),
     defaultValues,
   });
   
-  async function onSubmit(values: z.infer<typeof registrationSchema>) {
+  async function onSubmit(values: RegistrationFormValues) {
     setLoading(true);
 
     if (!user) {
@@ -70,22 +76,12 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         return;
     }
     
-    const { payment_screenshot, ...registrationData } = values;
-
     try {
-      // 1. Upload screenshot to Firebase Storage
-      const storageRefPath = `payments/${tournament.id}/${user.uid}_${Date.now()}_${payment_screenshot.name}`;
-      const storageRef = ref(storage, storageRefPath);
-      const uploadResult = await uploadBytes(storageRef, payment_screenshot);
-      const screenshotUrl = await getDownloadURL(uploadResult.ref);
-
-      // 2. Save registration to Firestore
       const docData = {
-        ...registrationData,
+        ...values,
         user_id: user.uid,
         tournament_id: tournament.id,
         game_name: tournament.game_name,
-        payment_screenshot_url: screenshotUrl,
         status: 'pending' as const,
         created_at: serverTimestamp(),
         match_slot: 'TBD',
@@ -95,8 +91,10 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
 
       toast({
         title: "Registration Submitted!",
-        description: "Your team has been registered. You will be notified upon confirmation.",
+        description: "Your team has been registered. Please contact the organizer to confirm.",
       });
+      setSubmittedData(values);
+      setIsSubmitted(true);
       form.reset();
     } catch (error) {
       console.error("Registration submission error:", error);
@@ -110,6 +108,13 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       setLoading(false);
     }
   }
+
+  const handleContactOrganizer = () => {
+    if (!submittedData) return;
+    const message = `Hey, I just registered for the ${tournament.game_name} tournament with squad '${submittedData.squad_name}' using UPI ID: ${submittedData.user_upi_id}. Please confirm my slot.`;
+    const whatsappUrl = `https://wa.me/${ORGANIZER_WHATSAPP}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
   
   const renderPlayerFields = () => {
     return Array.from({ length: numPlayers }, (_, i) => i + 1).map(num => (
@@ -153,6 +158,24 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         </Card>
       )
   }
+
+  if (isSubmitted) {
+    return (
+      <Card className="max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle>Registration Successful!</CardTitle>
+          <CardDescription>Your registration has been submitted. Click the button below to contact the organizer on WhatsApp and confirm your slot.</CardDescription>
+        </CardHeader>
+        <CardContent className="text-center">
+            <Button size="lg" onClick={handleContactOrganizer}>
+                <Send className="mr-2"/>
+                Contact Organizer on WhatsApp
+            </Button>
+            <p className="text-sm text-muted-foreground mt-4">A pre-filled message will be created for you.</p>
+        </CardContent>
+      </Card>
+    )
+  }
   
   return (
     <Card className="max-w-2xl mx-auto">
@@ -161,6 +184,20 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         <CardDescription>Fill out the form to enter your team. Entry Fee: ${tournament.entry_fee}</CardDescription>
       </CardHeader>
       <CardContent>
+        <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex-shrink-0">
+                <Image src={QR_CODE_URL} width={150} height={150} alt="Payment QR Code" data-ai-hint="qr code" className="rounded-md" />
+            </div>
+            <div className="space-y-2 text-center sm:text-left">
+                <p className="font-semibold">Scan to pay the entry fee.</p>
+                <p className="text-sm text-muted-foreground">Or pay directly to the UPI ID:</p>
+                <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-background rounded-md">
+                   <QrCode className="w-5 h-5 text-primary" />
+                   <span className="font-mono text-primary font-bold">{ORGANIZER_UPI_ID}</span>
+                </div>
+            </div>
+        </div>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField control={form.control} name="squad_name" render={({ field }) => (
@@ -175,26 +212,13 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
               {renderPlayerFields()}
             </div>
 
-            <FormField
-              control={form.control}
-              name="payment_screenshot"
-              render={({ field: { onChange, onBlur, name, ref } }) => (
-                <FormItem>
-                  <FormLabel>UPI Payment Screenshot</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => onChange(e.target.files?.[0])}
-                      onBlur={onBlur}
-                      name={name}
-                      ref={ref}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormField control={form.control} name="user_upi_id" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Your UPI ID (used for payment)</FormLabel>
+                <FormControl><Input placeholder="Enter the UPI ID you paid from" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
             
             <Button type="submit" className="w-full" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}

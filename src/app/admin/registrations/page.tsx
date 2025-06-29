@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
-import Image from 'next/image';
 
 export default function AdminRegistrationsPage() {
     const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -49,7 +48,7 @@ export default function AdminRegistrationsPage() {
                                 <TableHead>Squad Name</TableHead>
                                 <TableHead>Date</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead>Screenshot</TableHead>
+                                <TableHead>User UPI ID</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -73,13 +72,7 @@ export default function AdminRegistrationsPage() {
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            {reg.payment_screenshot_url ? (
-                                                <a href={reg.payment_screenshot_url} target="_blank" rel="noopener noreferrer">
-                                                    <Image src={reg.payment_screenshot_url} width={60} height={60} alt="Payment" className="rounded-md" />
-                                                </a>
-                                            ) : (
-                                                <span className="text-xs text-muted-foreground">No image</span>
-                                            )}
+                                            <span className="font-mono text-xs">{reg.user_upi_id || 'N/A'}</span>
                                         </TableCell>
                                     </TableRow>
                                 ))
