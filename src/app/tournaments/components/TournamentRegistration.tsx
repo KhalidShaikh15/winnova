@@ -21,7 +21,9 @@ const createSchema = (matchType: 'Solo' | 'Duo' | 'Squad') => {
   let schema = z.object({
     squad_name: z.string().min(3, "Squad name must be at least 3 characters."),
     contact_number: z.string().min(10, "A valid contact number is required."),
-    payment_screenshot: z.instanceof(File, { message: "Screenshot is required." }).refine(file => file.size > 0, "Screenshot is required."),
+    payment_screenshot: z.any()
+        .refine((file): file is File => file instanceof File, "Screenshot is required.")
+        .refine(file => file.size > 0, "Screenshot cannot be empty."),
   });
 
   const playerFields: Record<string, any> = {};
@@ -39,21 +41,20 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   const { user, loading: authLoading } = useAuth();
   
   const registrationSchema = createSchema(tournament.match_type);
-
   const numPlayers = tournament.match_type === 'Solo' ? 1 : tournament.match_type === 'Duo' ? 2 : 4;
-  const defaultPlayerValues: Record<string, string> = {};
+
+  const defaultValues: Record<string, any> = {
+    squad_name: "",
+    contact_number: "",
+    payment_screenshot: undefined,
+  };
   for (let i = 1; i <= numPlayers; i++) {
-    defaultPlayerValues[`player${i}_id`] = '';
+    defaultValues[`player${i}_id`] = '';
   }
 
   const form = useForm<z.infer<typeof registrationSchema>>({
     resolver: zodResolver(registrationSchema),
-    defaultValues: {
-      squad_name: "",
-      contact_number: "",
-      payment_screenshot: undefined,
-      ...defaultPlayerValues
-    },
+    defaultValues,
   });
   
   async function onSubmit(values: z.infer<typeof registrationSchema>) {
@@ -68,25 +69,14 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         setLoading(false);
         return;
     }
-
-    // Explicitly check for file existence to provide better feedback
-    if (!values.payment_screenshot || !(values.payment_screenshot instanceof File) || values.payment_screenshot.size === 0) {
-        toast({
-            variant: "destructive",
-            title: "Submission Failed",
-            description: "A valid payment screenshot is required.",
-        });
-        setLoading(false);
-        return;
-    }
-
+    
     const { payment_screenshot, ...registrationData } = values;
 
     try {
       // 1. Upload screenshot to Firebase Storage
-      const screenshotFile = values.payment_screenshot as File;
-      const storageRef = ref(storage, `payments/${tournament.id}/${user.uid}_${Date.now()}_${screenshotFile.name}`);
-      const uploadResult = await uploadBytes(storageRef, screenshotFile);
+      const storageRefPath = `payments/${tournament.id}/${user.uid}_${Date.now()}_${payment_screenshot.name}`;
+      const storageRef = ref(storage, storageRefPath);
+      const uploadResult = await uploadBytes(storageRef, payment_screenshot);
       const screenshotUrl = await getDownloadURL(uploadResult.ref);
 
       // 2. Save registration to Firestore
@@ -110,12 +100,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       form.reset();
     } catch (error) {
       console.error("Registration submission error:", error);
-      let errorMessage = "An unexpected error occurred. Please try again.";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        errorMessage = String(error.message);
-      }
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred. Please try again.";
       toast({
         variant: 'destructive',
         title: "Registration Failed",
@@ -127,7 +112,6 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   }
   
   const renderPlayerFields = () => {
-    const numPlayers = tournament.match_type === 'Solo' ? 1 : tournament.match_type === 'Duo' ? 2 : 4;
     return Array.from({ length: numPlayers }, (_, i) => i + 1).map(num => (
       <FormField key={num} control={form.control} name={`player${num}_id` as any} render={({ field }) => ( 
         <FormItem>
@@ -191,15 +175,26 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
               {renderPlayerFields()}
             </div>
 
-            <FormField control={form.control} name="payment_screenshot" render={({ field: { value, onChange, ...fieldProps} }) => (
+            <FormField
+              control={form.control}
+              name="payment_screenshot"
+              render={({ field: { onChange, onBlur, name, ref } }) => (
                 <FormItem>
-                    <FormLabel>UPI Payment Screenshot</FormLabel>
-                    <FormControl>
-                        <Input type="file" accept="image/*" {...fieldProps} onChange={(e) => onChange(e.target.files?.[0])} />
-                    </FormControl>
-                    <FormMessage />
+                  <FormLabel>UPI Payment Screenshot</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => onChange(e.target.files?.[0])}
+                      onBlur={onBlur}
+                      name={name}
+                      ref={ref}
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
-            )}/>
+              )}
+            />
             
             <Button type="submit" className="w-full" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
