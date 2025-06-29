@@ -19,7 +19,7 @@ import Image from "next/image"
 
 const ORGANIZER_UPI_ID = "organizer-upi@bank";
 const ORGANIZER_WHATSAPP = "+919653134660";
-const QR_CODE_URL = "https://i.ibb.co/gPBFzYg/qr.png";
+const QR_CODE_URL = "/upi.jpeg";
 
 const createSchema = (matchType: 'Solo' | 'Duo' | 'Squad') => {
   let schema = z.object({
