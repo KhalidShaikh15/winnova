@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
-import { addDoc, collection, Timestamp } from "firebase/firestore"
+import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { firestore, storage } from "@/lib/firebase"
 import { Loader2 } from "lucide-react"
@@ -21,7 +21,7 @@ const createSchema = (matchType: 'Solo' | 'Duo' | 'Squad') => {
   let schema = z.object({
     squad_name: z.string().min(3, "Squad name must be at least 3 characters."),
     contact_number: z.string().min(10, "A valid contact number is required."),
-    payment_screenshot: z.any().refine(file => file instanceof File, "Screenshot is required."),
+    payment_screenshot: z.instanceof(File).refine(file => file.size > 0, "Screenshot is required."),
   });
 
   const playerFields: Record<string, any> = {};
@@ -74,7 +74,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     try {
       // 1. Upload screenshot to Firebase Storage
       const screenshotFile = values.payment_screenshot as File;
-      const storageRef = ref(storage, `payments/${tournament.id}/${Date.now()}_${screenshotFile.name}`);
+      const storageRef = ref(storage, `payments/${tournament.id}/${user.uid}_${Date.now()}_${screenshotFile.name}`);
       const uploadResult = await uploadBytes(storageRef, screenshotFile);
       const screenshotUrl = await getDownloadURL(uploadResult.ref);
 
@@ -86,8 +86,8 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         game_name: tournament.game_name,
         payment_screenshot_url: screenshotUrl,
         status: 'pending' as const,
-        created_at: Timestamp.now(),
-        match_slot: 'TBD', // Or some other logic
+        created_at: serverTimestamp(),
+        match_slot: 'TBD',
       };
       
       await addDoc(collection(firestore, 'registrations'), docData);
@@ -98,11 +98,11 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       });
       form.reset();
     } catch (error) {
-      console.error(error);
+      console.error("Registration submission error:", error);
       toast({
         variant: 'destructive',
         title: "Registration Failed",
-        description: error instanceof Error ? error.message : "An error occurred. Please try again.",
+        description: error instanceof Error ? error.message : "An unexpected error occurred. Please try again.",
       });
     } finally {
       setLoading(false);
