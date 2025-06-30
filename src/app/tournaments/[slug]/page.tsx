@@ -89,22 +89,10 @@ export default function TournamentPage() {
 
   return (
     <div className="container py-12">
-      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 mb-8">
-        <div className="lg:w-1/3">
-          <Image
-            src={game?.imageUrl || 'https://placehold.co/600x400.png'}
-            alt={game?.name || 'Game poster'}
-            width={600}
-            height={400}
-            data-ai-hint={game?.aiHint || 'gaming'}
-            className="rounded-lg object-cover w-full aspect-video shadow-lg"
-          />
-        </div>
-        <div className="lg:w-2/3">
-          <p className="text-primary font-semibold">{tournament.game_name}</p>
-          <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl font-headline mt-1 mb-4">{tournament.title}</h1>
-          <p className="text-muted-foreground text-lg">{fullTournamentData.description}</p>
-        </div>
+      <div className="space-y-4 mb-12 text-center">
+        <p className="text-primary font-semibold">{tournament.game_name}</p>
+        <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl font-headline">{tournament.title}</h1>
+        <p className="max-w-[700px] mx-auto text-muted-foreground md:text-xl">{fullTournamentData.description}</p>
       </div>
 
       <Tabs defaultValue="details" className="w-full">
