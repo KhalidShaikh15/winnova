@@ -78,8 +78,8 @@ export default function Home() {
                 </div>
               </div>
               <Image
-                src="https://placehold.co/600x400.png"
-                width="600"
+                src="/images/bgmi1.png"
+                width="600" // Specify width as needed
                 height="400"
                 alt="Hero"
                 data-ai-hint="gaming esports"
