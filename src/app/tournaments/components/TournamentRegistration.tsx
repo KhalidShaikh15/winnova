@@ -15,7 +15,6 @@ import { firestore } from "@/lib/firebase"
 import { Loader2, QrCode, Send } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
-import Image from "next/image"
 
 const ORGANIZER_UPI_ID = "organizer-upi@bank";
 const ORGANIZER_WHATSAPP = "+919653134660";
@@ -186,7 +185,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       <CardContent>
         <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col sm:flex-row items-center gap-4">
             <div className="flex-shrink-0">
-                <Image src={QR_CODE_URL} width={150} height={150} alt="Payment QR Code" data-ai-hint="qr code" className="rounded-md" />
+                <img src={QR_CODE_URL} alt="Payment QR Code" data-ai-hint="qr code" className="w-[150px] h-[150px] rounded-md" />
             </div>
             <div className="space-y-2 text-center sm:text-left">
                 <p className="font-semibold">Scan to pay the entry fee.</p>
