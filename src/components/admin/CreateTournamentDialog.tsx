@@ -111,10 +111,10 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
 
             <div className="grid grid-cols-2 gap-4">
                 <FormField control={form.control} name="entry_fee" render={({ field }) => (
-                    <FormItem><FormLabel>Entry Fee ($)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Entry Fee (₹)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="prize_pool" render={({ field }) => (
-                    <FormItem><FormLabel>Prize Pool ($)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Prize Pool (₹)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
             </div>
 

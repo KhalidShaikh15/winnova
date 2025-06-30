@@ -83,8 +83,8 @@ export default function TournamentPage() {
         'Check-in is required 30 minutes before match time.',
       ],
       date: format(tournament.tournament_date.toDate(), 'PPP'),
-      prizePool: `$${tournament.prize_pool.toLocaleString()}`,
-      entryFee: tournament.entry_fee > 0 ? `$${tournament.entry_fee}`: 'Free',
+      prizePool: `₹${tournament.prize_pool.toLocaleString()}`,
+      entryFee: tournament.entry_fee > 0 ? `₹${tournament.entry_fee}`: 'Free',
   }
 
   return (

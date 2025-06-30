@@ -91,11 +91,11 @@ export default function TournamentsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Award className="w-4 h-4"/>
-                      <span>${tournament.prize_pool.toLocaleString()}</span>
+                      <span>₹{tournament.prize_pool.toLocaleString()}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Users className="w-4 h-4"/>
-                      <span>Fee: ${tournament.entry_fee}</span>
+                      <span>Fee: ₹{tournament.entry_fee}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Group className="w-4 h-4"/>
