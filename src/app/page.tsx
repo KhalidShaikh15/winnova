@@ -15,6 +15,20 @@ export default function Home() {
   const [upcomingTournaments, setUpcomingTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Map game names to local image paths
+  const gameImageMap: { [key: string]: string } = {
+    'BGMI': '/images/feature bgmi.png',
+    'Clash of Clans': '/images/feature coc.png',
+    'Free Fire': '/images/feature ff.png',
+  };
+  
+  const gameAltTextMap: { [key: string]: string } = {
+    'BGMI': 'Feature image for BGMI',
+    'Clash of Clans': 'Feature image for Clash of Clans',
+    'Free Fire': 'Feature image for Free Fire',
+  };
+
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -83,7 +97,6 @@ export default function Home() {
                 width="600"
                 height="400"
                 alt="Hero"
-                data-ai-hint="gaming esports"
                 className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
               />
             </div>
@@ -123,11 +136,10 @@ export default function Home() {
               {featuredGames.map((game) => (
                 <Card key={game.name} className="overflow-hidden transition-shadow hover:shadow-xl">
                   <Image
-                    src={game.imageUrl || 'https://placehold.co/400x300.png'}
-                    alt={game.name}
+                    src={gameImageMap[game.name] || game.imageUrl || 'https://placehold.co/400x300.png'}
+                    alt={gameAltTextMap[game.name] || game.name}
                     width={400}
                     height={300}
-                    data-ai-hint={game.aiHint || 'gaming'}
                     className="w-full h-48 object-cover"
                   />
                   <CardContent className="p-4">
