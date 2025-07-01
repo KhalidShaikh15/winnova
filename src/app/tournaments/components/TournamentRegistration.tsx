@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -15,6 +15,7 @@ import { firestore } from "@/lib/firebase"
 import { Loader2, QrCode, Send } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
+import QRCode from 'qrcode';
 
 const ORGANIZER_UPI_ID = "battkebuck@kotak";
 const ORGANIZER_WHATSAPP = "+919653134660";
@@ -45,6 +46,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   const { user, loading: authLoading } = useAuth();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedData, setSubmittedData] = useState<RegistrationFormValues | null>(null);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
   
   const registrationSchema = createSchema(tournament.match_type, tournament.entry_fee);
   const numPlayers = tournament.match_type === 'Solo' ? 1 : tournament.match_type === 'Duo' ? 2 : 4;
@@ -63,18 +65,24 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     defaultValues,
   });
 
-  let qrCodeUrl = '';
-  if (tournament.entry_fee > 0) {
-      const upiParams = new URLSearchParams({
-        pa: ORGANIZER_UPI_ID,
-        pn: 'Arena Clash',
-        am: tournament.entry_fee.toString(),
-        cu: 'INR',
-        tn: `Registration for ${tournament.title}`,
-      });
-      const upiUrl = `upi://pay?${upiParams.toString()}`;
-      qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(upiUrl)}&size=150x150`;
-  }
+  useEffect(() => {
+    if (tournament.entry_fee > 0) {
+      const upiUrl = `upi://pay?pa=${ORGANIZER_UPI_ID}&pn=Arena%20Clash&am=${tournament.entry_fee}&tn=Reg%20for%20${encodeURIComponent(tournament.title)}`;
+      QRCode.toDataURL(upiUrl)
+        .then(url => {
+          setQrCodeDataUrl(url);
+        })
+        .catch(err => {
+          console.error('QR Code generation failed:', err);
+          toast({
+              variant: 'destructive',
+              title: "QR Code Error",
+              description: "Could not generate payment QR code.",
+          });
+        });
+    }
+  }, [tournament, toast]);
+
   
   async function onSubmit(values: RegistrationFormValues) {
     setLoading(true);
@@ -216,7 +224,13 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         {tournament.entry_fee > 0 && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col sm:flex-row items-center gap-4">
               <div className="flex-shrink-0">
-                  <img src={qrCodeUrl} alt="Payment QR Code" data-ai-hint="qr code" className="w-[150px] h-[150px] rounded-md" />
+                  {qrCodeDataUrl ? (
+                    <img src={qrCodeDataUrl} alt="Payment QR Code" className="w-[150px] h-[150px] rounded-md" />
+                  ) : (
+                    <div className="w-[150px] h-[150px] rounded-md bg-muted flex items-center justify-center">
+                        <Loader2 className="h-8 w-8 animate-spin"/>
+                    </div>
+                  )}
               </div>
               <div className="space-y-2 text-center sm:text-left">
                   <p className="font-semibold">Scan to pay the entry fee of ₹{tournament.entry_fee}.</p>
