@@ -1,7 +1,6 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { keyStats } from '@/lib/data';
 import { Award, Calendar, Gamepad2, Group, Trophy, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -55,6 +54,8 @@ export default function Home() {
     fetchData();
   }, []);
 
+  const keyStats: { label: string; value: string }[] = [];
+
   return (
     <div className="flex flex-col min-h-dvh">
       <main className="flex-1">
@@ -78,8 +79,8 @@ export default function Home() {
                 </div>
               </div>
               <Image
-                src="/images/bgmi1.png"
-                width="600" // Specify width as needed
+                src="https://placehold.co/600x400.png"
+                width="600"
                 height="400"
                 alt="Hero"
                 data-ai-hint="gaming esports"
@@ -90,27 +91,29 @@ export default function Home() {
         </section>
 
         {/* Key Stats Section */}
-        <section className="w-full py-12 md:py-24">
-          <div className="container">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {keyStats.map((stat) => (
-                <Card key={stat.label} className="text-center transition-transform hover:scale-105 hover:shadow-lg">
-                  <CardHeader>
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                      {stat.label === 'Matches Conducted' && <Gamepad2 className="h-6 w-6" />}
-                      {stat.label === 'Prize Money Distributed' && <Trophy className="h-6 w-6" />}
-                      {stat.label === 'Registered Teams' && <Users className="h-6 w-6" />}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-4xl font-bold">{stat.value}</p>
-                    <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  </CardContent>
-                </Card>
-              ))}
+        {keyStats.length > 0 && (
+          <section className="w-full py-12 md:py-24">
+            <div className="container">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {keyStats.map((stat) => (
+                  <Card key={stat.label} className="text-center transition-transform hover:scale-105 hover:shadow-lg">
+                    <CardHeader>
+                      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        {stat.label === 'Matches Conducted' && <Gamepad2 className="h-6 w-6" />}
+                        {stat.label === 'Prize Money Distributed' && <Trophy className="h-6 w-6" />}
+                        {stat.label === 'Registered Teams' && <Users className="h-6 w-6" />}
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-4xl font-bold">{stat.value}</p>
+                      <p className="text-sm text-muted-foreground">{stat.label}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Featured Games Section */}
         <section className="w-full py-12 md:py-24 bg-card/50">
