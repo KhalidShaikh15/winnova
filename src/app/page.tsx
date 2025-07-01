@@ -58,6 +58,13 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-dvh">
+      {/* Hero Image Section */}
+      <div className="w-full">
+        <Image src="/images/bgmi1.png" alt="Hero" width={1920} height={600} quality={100} className="w-full object-cover" />
+      </div>
+
+
+
       <main className="flex-1">
         {/* Hero Section */}
         <section className="w-full py-20 md:py-32 lg:py-40 bg-card/50">
@@ -79,7 +86,7 @@ export default function Home() {
                 </div>
               </div>
               <Image
-                src="https://placehold.co/600x400.png"
+                src="/images/bgmi1.png"
                 width="600"
                 height="400"
                 alt="Hero"
