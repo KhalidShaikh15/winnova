@@ -30,6 +30,13 @@ const registrationSchema = z.object({
 
 type RegistrationFormValues = z.infer<typeof registrationSchema>;
 
+const qrCodeMap: { [key: number]: string } = {
+    500: 'https://i.ibb.co/tRtNphp/qr-500-battlebuck.png',
+    800: 'https://i.ibb.co/Ng788VxR/qr-800-battlebuck.png',
+    1000: 'https://i.ibb.co/Q3Z638nT/qr-1000-battlebuck.png',
+    1200: 'https://i.ibb.co/spLRR5bD/qr-1200-battlebuck.png',
+};
+
 export default function TournamentRegistration({ tournament }: { tournament: Tournament }) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -51,11 +58,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     },
   });
 
-  const qrCodeUrl = tournament.qr_image_url 
-    ? tournament.qr_image_url
-    : tournament.entry_fee > 0
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${tournament.upi_id}&pn=${encodeURIComponent(tournament.organizer_name)}&am=${tournament.entry_fee}&cu=INR`
-    : null;
+  const qrCodeUrl = tournament.entry_fee > 0 ? qrCodeMap[tournament.entry_fee] : null;
 
   async function onSubmit(values: RegistrationFormValues) {
     setLoading(true);
@@ -105,7 +108,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
 
   const handleContactOrganizer = () => {
     if (!submittedData || !tournament.allow_whatsapp) return;
-    const message = `Hey, I have registered for the tournament ${tournament.title} with Squad Name ${submittedData.squad_name} and UPI ID ${submittedData.user_upi_id}. Please confirm my slot.`;
+    const message = `Hey, I just registered for the ${tournament.title} tournament with UPI ID ${submittedData.user_upi_id}. Please confirm my slot.`;
     const whatsappUrl = `https://wa.me/${tournament.whatsapp_number}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -170,14 +173,17 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       <CardContent>
         {tournament.entry_fee > 0 && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col sm:flex-row items-center gap-4">
-              {qrCodeUrl && 
+              {qrCodeUrl ? 
                 <div className="flex-shrink-0">
-                    <Image src={qrCodeUrl} alt="Payment QR Code" width={150} height={150} className="rounded-md" unoptimized/>
+                    <Image src={qrCodeUrl} alt="Payment QR Code" width={150} height={150} className="rounded-md" />
+                </div>
+              :
+                <div className="flex-shrink-0 flex items-center justify-center w-[150px] h-[150px] bg-background rounded-md">
+                    <p className="text-sm text-muted-foreground text-center">QR Code not available for this fee amount.</p>
                 </div>
               }
               <div className="space-y-2 text-center sm:text-left">
                   <p className="font-semibold">Scan to pay the entry fee of ₹{tournament.entry_fee}.</p>
-                  <p className="text-sm text-muted-foreground">The amount may be pre-filled in your UPI app.</p>
                   <p className="text-sm text-muted-foreground">Or pay directly to the UPI ID:</p>
                   <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-background rounded-md">
                      <QrCode className="w-5 h-5 text-primary" />
