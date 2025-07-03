@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -15,15 +15,12 @@ import { firestore } from "@/lib/firebase"
 import { Loader2, QrCode, Send } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
-import QRCode from 'qrcode';
-
-const ORGANIZER_UPI_ID = "battkebuck@kotak";
-const ORGANIZER_WHATSAPP = "+919653134660";
 
 const createSchema = (matchType: 'Solo' | 'Duo' | 'Squad', entryFee: number) => {
   let schema = z.object({
     squad_name: z.string().min(3, "Squad name must be at least 3 characters."),
     contact_number: z.string().min(10, "A valid contact number is required."),
+    match_slot: z.string().min(1, "Match slot details are required."),
     user_upi_id: entryFee > 0 
         ? z.string().min(3, "Please enter the UPI ID you used for payment.") 
         : z.string().optional(),
@@ -46,7 +43,6 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   const { user, loading: authLoading } = useAuth();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedData, setSubmittedData] = useState<RegistrationFormValues | null>(null);
-  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
   
   const registrationSchema = createSchema(tournament.match_type, tournament.entry_fee);
   const numPlayers = tournament.match_type === 'Solo' ? 1 : tournament.match_type === 'Duo' ? 2 : 4;
@@ -55,6 +51,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     squad_name: "",
     contact_number: "",
     user_upi_id: "",
+    match_slot: "TBD",
   };
   for (let i = 1; i <= numPlayers; i++) {
     defaultValues[`player${i}_id`] = '';
@@ -65,25 +62,8 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     defaultValues,
   });
 
-  useEffect(() => {
-    if (tournament.entry_fee > 0) {
-      const upiUrl = `upi://pay?pa=${ORGANIZER_UPI_ID}&pn=Arena%20Clash&am=${tournament.entry_fee}&tn=Reg%20for%20${encodeURIComponent(tournament.title)}`;
-      QRCode.toDataURL(upiUrl)
-        .then(url => {
-          setQrCodeDataUrl(url);
-        })
-        .catch(err => {
-          console.error('QR Code generation failed:', err);
-          toast({
-              variant: 'destructive',
-              title: "QR Code Error",
-              description: "Could not generate payment QR code.",
-          });
-        });
-    }
-  }, [tournament, toast]);
+  const qrCodeUrl = tournament.entry_fee > 0 ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${tournament.upi_id}&pn=${encodeURIComponent(tournament.organizer_name)}&am=${tournament.entry_fee}&cu=INR` : null;
 
-  
   async function onSubmit(values: RegistrationFormValues) {
     setLoading(true);
 
@@ -102,10 +82,10 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         ...values,
         user_id: user.uid,
         tournament_id: tournament.id,
+        tournament_title: tournament.title,
         game_name: tournament.game_name,
         status: 'pending' as const,
         created_at: serverTimestamp(),
-        match_slot: 'TBD',
       };
       
       // Ensure optional field is not sent if it's empty
@@ -117,9 +97,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
 
       toast({
         title: "Registration Submitted!",
-        description: tournament.entry_fee > 0 
-          ? "Your team has been registered. Please contact the organizer to confirm."
-          : "Your team has been registered for the free tournament!",
+        description: "Your team registration has been submitted for review.",
       });
       setSubmittedData(values);
       setIsSubmitted(true);
@@ -138,12 +116,10 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   }
 
   const handleContactOrganizer = () => {
-    if (!submittedData) return;
-    const message = tournament.entry_fee > 0 
-        ? `Hey, I just registered for the ${tournament.game_name} tournament with squad '${submittedData.squad_name}' using UPI ID: ${submittedData.user_upi_id}. Please confirm my slot.`
-        : `Hey, I just registered for the free ${tournament.game_name} tournament with squad '${submittedData.squad_name}'. Please confirm my slot.`;
+    if (!submittedData || !tournament.allow_whatsapp) return;
+    const message = `Hey, I just registered for the ${tournament.title} tournament with UPI ID: ${submittedData.user_upi_id}. Please confirm my slot.`;
 
-    const whatsappUrl = `https://wa.me/${ORGANIZER_WHATSAPP}?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/${tournament.whatsapp_number}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
   
@@ -196,18 +172,20 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         <CardHeader>
           <CardTitle>Registration Successful!</CardTitle>
           <CardDescription>
-            {tournament.entry_fee > 0 
+            {tournament.allow_whatsapp
               ? "Your registration has been submitted. Click the button below to contact the organizer on WhatsApp and confirm your slot."
-              : "Your registration for the free tournament is complete! You can contact the organizer for any questions."}
+              : "Your registration has been submitted! You will be notified once it is confirmed."}
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-center">
-            <Button size="lg" onClick={handleContactOrganizer}>
-                <Send className="mr-2"/>
-                Contact Organizer on WhatsApp
-            </Button>
-            <p className="text-sm text-muted-foreground mt-4">A pre-filled message will be created for you.</p>
-        </CardContent>
+        {tournament.allow_whatsapp && (
+            <CardContent className="text-center">
+                <Button size="lg" onClick={handleContactOrganizer}>
+                    <Send className="mr-2"/>
+                    Contact Organizer
+                </Button>
+                <p className="text-sm text-muted-foreground mt-4">A pre-filled message will be created for you.</p>
+            </CardContent>
+        )}
       </Card>
     )
   }
@@ -221,16 +199,10 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {tournament.entry_fee > 0 && (
+        {qrCodeUrl && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col sm:flex-row items-center gap-4">
               <div className="flex-shrink-0">
-                  {qrCodeDataUrl ? (
-                    <img src={qrCodeDataUrl} alt="Payment QR Code" className="w-[150px] h-[150px] rounded-md" />
-                  ) : (
-                    <div className="w-[150px] h-[150px] rounded-md bg-muted flex items-center justify-center">
-                        <Loader2 className="h-8 w-8 animate-spin"/>
-                    </div>
-                  )}
+                  <img src={qrCodeUrl} alt="Payment QR Code" className="w-[200px] h-[200px] rounded-md" />
               </div>
               <div className="space-y-2 text-center sm:text-left">
                   <p className="font-semibold">Scan to pay the entry fee of ₹{tournament.entry_fee}.</p>
@@ -238,7 +210,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
                   <p className="text-sm text-muted-foreground">Or pay directly to the UPI ID:</p>
                   <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-background rounded-md">
                      <QrCode className="w-5 h-5 text-primary" />
-                     <span className="font-mono text-primary font-bold">{ORGANIZER_UPI_ID}</span>
+                     <span className="font-mono text-primary font-bold">{tournament.upi_id}</span>
                   </div>
               </div>
           </div>
@@ -257,6 +229,14 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
               <h3 className="text-lg font-medium">Player IDs ({tournament.match_type})</h3>
               {renderPlayerFields()}
             </div>
+
+            <FormField control={form.control} name="match_slot" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Match Slot Details</FormLabel>
+                  <FormControl><Input placeholder="e.g. Group A, Slot 5" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+            )} />
             
             {tournament.entry_fee > 0 && (
               <FormField control={form.control} name="user_upi_id" render={({ field }) => (

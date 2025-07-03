@@ -11,7 +11,7 @@ export interface Game {
 }
 
 export interface Tournament {
-  id: string;
+  id:string;
   game_name: string;
   title: string;
   entry_fee: number;
@@ -23,6 +23,10 @@ export interface Tournament {
   created_at: Timestamp;
   gameImage?: string; // Populated after fetch
   gameAiHint?: string; // Populated after fetch
+  upi_id: string;
+  organizer_name: string;
+  allow_whatsapp: boolean;
+  whatsapp_number: string;
 }
 
 export interface Registration {
