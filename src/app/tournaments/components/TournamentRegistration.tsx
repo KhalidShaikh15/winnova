@@ -12,10 +12,11 @@ import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 import { firestore } from "@/lib/firebase"
-import { Loader2, QrCode, Send } from "lucide-react"
+import { Award, Calendar, Gamepad2, Group, Loader2, QrCode, Send, Users } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import Image from "next/image"
+import { format } from "date-fns"
 
 const registrationSchema = z.object({
     squad_name: z.string().min(3, "Squad name must be at least 3 characters."),
@@ -167,12 +168,22 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       <CardHeader>
         <CardTitle>Register for {tournament.title}</CardTitle>
         <CardDescription>
-            {tournament.entry_fee > 0 ? `Fill out the form to enter your team. Entry Fee: ₹${tournament.entry_fee}` : 'This is a free tournament. Fill out the form to enter your team.'}
+            Fill out the form below to enter your team and join the battle!
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <div className="mb-6 p-4 rounded-lg bg-muted/50 border">
+            <h3 className="font-bold mb-4">Tournament Summary</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2"><Gamepad2 className="w-4 h-4 text-primary"/><span>Game: {tournament.game_name}</span></div>
+                <div className="flex items-center gap-2"><Award className="w-4 h-4 text-primary"/><span>Prize Pool: ₹{tournament.prize_pool.toLocaleString()}</span></div>
+                <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-primary"/><span>Date: {format(tournament.tournament_date.toDate(), 'PPP')}</span></div>
+                <div className="flex items-center gap-2"><Group className="w-4 h-4 text-primary"/><span>Type: {tournament.match_type}</span></div>
+            </div>
+        </div>
+
         {tournament.entry_fee > 0 && (
-          <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col sm:flex-row items-center gap-4">
+          <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col sm:flex-row items-center gap-4 border">
               {qrCodeUrl ? 
                 <div className="flex-shrink-0">
                     <Image src={qrCodeUrl} alt="Payment QR Code" width={150} height={150} className="rounded-md" />
@@ -183,12 +194,13 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
                 </div>
               }
               <div className="space-y-2 text-center sm:text-left">
-                  <p className="font-semibold">Scan to pay the entry fee of ₹{tournament.entry_fee}.</p>
-                  <p className="text-sm text-muted-foreground">Or pay directly to the UPI ID:</p>
+                  <p className="font-semibold text-lg">Entry Fee: <span className="text-primary">₹{tournament.entry_fee}</span></p>
+                  <p className="text-sm text-muted-foreground">Scan the QR or pay directly to the UPI ID below:</p>
                   <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-background rounded-md">
                      <QrCode className="w-5 h-5 text-primary" />
                      <span className="font-mono text-primary font-bold">{tournament.upi_id}</span>
                   </div>
+                   <p className="text-xs text-muted-foreground pt-1">Organizer: {tournament.organizer_name}</p>
               </div>
           </div>
         )}
