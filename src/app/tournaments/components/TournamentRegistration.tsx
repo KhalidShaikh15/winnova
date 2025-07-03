@@ -129,7 +129,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   }
 
   const handleContactOrganizer = () => {
-    if (!submittedUpiId || !tournament.allow_whatsapp) return;
+    if (!submittedUpiId || !tournament.allow_whatsapp || !tournament.whatsapp_number) return;
     const message = `Hey, I just registered for ${tournament.title} with my UPI ID ${submittedUpiId}`;
     const whatsappUrl = `https://wa.me/${tournament.whatsapp_number}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
@@ -163,18 +163,18 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   if (isSubmitted) {
     return (
       <Card className="max-w-2xl mx-auto">
-        <CardHeader>
+        <CardHeader className="text-center">
           <CardTitle>Registration Successful!</CardTitle>
           <CardDescription>
-            {tournament.allow_whatsapp
+            {tournament.allow_whatsapp && tournament.whatsapp_number
               ? "Your registration has been submitted. Click the button below to contact the organizer on WhatsApp and confirm your slot."
               : "Your registration has been submitted! You will be notified once it is confirmed."}
           </CardDescription>
         </CardHeader>
-        {tournament.allow_whatsapp && (
+        {tournament.allow_whatsapp && tournament.whatsapp_number && (
             <CardContent className="text-center">
                 <Button size="lg" onClick={handleContactOrganizer}>
-                    <Send className="mr-2"/>
+                    <Send className="mr-2 h-4 w-4"/>
                     Contact on WhatsApp
                 </Button>
                 <p className="text-sm text-muted-foreground mt-4">A pre-filled message will be created for you.</p>
