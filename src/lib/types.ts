@@ -27,6 +27,7 @@ export interface Tournament {
   organizer_name: string;
   allow_whatsapp: boolean;
   whatsapp_number: string;
+  qr_image_url?: string;
 }
 
 export interface Registration {
@@ -36,10 +37,10 @@ export interface Registration {
   tournament_title?: string;
   game_name: string;
   squad_name: string;
-  player1_id: string;
-  player2_id?: string;
-  player3_id?: string;
-  player4_id?: string;
+  player1_bgmi_id: string;
+  player2_bgmi_id?: string;
+  player3_bgmi_id?: string;
+  player4_bgmi_id?: string;
   contact_number: string;
   match_slot: string;
   user_upi_id: string;

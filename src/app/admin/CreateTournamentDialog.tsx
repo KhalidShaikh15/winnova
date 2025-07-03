@@ -30,6 +30,7 @@ const tournamentFormSchema = z.object({
   status: z.enum(["upcoming", "ongoing", "completed"]),
   upi_id: z.string().min(3, "UPI ID is required."),
   organizer_name: z.string().min(3, "Organizer name is required."),
+  qr_image_url: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   allow_whatsapp: z.boolean().default(false),
   whatsapp_number: z.string().optional(),
 }).refine(data => {
@@ -66,6 +67,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
         status: "upcoming",
         upi_id: "",
         organizer_name: "Arena Clash",
+        qr_image_url: "",
         allow_whatsapp: true,
         whatsapp_number: "",
     },
@@ -182,6 +184,15 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
                     <FormItem><FormLabel>Organizer Name</FormLabel><FormControl><Input placeholder="e.g. Arena Clash" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
             </div>
+
+             <FormField control={form.control} name="qr_image_url" render={({ field }) => (
+                <FormItem>
+                    <FormLabel>QR Code Image URL</FormLabel>
+                    <FormControl><Input placeholder="https://example.com/image.png" {...field} /></FormControl>
+                    <FormDescription>Optional. A link to your payment QR code image.</FormDescription>
+                    <FormMessage />
+                </FormItem>
+            )} />
 
             <FormField control={form.control} name="allow_whatsapp" render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
