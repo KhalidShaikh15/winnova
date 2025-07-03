@@ -124,9 +124,8 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   };
   
   const renderPlayerFields = () => {
-    const playerFieldLabel = `Player In-Game ID (${tournament.game_name})`;
     return Array.from({ length: numPlayers }, (_, i) => i + 1).map(num => (
-      <FormField key={num} control={form.control} name={`player${i + 1}_id` as any} render={({ field }) => ( 
+      <FormField key={num} control={form.control} name={`player${num}_id` as any} render={({ field }) => ( 
         <FormItem>
           <FormLabel>Player {num} In-Game ID</FormLabel>
           <FormControl><Input placeholder={`Enter Player ${num} ID`} {...field} /></FormControl>
