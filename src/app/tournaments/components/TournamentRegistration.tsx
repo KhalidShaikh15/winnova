@@ -219,7 +219,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
                   <p className="text-sm text-muted-foreground">Scan the QR or pay directly to the UPI ID below:</p>
                   <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-background rounded-md">
                      <QrCode className="w-5 h-5 text-primary" />
-                     <span className="font-mono text-primary font-bold">{tournament.upi_id}</span>
+                     <span className="font-mono text-primary font-bold">{tournament.upi_id || 'battlebuck@kotak'}</span>
                   </div>
                    <p className="text-xs text-muted-foreground pt-1">Organizer: {tournament.organizer_name}</p>
               </div>

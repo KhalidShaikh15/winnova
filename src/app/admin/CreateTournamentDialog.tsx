@@ -64,7 +64,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
         match_type: "Squad",
         max_teams: 16,
         status: "upcoming",
-        upi_id: "",
+        upi_id: "battlebuck@kotak",
         organizer_name: "Arena Clash",
         allow_whatsapp: true,
         whatsapp_number: "",
