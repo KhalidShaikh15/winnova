@@ -130,7 +130,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
 
   const handleContactOrganizer = () => {
     if (!submittedUpiId || !tournament.allow_whatsapp) return;
-    const message = `Hey, I just registered for the ${tournament.title} tournament with UPI ID ${submittedUpiId}. Please confirm my slot.`;
+    const message = `Hey, I just registered for ${tournament.title} with my UPI ID ${submittedUpiId}`;
     const whatsappUrl = `https://wa.me/${tournament.whatsapp_number}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
