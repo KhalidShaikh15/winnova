@@ -45,17 +45,5 @@ export interface Registration {
   user_upi_id: string;
   status: 'pending' | 'confirmed' | 'rejected';
   created_at: Timestamp;
-  payment_screenshot_url?: string; // Kept for backwards compatibility if needed, but new forms won't use it.
-}
-
-export interface LeaderboardEntry {
-    id: string;
-    tournament_id: string;
-    game_name: string;
-    squad_name: string;
-    total_kills: number;
-    matches_played: number;
-    points: number;
-    rank: number;
-    last_updated: Timestamp;
+  payment_screenshot_url?: string;
 }

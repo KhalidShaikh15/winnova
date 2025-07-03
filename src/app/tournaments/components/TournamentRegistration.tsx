@@ -124,8 +124,9 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   };
   
   const renderPlayerFields = () => {
+    const playerFieldLabel = `Player In-Game ID (${tournament.game_name})`;
     return Array.from({ length: numPlayers }, (_, i) => i + 1).map(num => (
-      <FormField key={num} control={form.control} name={`player${num}_id` as any} render={({ field }) => ( 
+      <FormField key={num} control={form.control} name={`player${i + 1}_id` as any} render={({ field }) => ( 
         <FormItem>
           <FormLabel>Player {num} In-Game ID</FormLabel>
           <FormControl><Input placeholder={`Enter Player ${num} ID`} {...field} /></FormControl>
@@ -202,7 +203,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         {qrCodeUrl && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col sm:flex-row items-center gap-4">
               <div className="flex-shrink-0">
-                  <img src={qrCodeUrl} alt="Payment QR Code" className="w-[200px] h-[200px] rounded-md" />
+                  <img src={qrCodeUrl} alt="Payment QR Code" className="w-[150px] h-[150px] rounded-md" />
               </div>
               <div className="space-y-2 text-center sm:text-left">
                   <p className="font-semibold">Scan to pay the entry fee of ₹{tournament.entry_fee}.</p>
