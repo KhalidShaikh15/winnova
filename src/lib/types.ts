@@ -36,14 +36,25 @@ export interface Registration {
   tournament_title?: string;
   game_name: string;
   squad_name: string;
-  player1_bgmi_id: string;
-  player2_bgmi_id: string;
-  player3_bgmi_id: string;
-  player4_bgmi_id: string;
+  player1_bgmi_id?: string;
+  player2_bgmi_id?: string;
+  player3_bgmi_id?: string;
+  player4_bgmi_id?: string;
+  clan_tag?: string;
   contact_number: string;
-  match_slot: string;
+  match_slot?: string;
   user_upi_id: string;
   status: 'pending' | 'confirmed' | 'rejected';
   created_at: Timestamp;
   payment_screenshot_url?: string;
+}
+
+export interface LeaderboardEntry {
+    id: string;
+    tournament_id: string;
+    squad_name: string;
+    total_kills: number;
+    matches_played: number;
+    points: number;
+    rank: number;
 }

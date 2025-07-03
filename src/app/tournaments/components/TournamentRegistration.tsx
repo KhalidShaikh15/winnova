@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -12,24 +12,32 @@ import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 import { firestore } from "@/lib/firebase"
-import { Award, Calendar, Gamepad2, Group, Loader2, QrCode, Send, Users } from "lucide-react"
+import { Award, Calendar, Gamepad2, Group, Loader2, QrCode, Send } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import Image from "next/image"
 import { format } from "date-fns"
 
-const registrationSchema = z.object({
+// Base schema for common fields
+const baseSchema = z.object({
     squad_name: z.string().min(3, "Squad name must be at least 3 characters."),
     contact_number: z.string().min(10, "A valid contact number is required."),
-    match_slot: z.string().min(1, "Match slot details are required."),
     user_upi_id: z.string().min(3, "Please enter the UPI ID you used for payment."),
+});
+
+// Schema for BGMI/Free Fire
+const shooterGameSchema = baseSchema.extend({
     player1_bgmi_id: z.string().min(2, `Player 1 ID is required.`),
     player2_bgmi_id: z.string().min(2, `Player 2 ID is required.`),
     player3_bgmi_id: z.string().min(2, `Player 3 ID is required.`),
     player4_bgmi_id: z.string().min(2, `Player 4 ID is required.`),
 });
 
-type RegistrationFormValues = z.infer<typeof registrationSchema>;
+// Schema for Clash of Clans
+const strategyGameSchema = baseSchema.extend({
+    clan_tag: z.string().min(2, "Clan Tag is required."),
+});
+
 
 const qrCodeMap: { [key: number]: string } = {
     500: 'https://i.ibb.co/tRtNphp/qr-500-battlebuck.png',
@@ -43,7 +51,16 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   const [loading, setLoading] = useState(false);
   const { user, loading: authLoading } = useAuth();
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submittedData, setSubmittedData] = useState<RegistrationFormValues | null>(null);
+  const [submittedUpiId, setSubmittedUpiId] = useState("");
+
+  const registrationSchema = useMemo(() => {
+    if (tournament.game_name === "Clash of Clans") {
+        return strategyGameSchema;
+    }
+    return shooterGameSchema;
+  }, [tournament.game_name]);
+  
+  type RegistrationFormValues = z.infer<typeof registrationSchema>;
 
   const form = useForm<RegistrationFormValues>({
     resolver: zodResolver(registrationSchema),
@@ -51,11 +68,15 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         squad_name: "",
         contact_number: "",
         user_upi_id: "",
-        match_slot: "TBD",
-        player1_bgmi_id: "",
-        player2_bgmi_id: "",
-        player3_bgmi_id: "",
-        player4_bgmi_id: "",
+        ...(tournament.game_name === "Clash of Clans" 
+            ? { clan_tag: "" } 
+            : { 
+                player1_bgmi_id: "",
+                player2_bgmi_id: "",
+                player3_bgmi_id: "",
+                player4_bgmi_id: "",
+              }
+        ),
     },
   });
 
@@ -75,7 +96,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     }
     
     try {
-      const docData: any = {
+      const docData = {
         ...values,
         user_id: user.uid,
         tournament_id: tournament.id,
@@ -91,7 +112,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         title: "Registration Submitted!",
         description: "Your team registration has been submitted for review.",
       });
-      setSubmittedData(values);
+      setSubmittedUpiId(values.user_upi_id);
       setIsSubmitted(true);
       form.reset();
     } catch (error) {
@@ -108,8 +129,8 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   }
 
   const handleContactOrganizer = () => {
-    if (!submittedData || !tournament.allow_whatsapp) return;
-    const message = `Hey, I just registered for the ${tournament.title} tournament with UPI ID ${submittedData.user_upi_id}. Please confirm my slot.`;
+    if (!submittedUpiId || !tournament.allow_whatsapp) return;
+    const message = `Hey, I just registered for the ${tournament.title} tournament with UPI ID ${submittedUpiId}. Please confirm my slot.`;
     const whatsappUrl = `https://wa.me/${tournament.whatsapp_number}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -214,21 +235,19 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
               <FormItem><FormLabel>Contact Number (WhatsApp)</FormLabel><FormControl><Input type="tel" placeholder="Enter a contact number" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Player In-Game IDs</h3>
-              <FormField control={form.control} name="player1_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 1 ID</FormLabel><FormControl><Input placeholder="Enter Player 1 ID" {...field} /></FormControl><FormMessage /></FormItem> )} />
-              <FormField control={form.control} name="player2_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 2 ID</FormLabel><FormControl><Input placeholder="Enter Player 2 ID" {...field} /></FormControl><FormMessage /></FormItem> )} />
-              <FormField control={form.control} name="player3_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 3 ID</FormLabel><FormControl><Input placeholder="Enter Player 3 ID" {...field} /></FormControl><FormMessage /></FormItem> )} />
-              <FormField control={form.control} name="player4_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 4 ID</FormLabel><FormControl><Input placeholder="Enter Player 4 ID" {...field} /></FormControl><FormMessage /></FormItem> )} />
-            </div>
-
-            <FormField control={form.control} name="match_slot" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Match Slot Details</FormLabel>
-                  <FormControl><Input placeholder="e.g. Group A, Slot 5" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-            )} />
+            {tournament.game_name === 'Clash of Clans' ? (
+                <FormField control={form.control} name="clan_tag" render={({ field }) => (
+                    <FormItem><FormLabel>Clan Tag</FormLabel><FormControl><Input placeholder="Enter your clan tag" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+            ) : (
+                <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Player In-Game IDs</h3>
+                    <FormField control={form.control} name="player1_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 1 ID</FormLabel><FormControl><Input placeholder="Enter Player 1 ID" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                    <FormField control={form.control} name="player2_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 2 ID</FormLabel><FormControl><Input placeholder="Enter Player 2 ID" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                    <FormField control={form.control} name="player3_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 3 ID</FormLabel><FormControl><Input placeholder="Enter Player 3 ID" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                    <FormField control={form.control} name="player4_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 4 ID</FormLabel><FormControl><Input placeholder="Enter Player 4 ID" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                </div>
+            )}
             
             {tournament.entry_fee > 0 && (
               <FormField control={form.control} name="user_upi_id" render={({ field }) => (
