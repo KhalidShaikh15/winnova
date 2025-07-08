@@ -13,17 +13,17 @@ import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { addDoc, collection, Timestamp } from "firebase/firestore"
-import { firestore, storage } from "@/lib/firebase"
+import { firestore } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
 import type { Game } from "@/lib/types"
 import { Switch } from "@/components/ui/switch"
-import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage"
 import Image from "next/image"
 
 const tournamentFormSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters."),
   game_name: z.string({ required_error: "Please select a game." }),
+  banner_url: z.string().min(1, { message: "Please select a banner image." }),
   entry_fee: z.coerce.number().min(0),
   prize_pool: z.coerce.number().min(0),
   match_type: z.enum(["Solo", "Duo", "Squad"]),
@@ -55,11 +55,15 @@ interface CreateTournamentDialogProps {
     onTournamentCreated: () => void;
 }
 
+const bannerOptions = [
+    '/banners/banner1.png',
+    '/banners/banner2.png',
+    '/banners/banner3.png',
+];
+
 export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTournamentCreated }: CreateTournamentDialogProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const form = useForm<TournamentFormValues>({
     resolver: zodResolver(tournamentFormSchema),
@@ -75,54 +79,23 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
         organizer_name: "Arena Clash",
         allow_whatsapp: true,
         whatsapp_number: "9653134660",
+        banner_url: "",
     },
   });
 
   const allowWhatsappValue = form.watch("allow_whatsapp");
-  
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast({
-          variant: "destructive",
-          title: "File too large",
-          description: "Please upload an image smaller than 5MB.",
-        });
-        return;
-      }
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    } else {
-      setImageFile(null);
-      setImagePreview(null);
-    }
-  };
+  const selectedBanner = form.watch("banner_url");
 
   async function onSubmit(data: TournamentFormValues) {
-    if (!firestore || !storage) {
+    if (!firestore) {
         toast({ variant: "destructive", title: "Error", description: "Firebase is not configured correctly." });
         return;
     }
     
-    if (!imageFile) {
-      toast({
-        variant: "destructive",
-        title: "Image Required",
-        description: "Please select a tournament image to upload.",
-      });
-      return;
-    }
-    
     setLoading(true);
     try {
-      const imageRef = storageRef(storage, `tournaments/${Date.now()}_${imageFile.name}`);
-      const snapshot = await uploadBytes(imageRef, imageFile);
-      const downloadURL = await getDownloadURL(snapshot.ref);
-
       const tournamentData = {
         ...data,
-        banner_url: downloadURL,
         tournament_date: Timestamp.fromDate(data.tournament_date),
         created_at: Timestamp.now(),
       };
@@ -132,15 +105,11 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
       onTournamentCreated();
       setIsOpen(false);
       form.reset();
-      setImageFile(null);
-      setImagePreview(null);
     } catch (error: any) {
       console.error("Error creating tournament:", error);
       let description = "An unknown error occurred. Please check your Firebase settings and security rules.";
-
-      if (error?.code === 'storage/unauthorized') {
-        description = "Permission denied. Please check your Firebase Storage security rules to allow uploads.";
-      } else if (error instanceof Error) {
+      
+      if (error instanceof Error) {
         description = error.message;
       }
       
@@ -166,18 +135,38 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
               <FormItem><FormLabel>Title</FormLabel><FormControl><Input placeholder="e.g., Summer Showdown Series" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
 
-            <div className="space-y-2">
-                <FormLabel>Tournament Banner</FormLabel>
-                {imagePreview && (
-                    <div className="w-full relative aspect-video">
-                        <Image src={imagePreview} alt="Tournament preview" fill className="rounded-md object-cover" />
+             <FormField
+              control={form.control}
+              name="banner_url"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Tournament Banner</FormLabel>
+                  <FormControl>
+                    <div className="grid grid-cols-2 gap-4">
+                      {bannerOptions.map((banner) => (
+                        <div
+                          key={banner}
+                          className={cn(
+                            "relative aspect-video cursor-pointer rounded-lg border-2 border-transparent transition-all",
+                            selectedBanner === banner && "border-primary ring-2 ring-primary"
+                          )}
+                          onClick={() => form.setValue("banner_url", banner, { shouldValidate: true })}
+                        >
+                          <Image
+                            src={banner}
+                            alt={`Banner option ${bannerOptions.indexOf(banner) + 1}`}
+                            fill
+                            className="rounded-md object-cover"
+                          />
+                        </div>
+                      ))}
                     </div>
-                )}
-                <FormControl>
-                    <Input type="file" accept="image/png, image/jpeg, image/webp" onChange={handleFileChange} />
-                </FormControl>
-                <FormDescription>Upload an image for the tournament banner (PNG, JPG, WEBP, max 5MB).</FormDescription>
-            </div>
+                  </FormControl>
+                  <FormDescription>Select a banner for the tournament.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             
             <div className="grid grid-cols-2 gap-4">
               <FormField control={form.control} name="game_name" render={({ field }) => (
