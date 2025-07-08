@@ -85,7 +85,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
 
   const qrLink = useMemo(() => {
     if (upiLink) {
-      return `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(upiLink)}`;
+      return `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(upiLink)}`;
     }
     return "";
   }, [upiLink]);
@@ -217,22 +217,22 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
 
         {tournament.entry_fee > 0 && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col items-center border">
-            <p className="font-semibold text-lg">Pay Entry Fee: <span className="text-primary">₹{tournament.entry_fee}</span></p>
+            <h3 className="font-bold text-lg mb-2">Pay Entry Fee</h3>
             <img
               src={qrLink}
-              alt="Pay with UPI"
-              style={{ width: "280px", margin: "16px 0" }}
+              alt="QR Code"
+              style={{ width: "200px", height: "200px", margin: "16px 0" }}
               className="rounded-md"
             />
-            <a
-              href={upiLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ marginTop: "10px", display: "block" }}
-              className="text-primary underline"
-            >
-              Click to pay with UPI app
-            </a>
+            <Button asChild>
+                <a
+                  href={upiLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Pay Now
+                </a>
+            </Button>
              <p className="text-xs text-muted-foreground mt-4 text-center">
                 After paying, please enter your UPI ID in the form below for verification.
              </p>
