@@ -39,13 +39,6 @@ const strategyGameSchema = baseSchema.extend({
 });
 
 
-const qrCodeMap: { [key: number]: string } = {
-    500: 'https://i.ibb.co/tRtNphp/qr-500-battlebuck.png',
-    800: 'https://i.ibb.co/Ng788VxR/qr-800-battlebuck.png',
-    1000: 'https://i.ibb.co/Q3Z638nT/qr-1000-battlebuck.png',
-    1200: 'https://i.ibb.co/spLRR5bD/qr-1200-battlebuck.png',
-};
-
 export default function TournamentRegistration({ tournament }: { tournament: Tournament }) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -79,8 +72,6 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         ),
     },
   });
-
-  const qrCodeUrl = tournament.entry_fee > 0 ? qrCodeMap[tournament.entry_fee] : null;
 
   async function onSubmit(values: RegistrationFormValues) {
     if (!firestore) return;
@@ -206,13 +197,13 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
 
         {tournament.entry_fee > 0 && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col sm:flex-row items-center gap-4 border">
-              {qrCodeUrl ? 
+              {tournament.qr_link ? 
                 <div className="flex-shrink-0">
-                    <Image src={qrCodeUrl} alt="Payment QR Code" width={150} height={150} className="rounded-md" />
+                    <Image src={tournament.qr_link} alt="Scan to Pay Entry Fee" width={150} height={150} className="rounded-md" />
                 </div>
               :
                 <div className="flex-shrink-0 flex items-center justify-center w-[150px] h-[150px] bg-background rounded-md">
-                    <p className="text-sm text-muted-foreground text-center">QR Code not available for this fee amount.</p>
+                    <p className="text-sm text-muted-foreground text-center">QR Code not available.</p>
                 </div>
               }
               <div className="space-y-2 text-center sm:text-left">
