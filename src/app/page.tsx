@@ -1,7 +1,7 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Award, Calendar, Gamepad2, Group, Trophy, Users } from 'lucide-react';
+import { Calendar, Group, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -9,6 +9,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Game } from '@/lib/types';
 import { format } from 'date-fns';
+import { keyStats } from '@/lib/data';
 
 export default function Home() {
   const [featuredGames, setFeaturedGames] = useState<Game[]>([]);
@@ -63,9 +64,7 @@ export default function Home() {
       }
     };
     fetchData();
-  }, [firestore]);
-
-  const keyStats: { label: string; value: string }[] = [];
+  }, []);
 
   return (
     <div className="flex flex-col min-h-dvh">
@@ -77,10 +76,10 @@ export default function Home() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
                   <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
-                    Welcome to Arena Clash
+                    Compete. Conquer. Collect.
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    The ultimate platform for competitive gaming tournaments. Join now and prove your skills.
+                    Your ultimate destination for high-stakes gaming tournaments. Join thousands of players, showcase your talent, and win incredible prizes.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
@@ -101,29 +100,26 @@ export default function Home() {
         </section>
 
         {/* Key Stats Section */}
-        {keyStats.length > 0 && (
-          <section className="w-full py-12 md:py-24">
-            <div className="container">
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {keyStats.map((stat) => (
-                  <Card key={stat.label} className="text-center transition-transform hover:scale-105 hover:shadow-lg">
-                    <CardHeader>
-                      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        {stat.label === 'Matches Conducted' && <Gamepad2 className="h-6 w-6" />}
-                        {stat.label === 'Prize Money Distributed' && <Trophy className="h-6 w-6" />}
-                        {stat.label === 'Registered Teams' && <Users className="h-6 w-6" />}
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-4xl font-bold">{stat.value}</p>
-                      <p className="text-sm text-muted-foreground">{stat.label}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+        <section className="w-full py-12 md:py-24">
+          <div className="container">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {keyStats.map((stat) => (
+                <Card key={stat.label} className="text-center transition-transform hover:scale-105 hover:shadow-lg">
+                  <CardHeader>
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <stat.icon className="h-6 w-6" />
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-4xl font-bold">{stat.value}</p>
+                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          </section>
-        )}
+          </div>
+        </section>
+
 
         {/* Featured Games Section */}
         <section className="w-full py-12 md:py-24 bg-card/50">
@@ -171,7 +167,7 @@ export default function Home() {
                                 <span>{format(tournament.tournament_date.toDate(), 'PPP')}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Award className="w-4 h-4"/>
+                                <Users className="w-4 h-4"/>
                                 <span>₹{tournament.prize_pool.toLocaleString()}</span>
                             </div>
                             <div className="flex items-center gap-2">
