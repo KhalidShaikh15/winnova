@@ -148,7 +148,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
                         <div
                           key={banner}
                           className={cn(
-                            "relative aspect-video cursor-pointer rounded-lg border-2 border-transparent transition-all",
+                            "relative w-[150px] h-[100px] cursor-pointer rounded-lg border-2 border-transparent transition-all",
                             selectedBanner === banner && "border-primary ring-2 ring-primary"
                           )}
                           onClick={() => form.setValue("banner_url", banner, { shouldValidate: true })}
