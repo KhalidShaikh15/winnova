@@ -38,6 +38,22 @@ export default function Header() {
     { href: '/tournaments', label: 'Tournaments' },
     { href: '/leaderboard', label: 'Leaderboard' },
   ];
+  
+  const getInitials = (name: string | null | undefined, email: string | null | undefined): string => {
+    if (name) {
+        const parts = name.trim().split(' ').filter(Boolean);
+        if (parts.length > 1) {
+            return (parts[0][0] + parts[1][0]).toUpperCase();
+        }
+        if (parts.length === 1 && parts[0].length > 0) {
+            return parts[0][0].toUpperCase();
+        }
+    }
+    if (email) {
+        return email.charAt(0).toUpperCase();
+    }
+    return 'U';
+  };
 
   const handleLogout = async () => {
     try {
@@ -99,8 +115,8 @@ export default function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.photoURL || "https://placehold.co/100x100.png"} alt={user.displayName || "User"} />
-                      <AvatarFallback>{user.email?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
+                      <AvatarImage src={user.photoURL || undefined} alt={user.displayName || "User"} />
+                      <AvatarFallback>{getInitials(user.displayName, user.email)}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>

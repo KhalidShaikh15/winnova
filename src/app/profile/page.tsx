@@ -55,6 +55,8 @@ export default function ProfilePage() {
       });
       if (user.photoURL) {
         setAvatarPreview(user.photoURL);
+      } else {
+        setAvatarPreview("https://placehold.co/100x100.png");
       }
     }
   }, [user, form]);
@@ -69,6 +71,22 @@ export default function ProfilePage() {
           });
       }
   }, [user, authLoading, router, toast]);
+
+  const getInitials = (name: string | null | undefined, email: string | null | undefined): string => {
+    if (name) {
+        const parts = name.trim().split(' ').filter(Boolean);
+        if (parts.length > 1) {
+            return (parts[0][0] + parts[1][0]).toUpperCase();
+        }
+        if (parts.length === 1 && parts[0].length > 0) {
+            return parts[0][0].toUpperCase();
+        }
+    }
+    if (email) {
+        return email.charAt(0).toUpperCase();
+    }
+    return 'U';
+  };
 
   async function onSubmit(data: ProfileFormValues) {
     if (!user) return;
@@ -181,7 +199,7 @@ export default function ProfilePage() {
                 <div className="relative">
                   <Avatar className="h-24 w-24">
                     <AvatarImage src={avatarPreview} alt={user?.displayName || "User avatar"} />
-                    <AvatarFallback>{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback>{getInitials(user?.displayName, user?.email)}</AvatarFallback>
                   </Avatar>
                   {isModerating && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
