@@ -79,15 +79,10 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
     if (!firestore) return;
     setLoading(true);
     try {
-      // Generate QR link
-      const upiUrl = `upi://pay?pa=${data.upi_id}&pn=${encodeURIComponent(data.organizer_name)}&am=${data.entry_fee}&cu=INR`;
-      const qr_link = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(upiUrl)}`;
-
       const tournamentData = {
         ...data,
         tournament_date: Timestamp.fromDate(data.tournament_date),
         created_at: Timestamp.now(),
-        qr_link: data.entry_fee > 0 ? qr_link : "", // Only add qr_link if there is an entry fee
       };
 
       await addDoc(collection(firestore, "tournaments"), tournamentData);

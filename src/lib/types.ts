@@ -28,7 +28,6 @@ export interface Tournament {
   organizer_name: string;
   allow_whatsapp: boolean;
   whatsapp_number: string;
-  qr_link: string;
 }
 
 export interface Registration {

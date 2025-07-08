@@ -132,6 +132,14 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     const whatsappUrl = `https://wa.me/91${tournament.whatsapp_number}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
+
+  const qrLink = useMemo(() => {
+    if (tournament.entry_fee > 0 && tournament.upi_id && tournament.organizer_name) {
+      const upiUrl = `upi://pay?pa=${tournament.upi_id}&pn=${encodeURIComponent(tournament.organizer_name)}&am=${tournament.entry_fee}&cu=INR`;
+      return `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(upiUrl)}`;
+    }
+    return "";
+  }, [tournament.entry_fee, tournament.upi_id, tournament.organizer_name]);
   
   if (authLoading) {
     return (
@@ -201,10 +209,10 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
             </div>
         </div>
 
-        {tournament.entry_fee > 0 && tournament.qr_link && (
+        {tournament.entry_fee > 0 && qrLink && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col sm:flex-row items-center gap-4 border">
             <div className="flex-shrink-0">
-              <Image src={tournament.qr_link} alt="Scan to Pay Entry Fee" width={150} height={150} className="rounded-md" />
+              <Image src={qrLink} alt="Scan to Pay Entry Fee" width={150} height={150} className="rounded-md" />
             </div>
             <div className="space-y-2 text-center sm:text-left">
                 <p className="font-semibold text-lg">Entry Fee: <span className="text-primary">₹{tournament.entry_fee}</span></p>
