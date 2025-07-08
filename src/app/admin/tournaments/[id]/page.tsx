@@ -1,16 +1,25 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { doc, getDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Registration } from '@/lib/types';
 import { notFound, useParams } from 'next/navigation';
-import { Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import Image from 'next/image';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function ManageTournamentPage() {
   const params = useParams<{ id: string }>();
@@ -18,6 +27,10 @@ export default function ManageTournamentPage() {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!params.id) return;
@@ -62,6 +75,24 @@ export default function ManageTournamentPage() {
     }
   };
 
+  const handleDeleteRegistration = async () => {
+    if (!selectedRegistration) return;
+    setIsDeleting(true);
+    try {
+      await deleteDoc(doc(firestore, 'registrations', selectedRegistration.id));
+      toast({ title: 'Success', description: 'Registration deleted successfully.' });
+      setRegistrations(regs => regs.filter(r => r.id !== selectedRegistration.id)); // Refresh list
+    } catch (error) {
+      console.error("Error deleting registration:", error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete registration.' });
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+      setSelectedRegistration(null);
+    }
+  };
+
+
   if (loading) {
     return <div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>;
   }
@@ -85,7 +116,7 @@ export default function ManageTournamentPage() {
                 <TableHead>Contact</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>User UPI ID</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -98,7 +129,7 @@ export default function ManageTournamentPage() {
                     <TableCell>
                       <span className="font-mono text-xs">{reg.user_upi_id || 'N/A'}</span>
                     </TableCell>
-                    <TableCell className="space-x-2">
+                    <TableCell className="text-right space-x-2">
                       <Button size="sm" variant="outline" disabled={reg.status === 'confirmed'} onClick={() => handleRegistrationStatus(reg.id, 'confirmed')}>
                         <CheckCircle className="h-4 w-4 mr-2" />
                         Confirm
@@ -106,6 +137,17 @@ export default function ManageTournamentPage() {
                       <Button size="sm" variant="destructive" disabled={reg.status === 'rejected'} onClick={() => handleRegistrationStatus(reg.id, 'rejected')}>
                         <XCircle className="h-4 w-4 mr-2" />
                         Reject
+                      </Button>
+                       <Button 
+                        variant="destructive" 
+                        size="icon"
+                        onClick={() => {
+                          setSelectedRegistration(reg);
+                          setIsDeleteDialogOpen(true);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                         <span className="sr-only">Delete</span>
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -117,6 +159,23 @@ export default function ManageTournamentPage() {
           </Table>
         </CardContent>
       </Card>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the registration for
+              <span className="font-bold"> &quot;{selectedRegistration?.squad_name}&quot;</span>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteRegistration} disabled={isDeleting}>
+              {isDeleting ? 'Deleting...' : 'Continue'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
