@@ -59,7 +59,7 @@ export default function SignupPage() {
         description: "Welcome to Arena Clash! You are now logged in.",
       });
       router.push('/');
-    } catch (error: any) => {
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Signup Failed",
