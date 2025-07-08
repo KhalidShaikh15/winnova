@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from './use-auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { firestore, app } from '@/lib/firebase';
+import { firestore } from '@/lib/firebase';
 
 export function useAdmin() {
   const { user, loading: authLoading } = useAuth();
@@ -14,33 +14,42 @@ export function useAdmin() {
       return;
     }
 
-    // Also wait for firebase to be initialized on the client
-    if (!user || !app) {
-      // No user or no firebase, so not an admin
+    if (!user) {
+      // No user, so not an admin
       setIsAdmin(false);
       setIsAdminLoading(false);
       return;
     }
 
     // User is authenticated, now check for admin role
-    setIsAdminLoading(true);
-    const adminDocRef = doc(firestore, 'admins', user.uid);
-    
-    getDoc(adminDocRef)
-      .then(adminDocSnap => {
+    const checkAdminStatus = async () => {
+      // Ensure firestore is initialized before using it
+      if (!firestore) {
+        setIsAdmin(false);
+        setIsAdminLoading(false);
+        console.warn("Firestore not initialized, cannot check admin status.");
+        return;
+      }
+      
+      setIsAdminLoading(true);
+      const adminDocRef = doc(firestore, 'admins', user.uid);
+      
+      try {
+        const adminDocSnap = await getDoc(adminDocRef);
         if (adminDocSnap.exists() && adminDocSnap.data().role === 'admin') {
           setIsAdmin(true);
         } else {
           setIsAdmin(false);
         }
-      })
-      .catch(error => {
+      } catch (error) {
         console.error("Error checking admin status:", error);
         setIsAdmin(false);
-      })
-      .finally(() => {
+      } finally {
         setIsAdminLoading(false);
-      });
+      }
+    };
+    
+    checkAdminStatus();
       
   }, [user, authLoading]);
 

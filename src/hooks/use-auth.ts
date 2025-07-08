@@ -2,22 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { auth, app } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // app is null until initialized on the client
-    if (app) {
+    // Ensure Firebase auth is initialized before using it
+    if (auth) {
       const unsubscribe = onAuthStateChanged(auth, (user) => {
         setUser(user);
         setLoading(false);
       });
+      // Cleanup subscription on unmount
       return () => unsubscribe();
     } else {
-      setLoading(false); // Firebase is not available
+      // Firebase is not initialized (e.g., on server or missing config)
+      setLoading(false);
     }
   }, []);
 

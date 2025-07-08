@@ -13,13 +13,15 @@ const firebaseConfig: FirebaseOptions = {
   databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
-// Initialize Firebase ONLY on the client side
-const app: FirebaseApp | null = typeof window !== 'undefined' && firebaseConfig.apiKey
-  ? !getApps().length ? initializeApp(firebaseConfig) : getApp()
-  : null;
+// Conditionally initialize Firebase only on the client-side with a valid API key.
+// This prevents server-side rendering errors when the .env file is not configured.
+let app: FirebaseApp | undefined;
+if (typeof window !== 'undefined' && firebaseConfig.apiKey) {
+  app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+}
 
-const auth: Auth = app ? getAuth(app) : ({} as Auth);
-const firestore: Firestore = app ? getFirestore(app) : ({} as Firestore);
-const storage: FirebaseStorage = app ? getStorage(app) : ({} as FirebaseStorage);
+const auth: Auth | undefined = app ? getAuth(app) : undefined;
+const firestore: Firestore | undefined = app ? getFirestore(app) : undefined;
+const storage: FirebaseStorage | undefined = app ? getStorage(app) : undefined;
 
 export { app, auth, firestore, storage };
