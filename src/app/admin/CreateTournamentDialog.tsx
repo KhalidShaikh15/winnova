@@ -19,9 +19,17 @@ import { useState } from "react"
 import type { Game } from "@/lib/types"
 import { Switch } from "@/components/ui/switch"
 
+const tournamentImages = [
+    { label: "BGMI Action Cover", value: "/images/bgmi1.png" },
+    { label: "BGMI Feature", value: "/images/feature bgmi.png" },
+    { label: "Clash of Clans Feature", value: "/images/feature coc.png" },
+    { label: "Free Fire Feature", value: "/images/feature ff.png" },
+];
+
 const tournamentFormSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters."),
   game_name: z.string({ required_error: "Please select a game." }),
+  imageUrl: z.string({ required_error: "Please select an image." }),
   entry_fee: z.coerce.number().min(0),
   prize_pool: z.coerce.number().min(0),
   match_type: z.enum(["Solo", "Duo", "Squad"]),
@@ -60,6 +68,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
     resolver: zodResolver(tournamentFormSchema),
     defaultValues: {
         title: "",
+        imageUrl: "",
         entry_fee: 0,
         prize_pool: 0,
         match_type: "Squad",
@@ -109,6 +118,15 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
             <FormField control={form.control} name="title" render={({ field }) => (
               <FormItem><FormLabel>Title</FormLabel><FormControl><Input placeholder="e.g., Summer Showdown Series" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
+
+             <FormField control={form.control} name="imageUrl" render={({ field }) => (
+                <FormItem><FormLabel>Tournament Image</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Select an image" /></SelectTrigger></FormControl>
+                    <SelectContent>{tournamentImages.map(image => <SelectItem key={image.value} value={image.value}>{image.label}</SelectItem>)}</SelectContent>
+                  </Select><FormMessage />
+                </FormItem>
+              )} />
             
             <div className="grid grid-cols-2 gap-4">
               <FormField control={form.control} name="game_name" render={({ field }) => (

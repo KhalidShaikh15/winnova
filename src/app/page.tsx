@@ -46,15 +46,11 @@ export default function Home() {
         const tournamentsSnapshot = await getDocs(q);
         
         const tournamentsList = tournamentsSnapshot.docs.map(doc => {
-          const data = doc.data() as Tournament;
-          const game = gamesList.find(g => g.name === data.game_name);
           return {
             id: doc.id,
-            ...data,
-            gameImage: game?.imageUrl || 'https://placehold.co/150x100.png',
-            gameAiHint: game?.aiHint || 'gaming',
-          };
-        }) as Tournament[];
+            ...doc.data(),
+          } as Tournament;
+        });
 
         // Sort by date and take the first 3
         tournamentsList.sort((a, b) => a.tournament_date.toMillis() - b.tournament_date.toMillis());
@@ -163,7 +159,7 @@ export default function Home() {
                    <Link href={`/tournaments/${tournament.id}`}>
                     <div className="grid grid-cols-1 md:grid-cols-5 items-center p-4 gap-4">
                         <div className="md:col-span-1">
-                             <Image src={tournament.gameImage!} alt={tournament.game_name} width={150} height={100} data-ai-hint={tournament.gameAiHint} className="rounded-lg object-cover w-full h-auto aspect-video"/>
+                             <Image src={tournament.imageUrl} alt={tournament.title} width={150} height={100} className="rounded-lg object-cover w-full h-auto aspect-video"/>
                         </div>
                         <div className="md:col-span-2">
                             <CardTitle>{tournament.title}</CardTitle>

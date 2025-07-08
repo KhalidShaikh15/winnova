@@ -22,8 +22,7 @@ export interface Tournament {
   max_teams: number;
   status: 'upcoming' | 'completed' | 'ongoing';
   created_at: Timestamp;
-  gameImage?: string; // Populated after fetch
-  gameAiHint?: string; // Populated after fetch
+  imageUrl: string;
   upi_id: string;
   organizer_name: string;
   allow_whatsapp: boolean;

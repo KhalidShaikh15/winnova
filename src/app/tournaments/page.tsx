@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
-import { type Tournament, type Game } from '@/lib/types';
+import { type Tournament } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -20,26 +20,17 @@ export default function TournamentsPage() {
       if (!firestore) return;
       setLoading(true);
       try {
-        // Fetch Games first to map images
-        const gamesCollection = collection(firestore, 'games');
-        const gamesSnapshot = await getDocs(gamesCollection);
-        const gamesList = gamesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Game[];
-
         // Fetch All Tournaments
         const tournamentsCollection = collection(firestore, 'tournaments');
         const q = query(tournamentsCollection, orderBy('tournament_date', 'desc'));
         const tournamentsSnapshot = await getDocs(q);
         
         const tournamentsList = tournamentsSnapshot.docs.map(doc => {
-          const data = doc.data() as Tournament;
-          const game = gamesList.find(g => g.name === data.game_name);
           return {
             id: doc.id,
-            ...data,
-            gameImage: game?.imageUrl || 'https://placehold.co/150x100.png',
-            gameAiHint: game?.aiHint || 'gaming',
-          };
-        }) as Tournament[];
+            ...doc.data(),
+          } as Tournament;
+        });
 
         setTournaments(tournamentsList);
 
@@ -74,7 +65,7 @@ export default function TournamentsPage() {
               <Link href={`/tournaments/${tournament.id}`}>
                 <div className="grid grid-cols-1 md:grid-cols-5 items-center p-4 gap-4">
                   <div className="md:col-span-1">
-                    <Image src={tournament.gameImage!} alt={tournament.game_name} width={150} height={100} data-ai-hint={tournament.gameAiHint} className="rounded-lg object-cover w-full h-auto aspect-video"/>
+                    <Image src={tournament.imageUrl} alt={tournament.title} width={150} height={100} className="rounded-lg object-cover w-full h-auto aspect-video"/>
                   </div>
                   <div className="md:col-span-2">
                     <div className="flex items-center gap-2 mb-1">
