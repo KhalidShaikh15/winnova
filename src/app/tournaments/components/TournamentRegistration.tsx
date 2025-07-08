@@ -173,6 +173,9 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         </Card>
       );
   }
+
+  const upiUrl = `upi://pay?pa=battlebucks@pay&pn=BattleBucks&am=${tournament.entry_fee}&cu=INR`;
+  const qrLink = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(upiUrl)}`;
   
   return (
     <Card className="max-w-2xl mx-auto">
@@ -197,24 +200,18 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
 
         {tournament.entry_fee > 0 && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col sm:flex-row items-center gap-4 border">
-              {tournament.qr_link ? 
-                <div className="flex-shrink-0">
-                    <Image src={tournament.qr_link} alt="Scan to Pay Entry Fee" width={150} height={150} className="rounded-md" />
+            <div className="flex-shrink-0">
+              <Image src={qrLink} alt="Scan to Pay Entry Fee" width={150} height={150} className="rounded-md" />
+            </div>
+            <div className="space-y-2 text-center sm:text-left">
+                <p className="font-semibold text-lg">Entry Fee: <span className="text-primary">₹{tournament.entry_fee}</span></p>
+                <p className="text-sm text-muted-foreground">Scan the QR or pay directly to the UPI ID below:</p>
+                <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-background rounded-md">
+                   <QrCode className="w-5 h-5 text-primary" />
+                   <span className="font-mono text-primary font-bold">battlebucks@pay</span>
                 </div>
-              :
-                <div className="flex-shrink-0 flex items-center justify-center w-[150px] h-[150px] bg-background rounded-md">
-                    <p className="text-sm text-muted-foreground text-center">QR Code not available.</p>
-                </div>
-              }
-              <div className="space-y-2 text-center sm:text-left">
-                  <p className="font-semibold text-lg">Entry Fee: <span className="text-primary">₹{tournament.entry_fee}</span></p>
-                  <p className="text-sm text-muted-foreground">Scan the QR or pay directly to the UPI ID below:</p>
-                  <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-background rounded-md">
-                     <QrCode className="w-5 h-5 text-primary" />
-                     <span className="font-mono text-primary font-bold">{tournament.upi_id || 'battlebuck@kotak'}</span>
-                  </div>
-                   <p className="text-xs text-muted-foreground pt-1">Organizer: {tournament.organizer_name}</p>
-              </div>
+                 <p className="text-xs text-muted-foreground pt-1">Organizer: BattleBucks</p>
+            </div>
           </div>
         )}
 
