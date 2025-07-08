@@ -23,7 +23,7 @@ export default function Footer() {
           </div>
           <div className="flex flex-col gap-3">
             <h4 className="font-semibold">Legal</h4>
-            <Link href="#" className="text-sm text-muted-foreground hover:text-primary">Terms of Service</Link>
+            <Link href="/terms-and-conditions" className="text-sm text-muted-foreground hover:text-primary">Terms of Service</Link>
             <Link href="#" className="text-sm text-muted-foreground hover:text-primary">Privacy Policy</Link>
             <Link href="#" className="text-sm text-muted-foreground hover:text-primary">Contact Us</Link>
           </div>
