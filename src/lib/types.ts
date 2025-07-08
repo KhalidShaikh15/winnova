@@ -34,6 +34,7 @@ export interface Registration {
   id: string;
   user_id: string;
   username: string;
+  user_email: string;
   tournament_id: string;
   tournament_title?: string;
   game_name: string;

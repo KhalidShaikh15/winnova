@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from './use-auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { firestore } from '@/lib/firebase';
+import { firestore, app } from '@/lib/firebase';
 
 export function useAdmin() {
   const { user, loading: authLoading } = useAuth();
@@ -14,8 +14,9 @@ export function useAdmin() {
       return;
     }
 
-    if (!user) {
-      // No user, so not an admin
+    // Also wait for firebase to be initialized on the client
+    if (!user || !app) {
+      // No user or no firebase, so not an admin
       setIsAdmin(false);
       setIsAdminLoading(false);
       return;

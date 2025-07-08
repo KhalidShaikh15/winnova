@@ -85,7 +85,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   async function onSubmit(values: RegistrationFormValues) {
     setLoading(true);
 
-    if (!user) {
+    if (!user || !user.email) {
         toast({
             variant: "destructive",
             title: "Not Authenticated",
@@ -100,6 +100,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         ...values,
         user_id: user.uid,
         username: user.displayName || user.email || 'Anonymous',
+        user_email: user.email,
         tournament_id: tournament.id,
         tournament_title: tournament.title,
         game_name: tournament.game_name,

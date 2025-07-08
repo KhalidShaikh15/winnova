@@ -1,7 +1,7 @@
-import { initializeApp, getApps, getApp, type FirebaseOptions } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
+import { initializeApp, getApps, getApp, type FirebaseOptions, type FirebaseApp } from 'firebase/app';
+import { getAuth, type Auth } from 'firebase/auth';
+import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getStorage, type FirebaseStorage } from 'firebase/storage';
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -13,11 +13,13 @@ const firebaseConfig: FirebaseOptions = {
   databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
-// Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+// Initialize Firebase ONLY on the client side
+const app: FirebaseApp | null = typeof window !== 'undefined' && firebaseConfig.apiKey
+  ? !getApps().length ? initializeApp(firebaseConfig) : getApp()
+  : null;
 
-const auth = getAuth(app);
-const firestore = getFirestore(app);
-const storage = getStorage(app);
+const auth: Auth = app ? getAuth(app) : ({} as Auth);
+const firestore: Firestore = app ? getFirestore(app) : ({} as Firestore);
+const storage: FirebaseStorage = app ? getStorage(app) : ({} as FirebaseStorage);
 
 export { app, auth, firestore, storage };

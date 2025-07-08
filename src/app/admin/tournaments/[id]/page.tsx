@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+import { sendConfirmationEmail } from '@/ai/flows/send-confirmation-email';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -65,11 +67,32 @@ export default function ManageTournamentPage() {
     try {
       const regDocRef = doc(firestore, 'registrations', regId);
       await updateDoc(regDocRef, { status });
-      setRegistrations(regs => regs.map(r => r.id === regId ? { ...r, status } : r));
       toast({ title: 'Success', description: `Registration has been ${status}.` });
+
+      if (status === 'confirmed' && tournament) {
+        const reg = registrations.find(r => r.id === regId);
+        if (reg && reg.user_email) {
+          toast({ title: 'Sending Email...', description: `Sending confirmation to ${reg.user_email}` });
+          const emailResult = await sendConfirmationEmail({
+            email: reg.user_email,
+            username: reg.username,
+            tournamentTitle: tournament.title,
+            tournamentDate: format(tournament.tournament_date.toDate(), 'PPP'),
+            tournamentTime: tournament.tournament_time,
+            entryFee: tournament.entry_fee,
+            prizePool: tournament.prize_pool,
+          });
+
+          if (emailResult.success) {
+            toast({ title: 'Email Sent', description: 'Confirmation email sent successfully.' });
+          } else {
+            toast({ variant: 'destructive', title: 'Email Failed', description: emailResult.message });
+          }
+        }
+      }
       
-      // A backend function (e.g., Firebase Cloud Function) can be triggered 
-      // on this status update to send a confirmation email to the user.
+      setRegistrations(regs => regs.map(r => r.id === regId ? { ...r, status } : r));
+
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to update registration status.' });
     }
