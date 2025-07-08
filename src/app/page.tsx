@@ -21,12 +21,14 @@ export default function Home() {
     'BGMI': '/images/feature bgmi.png',
     'Clash of Clans': '/images/feature coc.png',
     'Free Fire': '/images/feature ff.png',
+    'FC25': '/images/fc feature.png',
   };
   
   const gameAltTextMap: { [key: string]: string } = {
     'BGMI': 'Feature image for BGMI',
     'Clash of Clans': 'Feature image for Clash of Clans',
     'Free Fire': 'Feature image for Free Fire',
+    'FC25': 'Feature image for FC25',
   };
 
   const testimonials = [
@@ -57,6 +59,19 @@ export default function Home() {
         const gamesCollection = collection(firestore, 'games');
         const gamesSnapshot = await getDocs(gamesCollection);
         const gamesList = gamesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Game[];
+
+        // Add FC25 if it's not already in the list
+        if (!gamesList.some(game => game.name === 'FC25')) {
+          gamesList.push({
+            id: 'fc25',
+            name: 'FC25',
+            max_players: 0,
+            platform: '',
+            active: true,
+            imageUrl: '',
+            aiHint: '',
+          });
+        }
         setFeaturedGames(gamesList);
 
         // Fetch Upcoming Tournaments
@@ -87,7 +102,7 @@ export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="w-full py-12 bg-card/50">
+      <section className="w-full pt-12">
         <div className="container px-4 md:px-6">
           <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
             <div className="flex flex-col justify-center space-y-4">
@@ -117,7 +132,7 @@ export default function Home() {
       </section>
 
       {/* Featured Games Section */}
-      <section className="w-full py-12 bg-card/50">
+      <section className="w-full py-12">
         <div className="container">
           <h2 className="text-3xl font-bold text-center mb-8 font-headline">Featured Games</h2>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
