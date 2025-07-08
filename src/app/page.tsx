@@ -85,137 +85,134 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-dvh">
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="w-full py-20 md:py-32 lg:py-40 bg-card/50">
-          <div className="container px-4 md:px-6">
-            <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
-              <div className="flex flex-col justify-center space-y-4">
-                <div className="space-y-2">
-                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
-                    Compete. Conquer. Collect.
-                  </h1>
-                  <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    Your ultimate destination for high-stakes gaming tournaments. Join thousands of players, showcase your talent, and win incredible prizes.
-                  </p>
-                </div>
-                <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Button asChild size="lg">
-                    <Link href="/tournaments">Browse Tournaments</Link>
-                  </Button>
-                </div>
+    <>
+      {/* Hero Section */}
+      <section className="w-full py-20 md:py-32 lg:py-40 bg-card/50">
+        <div className="container px-4 md:px-6">
+          <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
+            <div className="flex flex-col justify-center space-y-4">
+              <div className="space-y-2">
+                <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
+                  Compete. Conquer. Collect.
+                </h1>
+                <p className="max-w-[600px] text-muted-foreground md:text-xl">
+                  Your ultimate destination for high-stakes gaming tournaments. Join thousands of players, showcase your talent, and win incredible prizes.
+                </p>
               </div>
-              <Image
-                src="/images/bgmi1.png"
-                width="600"
-                height="400"
-                alt="Hero"
-                className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
-              />
+              <div className="flex flex-col gap-2 min-[400px]:flex-row">
+                <Button asChild size="lg">
+                  <Link href="/tournaments">Browse Tournaments</Link>
+                </Button>
+              </div>
             </div>
+            <Image
+              src="/images/bgmi1.png"
+              width="600"
+              height="400"
+              alt="Hero"
+              className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
+            />
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Featured Games Section */}
-        <section className="w-full py-12 md:py-24 bg-card/50">
-          <div className="container">
-            <h2 className="text-3xl font-bold text-center mb-8 font-headline">Featured Games</h2>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {featuredGames.map((game) => (
-                <Card key={game.name} className="overflow-hidden transition-shadow hover:shadow-xl">
-                  <Image
-                    src={gameImageMap[game.name] || game.imageUrl || 'https://placehold.co/400x300.png'}
-                    alt={gameAltTextMap[game.name] || game.name}
-                    width={400}
-                    height={300}
-                    className="w-full h-48 object-cover"
-                  />
-                  <CardContent className="p-4">
-                    <h3 className="text-lg font-bold">{game.name}</h3>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+      {/* Featured Games Section */}
+      <section className="w-full py-12 md:py-24 bg-card/50">
+        <div className="container">
+          <h2 className="text-3xl font-bold text-center mb-8 font-headline">Featured Games</h2>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {featuredGames.map((game) => (
+              <Card key={game.name} className="overflow-hidden transition-shadow hover:shadow-xl">
+                <Image
+                  src={gameImageMap[game.name] || game.imageUrl || 'https://placehold.co/400x300.png'}
+                  alt={gameAltTextMap[game.name] || game.name}
+                  width={400}
+                  height={300}
+                  className="w-full h-48 object-cover"
+                />
+                <CardContent className="p-4">
+                  <h3 className="text-lg font-bold">{game.name}</h3>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Upcoming Tournaments Section */}
-        <section className="w-full py-12 md:py-24">
-          <div className="container">
-            <h2 className="text-3xl font-bold text-center mb-8 font-headline">Upcoming Tournaments</h2>
-            <div className="space-y-8">
-              {loading ? <p className="text-center">Loading tournaments...</p> : 
-              upcomingTournaments.map((tournament) => (
-                <Card key={tournament.id} className="w-full transition-all hover:shadow-md">
-                   <Link href={`/tournaments/${tournament.id}`}>
-                    <div className="grid grid-cols-1 md:grid-cols-5 items-center p-4 gap-4">
-                        <div className="md:col-span-1">
-                             <Image src={tournament.banner_url || 'https://placehold.co/150x100.png'} alt={tournament.title} width={150} height={100} className="rounded-lg object-cover w-full h-auto aspect-video"/>
-                        </div>
-                        <div className="md:col-span-2">
-                            <CardTitle>{tournament.title}</CardTitle>
-                            <CardDescription>{tournament.game_name}</CardDescription>
-                        </div>
-                        <div className="md:col-span-2 grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4"/>
-                                <span>{format(tournament.tournament_date.toDate(), 'PPP')}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Users className="w-4 h-4"/>
-                                <span>₹{tournament.prize_pool.toLocaleString()}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Users className="w-4 h-4"/>
-                                <span>Fee: ₹{tournament.entry_fee}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Group className="w-4 h-4"/>
-                                <span>{tournament.match_type}</span>
-                            </div>
-                        </div>
-                    </div>
-                    </Link>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials Section */}
-        <section className="w-full py-12 md:py-24 bg-card/50">
-          <div className="container">
-            <h2 className="text-3xl font-bold text-center mb-12 font-headline">What Our Players Say</h2>
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {testimonials.map((testimonial, index) => (
-                <Card key={index} className="p-6 flex flex-col">
-                  <div className="flex-grow">
-                    <blockquote className="text-muted-foreground italic mb-4">
-                      &ldquo;{testimonial.quote}&rdquo;
-                    </blockquote>
-                  </div>
-                  <div className="flex items-center gap-4 mt-auto">
-                    <Avatar>
-                      <AvatarImage data-ai-hint="person" src={testimonial.avatar} alt={testimonial.name} />
-                      <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-semibold">{testimonial.name}</p>
-                      <div className="flex items-center gap-0.5 text-primary">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="w-4 h-4 fill-current" />
-                        ))}
+      {/* Upcoming Tournaments Section */}
+      <section className="w-full py-12 md:py-24">
+        <div className="container">
+          <h2 className="text-3xl font-bold text-center mb-8 font-headline">Upcoming Tournaments</h2>
+          <div className="space-y-8">
+            {loading ? <p className="text-center">Loading tournaments...</p> : 
+            upcomingTournaments.map((tournament) => (
+              <Card key={tournament.id} className="w-full transition-all hover:shadow-md">
+                 <Link href={`/tournaments/${tournament.id}`}>
+                  <div className="grid grid-cols-1 md:grid-cols-5 items-center p-4 gap-4">
+                      <div className="md:col-span-1">
+                           <Image src={tournament.banner_url || 'https://placehold.co/150x100.png'} alt={tournament.title} width={150} height={100} className="rounded-lg object-cover w-full h-auto aspect-video"/>
                       </div>
+                      <div className="md:col-span-2">
+                          <CardTitle>{tournament.title}</CardTitle>
+                          <CardDescription>{tournament.game_name}</CardDescription>
+                      </div>
+                      <div className="md:col-span-2 grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4"/>
+                              <span>{format(tournament.tournament_date.toDate(), 'PPP')}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4"/>
+                              <span>₹{tournament.prize_pool.toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4"/>
+                              <span>Fee: ₹{tournament.entry_fee}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                              <Group className="w-4 h-4"/>
+                              <span>{tournament.match_type}</span>
+                          </div>
+                      </div>
+                  </div>
+                  </Link>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="w-full py-12 md:py-24 bg-card/50">
+        <div className="container">
+          <h2 className="text-3xl font-bold text-center mb-12 font-headline">What Our Players Say</h2>
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="p-6 flex flex-col">
+                <div className="flex-grow">
+                  <blockquote className="text-muted-foreground italic mb-4">
+                    &ldquo;{testimonial.quote}&rdquo;
+                  </blockquote>
+                </div>
+                <div className="flex items-center gap-4 mt-auto">
+                  <Avatar>
+                    <AvatarImage data-ai-hint="person" src={testimonial.avatar} alt={testimonial.name} />
+                    <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-semibold">{testimonial.name}</p>
+                    <div className="flex items-center gap-0.5 text-primary">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 fill-current" />
+                      ))}
                     </div>
                   </div>
-                </Card>
-              ))}
-            </div>
+                </div>
+              </Card>
+            ))}
           </div>
-        </section>
-
-      </main>
-    </div>
+        </div>
+      </section>
+    </>
   );
 }
