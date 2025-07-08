@@ -22,7 +22,7 @@ export interface Tournament {
   max_teams: number;
   status: 'upcoming' | 'completed' | 'ongoing';
   created_at: Timestamp;
-  imageUrl: string;
+  banner_url: string;
   upi_id: string;
   organizer_name: string;
   allow_whatsapp: boolean;

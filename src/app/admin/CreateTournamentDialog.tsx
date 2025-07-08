@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon } from "lucide-react"
+import { CalendarIcon, Loader2 } from "lucide-react"
 import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
@@ -122,7 +122,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
 
       const tournamentData = {
         ...data,
-        imageUrl: downloadURL,
+        banner_url: downloadURL,
         tournament_date: Timestamp.fromDate(data.tournament_date),
         created_at: Timestamp.now(),
       };
@@ -167,7 +167,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
             )} />
 
             <div className="space-y-2">
-                <FormLabel>Tournament Image</FormLabel>
+                <FormLabel>Tournament Banner</FormLabel>
                 {imagePreview && (
                     <div className="w-full relative aspect-video">
                         <Image src={imagePreview} alt="Tournament preview" fill className="rounded-md object-cover" />
@@ -176,7 +176,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
                 <FormControl>
                     <Input type="file" accept="image/png, image/jpeg, image/webp" onChange={handleFileChange} />
                 </FormControl>
-                <FormDescription>Upload an image for the tournament (PNG, JPG, WEBP, max 5MB).</FormDescription>
+                <FormDescription>Upload an image for the tournament banner (PNG, JPG, WEBP, max 5MB).</FormDescription>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
@@ -283,7 +283,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
                 )} />
             )}
 
-            <Button type="submit" disabled={loading}>{loading ? 'Creating...' : 'Create Tournament'}</Button>
+            <Button type="submit" disabled={loading}>{loading && <Loader2 className="h-4 w-4 animate-spin mr-2"/>}{loading ? 'Creating...' : 'Create Tournament'}</Button>
           </form>
         </Form>
       </DialogContent>
