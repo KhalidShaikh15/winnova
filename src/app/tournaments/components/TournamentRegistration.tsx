@@ -217,21 +217,23 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         </div>
 
         {tournament.entry_fee > 0 && qrImageUrl && (
-          <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col items-center border">
-            <h3 className="font-bold text-lg mb-2">Scan to Pay ₹{tournament.entry_fee}</h3>
+          <div className="mb-6 p-4 rounded-lg bg-muted/50 border flex items-center gap-6">
             <img
               src={qrImageUrl}
               alt="Tournament QR Code"
-              width="200"
-              height="200"
-              className="rounded-md my-4"
+              width="128"
+              height="128"
+              className="rounded-md"
             />
-            <p className="text-sm text-muted-foreground mt-2 font-mono break-all text-center">
-                Or pay to: {tournament.upi_id}
-            </p>
-             <p className="text-xs text-muted-foreground mt-4 text-center">
-                After paying, please enter your UPI ID in the form below for verification.
-             </p>
+            <div className="flex flex-col">
+                <h3 className="font-bold text-lg">Scan to Pay ₹{tournament.entry_fee}</h3>
+                <p className="text-sm text-muted-foreground mt-2 font-mono break-all">
+                    Or pay to: {tournament.upi_id}
+                </p>
+                <p className="text-xs text-muted-foreground mt-4">
+                    After paying, please enter your UPI ID in the form below for verification.
+                </p>
+            </div>
           </div>
         )}
 
