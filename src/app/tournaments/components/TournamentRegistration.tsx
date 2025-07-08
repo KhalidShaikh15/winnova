@@ -134,8 +134,10 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   };
 
   const qrLink = useMemo(() => {
-    if (tournament.entry_fee > 0 && tournament.upi_id && tournament.organizer_name) {
-      const upiUrl = `upi://pay?pa=${tournament.upi_id}&pn=${encodeURIComponent(tournament.organizer_name)}&am=${tournament.entry_fee}&cu=INR`;
+    if (tournament.entry_fee > 0) {
+      const upiId = tournament.upi_id || 'battlebucks@kotak';
+      const organizerName = tournament.organizer_name || 'Arena Clash';
+      const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(organizerName)}&am=${tournament.entry_fee}&cu=INR`;
       return `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(upiUrl)}`;
     }
     return "";
@@ -209,7 +211,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
             </div>
         </div>
 
-        {tournament.entry_fee > 0 && qrLink && (
+        {tournament.entry_fee > 0 && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col sm:flex-row items-center gap-4 border">
             <div className="flex-shrink-0">
               <Image src={qrLink} alt="Scan to Pay Entry Fee" width={150} height={150} className="rounded-md" />
@@ -219,9 +221,9 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
                 <p className="text-sm text-muted-foreground">Scan the QR or pay directly to the UPI ID below:</p>
                 <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-background rounded-md">
                    <QrCode className="w-5 h-5 text-primary" />
-                   <span className="font-mono text-primary font-bold">{tournament.upi_id}</span>
+                   <span className="font-mono text-primary font-bold">{tournament.upi_id || 'battlebucks@kotak'}</span>
                 </div>
-                 <p className="text-xs text-muted-foreground pt-1">Organizer: {tournament.organizer_name}</p>
+                 <p className="text-xs text-muted-foreground pt-1">Organizer: {tournament.organizer_name || 'Arena Clash'}</p>
             </div>
           </div>
         )}
