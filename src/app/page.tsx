@@ -1,7 +1,7 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Group, Users } from 'lucide-react';
+import { Calendar, Group, Users, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -9,6 +9,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Game } from '@/lib/types';
 import { format } from 'date-fns';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function Home() {
   const [featuredGames, setFeaturedGames] = useState<Game[]>([]);
@@ -27,6 +28,24 @@ export default function Home() {
     'Clash of Clans': 'Feature image for Clash of Clans',
     'Free Fire': 'Feature image for Free Fire',
   };
+
+  const testimonials = [
+    {
+      name: "SavagePlayer47",
+      quote: "Arena Clash has the most competitive tournaments I've ever played in. The prize pools are massive and the community is fantastic!",
+      avatar: "https://placehold.co/100x100.png",
+    },
+    {
+      name: "NinjaGamerX",
+      quote: "The registration process is so smooth, and getting payouts is quick and easy. Highly recommend this platform for any serious gamer.",
+      avatar: "https://placehold.co/100x100.png",
+    },
+    {
+      name: "ClasherQueen",
+      quote: "I won my first big tournament here! The support team was super helpful with my questions. Can't wait for the next event.",
+      avatar: "https://placehold.co/100x100.png",
+    },
+  ];
 
 
   useEffect(() => {
@@ -163,6 +182,39 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* Testimonials Section */}
+        <section className="w-full py-12 md:py-24 bg-card/50">
+          <div className="container">
+            <h2 className="text-3xl font-bold text-center mb-12 font-headline">What Our Players Say</h2>
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {testimonials.map((testimonial, index) => (
+                <Card key={index} className="p-6 flex flex-col">
+                  <div className="flex-grow">
+                    <blockquote className="text-muted-foreground italic mb-4">
+                      &ldquo;{testimonial.quote}&rdquo;
+                    </blockquote>
+                  </div>
+                  <div className="flex items-center gap-4 mt-auto">
+                    <Avatar>
+                      <AvatarImage data-ai-hint="person" src={testimonial.avatar} alt={testimonial.name} />
+                      <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold">{testimonial.name}</p>
+                      <div className="flex items-center gap-0.5 text-primary">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-current" />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
       </main>
     </div>
   );
