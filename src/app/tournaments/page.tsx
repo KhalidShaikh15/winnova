@@ -50,7 +50,7 @@ export default function TournamentsPage() {
       }
     };
     fetchData();
-  }, []);
+  }, [firestore]);
 
   return (
     <div className="container py-12">

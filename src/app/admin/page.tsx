@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { collection, getDocs, orderBy, query, deleteDoc, doc, where, writeBatch } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Game } from '@/lib/types';
@@ -34,15 +34,15 @@ export default function AdminDashboardPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
-  const fetchGames = async () => {
+  const fetchGames = useCallback(async () => {
     if (!firestore) return;
     const gamesCollection = collection(firestore, 'games');
     const gamesSnapshot = await getDocs(gamesCollection);
     const gamesList = gamesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Game[];
     setGames(gamesList);
-  };
+  }, [firestore]);
   
-  const fetchTournaments = async () => {
+  const fetchTournaments = useCallback(async () => {
     if (!firestore) return;
     setLoading(true);
     const tournamentsCollection = collection(firestore, 'tournaments');
@@ -51,12 +51,12 @@ export default function AdminDashboardPage() {
     const tournamentsList = tournamentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Tournament[];
     setTournaments(tournamentsList);
     setLoading(false);
-  };
+  }, [firestore]);
 
   useEffect(() => {
     fetchGames();
     fetchTournaments();
-  }, []);
+  }, [fetchGames, fetchTournaments]);
 
   const handleTournamentCreated = () => {
     fetchTournaments();

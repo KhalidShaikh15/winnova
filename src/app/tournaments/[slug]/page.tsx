@@ -65,7 +65,7 @@ export default function TournamentPage() {
     };
 
     fetchTournamentData();
-  }, [params.slug]);
+  }, [params.slug, firestore]);
 
   if (loading) {
     return <div className="container py-12 flex justify-center"><Loader2 className="w-16 h-16 animate-spin"/></div>;

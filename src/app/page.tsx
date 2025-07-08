@@ -67,7 +67,7 @@ export default function Home() {
       }
     };
     fetchData();
-  }, []);
+  }, [firestore]);
 
   const keyStats: { label: string; value: string }[] = [];
 

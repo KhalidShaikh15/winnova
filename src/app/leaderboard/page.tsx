@@ -33,7 +33,7 @@ export default function LeaderboardPage() {
             }
         };
         fetchTournaments();
-    }, []);
+    }, [firestore]);
 
     useEffect(() => {
         if (!selectedTournament) {
@@ -59,7 +59,7 @@ export default function LeaderboardPage() {
             setLoading(false);
         };
         fetchLeaderboard();
-    }, [selectedTournament]);
+    }, [selectedTournament, firestore]);
 
     return (
         <div className="container py-12">

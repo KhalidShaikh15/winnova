@@ -62,7 +62,7 @@ export default function ManageTournamentPage() {
       }
     };
     fetchTournamentAndRegistrations();
-  }, [params.id, toast]);
+  }, [params.id, toast, firestore]);
 
   const handleRegistrationStatus = async (regId: string, status: 'confirmed' | 'rejected') => {
     if (!firestore) return;
