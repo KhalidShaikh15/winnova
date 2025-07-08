@@ -22,7 +22,7 @@ import { format } from "date-fns"
 const baseSchema = z.object({
     squad_name: z.string().min(3, "Squad name must be at least 3 characters."),
     contact_number: z.string().min(10, "A valid contact number is required."),
-    user_upi_id: z.string().min(3, "Please enter the UPI ID you used for payment."),
+    user_upi_id: z.string().optional(),
 });
 
 // Schema for BGMI/Free Fire
@@ -47,11 +47,15 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   const [submittedUpiId, setSubmittedUpiId] = useState("");
 
   const registrationSchema = useMemo(() => {
-    if (tournament.game_name === "Clash of Clans") {
-        return strategyGameSchema;
+    const dynamicSchema = tournament.game_name === "Clash of Clans" ? strategyGameSchema : shooterGameSchema;
+    
+    if (tournament.entry_fee > 0) {
+      return dynamicSchema.extend({
+        user_upi_id: z.string().min(3, "Please enter the UPI ID you used for payment."),
+      })
     }
-    return shooterGameSchema;
-  }, [tournament.game_name]);
+    return dynamicSchema;
+  }, [tournament.game_name, tournament.entry_fee]);
   
   type RegistrationFormValues = z.infer<typeof registrationSchema>;
 
@@ -106,7 +110,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         title: "Registration Submitted!",
         description: "Your team registration has been submitted for review.",
       });
-      setSubmittedUpiId(values.user_upi_id);
+      setSubmittedUpiId(values.user_upi_id || "");
       setIsSubmitted(true);
       form.reset();
     } catch (error) {
@@ -123,9 +127,9 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   }
 
   const handleContactOrganizer = () => {
-    if (!submittedUpiId) return;
+    if (!submittedUpiId || !tournament.allow_whatsapp || !tournament.whatsapp_number) return;
     const message = `Hey, I have registered for ${tournament.title} with UPI ID ${submittedUpiId}`;
-    const whatsappUrl = `https://wa.me/919653134660?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/91${tournament.whatsapp_number}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
   
@@ -163,20 +167,19 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
               Your registration has been submitted! You will be notified once it is confirmed.
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-center">
-              <Button size="lg" onClick={handleContactOrganizer}>
-                  <Send className="mr-2 h-4 w-4"/>
-                  Contact on WhatsApp
-              </Button>
-              <p className="text-sm text-muted-foreground mt-4">Click the button to confirm your slot with the organizer.</p>
-          </CardContent>
+           {tournament.allow_whatsapp && (
+                <CardContent className="text-center">
+                    <Button size="lg" onClick={handleContactOrganizer}>
+                        <Send className="mr-2 h-4 w-4"/>
+                        Contact on WhatsApp
+                    </Button>
+                    <p className="text-sm text-muted-foreground mt-4">Click the button to confirm your slot with the organizer.</p>
+                </CardContent>
+            )}
         </Card>
       );
   }
 
-  const upiUrl = `upi://pay?pa=battlebucks@pay&pn=BattleBucks&am=${tournament.entry_fee}&cu=INR`;
-  const qrLink = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(upiUrl)}`;
-  
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
@@ -198,19 +201,19 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
             </div>
         </div>
 
-        {tournament.entry_fee > 0 && (
+        {tournament.entry_fee > 0 && tournament.qr_link && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col sm:flex-row items-center gap-4 border">
             <div className="flex-shrink-0">
-              <Image src={qrLink} alt="Scan to Pay Entry Fee" width={150} height={150} className="rounded-md" />
+              <Image src={tournament.qr_link} alt="Scan to Pay Entry Fee" width={150} height={150} className="rounded-md" />
             </div>
             <div className="space-y-2 text-center sm:text-left">
                 <p className="font-semibold text-lg">Entry Fee: <span className="text-primary">₹{tournament.entry_fee}</span></p>
                 <p className="text-sm text-muted-foreground">Scan the QR or pay directly to the UPI ID below:</p>
                 <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-background rounded-md">
                    <QrCode className="w-5 h-5 text-primary" />
-                   <span className="font-mono text-primary font-bold">battlebucks@pay</span>
+                   <span className="font-mono text-primary font-bold">{tournament.upi_id}</span>
                 </div>
-                 <p className="text-xs text-muted-foreground pt-1">Organizer: BattleBucks</p>
+                 <p className="text-xs text-muted-foreground pt-1">Organizer: {tournament.organizer_name}</p>
             </div>
           </div>
         )}

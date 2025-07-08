@@ -47,7 +47,7 @@ export interface Registration {
   clan_tag?: string;
   contact_number: string;
   match_slot?: string;
-  user_upi_id: string;
+  user_upi_id?: string;
   status: 'pending' | 'confirmed' | 'rejected';
   created_at: Timestamp;
   payment_screenshot_url?: string;
