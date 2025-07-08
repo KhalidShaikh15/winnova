@@ -91,15 +91,6 @@ export default function TournamentPage() {
 
   return (
     <div className="container py-12">
-      <div className="mb-8 flex justify-center">
-        <Image
-          src={tournament.banner_url || 'https://placehold.co/150x100.png'}
-          alt={tournament.title}
-          width={150}
-          height={100}
-          className="rounded-xl object-cover"
-        />
-      </div>
       <div className="space-y-4 mb-12 text-center">
         <p className="text-primary font-semibold">{tournament.game_name}</p>
         <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl font-headline">{tournament.title}</h1>
