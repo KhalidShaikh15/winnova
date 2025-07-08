@@ -59,7 +59,7 @@ export default function SignupPage() {
         description: "Welcome to Arena Clash! You are now logged in.",
       });
       router.push('/');
-    } catch (error: any) {
+    } catch (error: any) => {
       toast({
         variant: "destructive",
         title: "Signup Failed",
@@ -96,10 +96,15 @@ export default function SignupPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col">
-            <Button className="w-full" type="submit" disabled={loading}>
+            <Button className="w-full" type="submit" disabled={loading || !auth}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {loading ? "Creating account..." : "Create account"}
             </Button>
+             {!auth && (
+                 <p className="mt-2 text-xs text-destructive text-center">
+                    Firebase is not configured. Please add your credentials to the .env file.
+                 </p>
+            )}
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
               <Link href="/login" className="underline">

@@ -69,10 +69,15 @@ export default function LoginPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col">
-            <Button className="w-full" type="submit" disabled={loading}>
+            <Button className="w-full" type="submit" disabled={loading || !auth}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {loading ? "Signing in..." : "Sign in"}
             </Button>
+            {!auth && (
+                 <p className="mt-2 text-xs text-destructive text-center">
+                    Firebase is not configured. Please add your credentials to the .env file.
+                 </p>
+            )}
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
               <Link href="/signup" className="underline">
