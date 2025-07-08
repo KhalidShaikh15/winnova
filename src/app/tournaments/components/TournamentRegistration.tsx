@@ -15,7 +15,6 @@ import { firestore } from "@/lib/firebase"
 import { Award, Calendar, Gamepad2, Group, Loader2, QrCode, Send, Clock } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
-import Image from "next/image"
 import { format } from "date-fns"
 
 // Base schema for common fields
@@ -214,7 +213,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         {tournament.entry_fee > 0 && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col sm:flex-row items-center gap-4 border">
             <div className="flex-shrink-0">
-              <Image src={qrLink} alt="Scan to Pay Entry Fee" width={150} height={150} className="rounded-md" />
+              <img src={qrLink} alt="Scan to Pay Entry Fee" width={150} height={150} className="rounded-md" />
             </div>
             <div className="space-y-2 text-center sm:text-left">
                 <p className="font-semibold text-lg">Entry Fee: <span className="text-primary">₹{tournament.entry_fee}</span></p>
