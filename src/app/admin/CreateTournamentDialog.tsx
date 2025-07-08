@@ -136,13 +136,19 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
       setImagePreview(null);
     } catch (error: any) {
       console.error("Error creating tournament:", error);
-      let errorMessage = "Failed to create tournament. Please check the console for more details.";
-      if (error.code === 'storage/unauthorized') {
-        errorMessage = "Permission denied. Please check your Firebase Storage security rules to allow uploads.";
-      } else if (error.code) {
-        errorMessage = `An error occurred during upload: ${error.code}`;
+      let description = "An unknown error occurred. Please check your Firebase settings and security rules.";
+
+      if (error?.code === 'storage/unauthorized') {
+        description = "Permission denied. Please check your Firebase Storage security rules to allow uploads.";
+      } else if (error instanceof Error) {
+        description = error.message;
       }
-      toast({ variant: "destructive", title: "Upload Error", description: errorMessage });
+      
+      toast({
+        variant: "destructive",
+        title: "Creation Failed",
+        description: description,
+      });
     } finally {
       setLoading(false);
     }
