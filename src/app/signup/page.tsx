@@ -38,6 +38,15 @@ export default function SignupPage() {
         return;
     }
     setLoading(true);
+    if (!auth) {
+      toast({
+        variant: "destructive",
+        title: "Signup Failed",
+        description: "Firebase is not configured correctly.",
+      });
+      setLoading(false);
+      return;
+    }
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       if (userCredential.user) {
