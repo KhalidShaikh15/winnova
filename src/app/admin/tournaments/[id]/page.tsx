@@ -54,6 +54,9 @@ export default function ManageTournamentPage() {
       await updateDoc(regDocRef, { status });
       setRegistrations(regs => regs.map(r => r.id === regId ? { ...r, status } : r));
       toast({ title: 'Success', description: `Registration has been ${status}.` });
+      
+      // A backend function (e.g., Firebase Cloud Function) can be triggered 
+      // on this status update to send a confirmation email to the user.
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to update registration status.' });
     }
@@ -96,11 +99,13 @@ export default function ManageTournamentPage() {
                       <span className="font-mono text-xs">{reg.user_upi_id || 'N/A'}</span>
                     </TableCell>
                     <TableCell className="space-x-2">
-                      <Button size="icon" variant="ghost" disabled={reg.status === 'confirmed'} onClick={() => handleRegistrationStatus(reg.id, 'confirmed')}>
-                        <CheckCircle className="h-5 w-5 text-green-500" />
+                      <Button size="sm" variant="outline" disabled={reg.status === 'confirmed'} onClick={() => handleRegistrationStatus(reg.id, 'confirmed')}>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Confirm
                       </Button>
-                      <Button size="icon" variant="ghost" disabled={reg.status === 'rejected'} onClick={() => handleRegistrationStatus(reg.id, 'rejected')}>
-                        <XCircle className="h-5 w-5 text-red-500" />
+                      <Button size="sm" variant="destructive" disabled={reg.status === 'rejected'} onClick={() => handleRegistrationStatus(reg.id, 'rejected')}>
+                        <XCircle className="h-4 w-4 mr-2" />
+                        Reject
                       </Button>
                     </TableCell>
                   </TableRow>

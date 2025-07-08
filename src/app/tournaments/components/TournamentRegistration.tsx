@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 import { firestore } from "@/lib/firebase"
-import { Award, Calendar, Gamepad2, Group, Loader2, QrCode, Send } from "lucide-react"
+import { Award, Calendar, Gamepad2, Group, Loader2, QrCode, Send, Clock } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import Image from "next/image"
@@ -99,6 +99,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       const docData = {
         ...values,
         user_id: user.uid,
+        username: user.displayName || user.email || 'Anonymous',
         tournament_id: tournament.id,
         tournament_title: tournament.title,
         game_name: tournament.game_name,
@@ -191,11 +192,13 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       <CardContent>
         <div className="mb-6 p-4 rounded-lg bg-muted/50 border">
             <h3 className="font-bold mb-4">Tournament Summary</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2"><Gamepad2 className="w-4 h-4 text-primary"/><span>Game: {tournament.game_name}</span></div>
-                <div className="flex items-center gap-2"><Award className="w-4 h-4 text-primary"/><span>Prize Pool: ₹{tournament.prize_pool.toLocaleString()}</span></div>
-                <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-primary"/><span>Date: {format(tournament.tournament_date.toDate(), 'PPP')}</span></div>
-                <div className="flex items-center gap-2"><Group className="w-4 h-4 text-primary"/><span>Type: {tournament.match_type}</span></div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center gap-2"><Gamepad2 className="w-4 h-4 text-primary"/><span>{tournament.game_name}</span></div>
+                <div className="flex items-center gap-2"><Award className="w-4 h-4 text-primary"/><span>Prize: ₹{tournament.prize_pool.toLocaleString()}</span></div>
+                <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-primary"/><span>{format(tournament.tournament_date.toDate(), 'PPP')}</span></div>
+                <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-primary"/><span>{tournament.tournament_time}</span></div>
+                <div className="flex items-center gap-2"><Group className="w-4 h-4 text-primary"/><span>{tournament.match_type}</span></div>
+                <div className="flex items-center gap-2 text-primary font-semibold">Fee: ₹{tournament.entry_fee}</div>
             </div>
         </div>
 

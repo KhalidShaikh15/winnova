@@ -18,6 +18,7 @@ export interface Tournament {
   prize_pool: number;
   match_type: 'Solo' | 'Duo' | 'Squad';
   tournament_date: Timestamp;
+  tournament_time: string;
   max_teams: number;
   status: 'upcoming' | 'completed' | 'ongoing';
   created_at: Timestamp;
@@ -32,6 +33,7 @@ export interface Tournament {
 export interface Registration {
   id: string;
   user_id: string;
+  username: string;
   tournament_id: string;
   tournament_title?: string;
   game_name: string;

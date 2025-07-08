@@ -26,6 +26,7 @@ const tournamentFormSchema = z.object({
   prize_pool: z.coerce.number().min(0),
   match_type: z.enum(["Solo", "Duo", "Squad"]),
   tournament_date: z.date({ required_error: "A date is required." }),
+  tournament_time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)."),
   max_teams: z.coerce.number().int().min(2),
   status: z.enum(["upcoming", "ongoing", "completed"]),
   upi_id: z.string().min(3, "UPI ID is required."),
@@ -64,6 +65,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
         match_type: "Squad",
         max_teams: 16,
         status: "upcoming",
+        tournament_time: "18:00",
         upi_id: "battlebuck@kotak",
         organizer_name: "Arena Clash",
         allow_whatsapp: true,
@@ -138,23 +140,34 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
                 )} />
             </div>
 
-            <FormField control={form.control} name="tournament_date" render={({ field }) => (
-                <FormItem className="flex flex-col"><FormLabel>Tournament Date</FormLabel>
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <FormControl>
-                                <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                                    {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                            </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date()} initialFocus />
-                        </PopoverContent>
-                    </Popover><FormMessage />
-                </FormItem>
-            )} />
+            <div className="grid grid-cols-2 gap-4">
+                <FormField control={form.control} name="tournament_date" render={({ field }) => (
+                    <FormItem className="flex flex-col"><FormLabel>Tournament Date</FormLabel>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <FormControl>
+                                    <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                            </PopoverContent>
+                        </Popover><FormMessage />
+                    </FormItem>
+                )} />
+                 <FormField control={form.control} name="tournament_time" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Time (24h format)</FormLabel>
+                        <FormControl>
+                            <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+            </div>
             
             <div className="grid grid-cols-2 gap-4">
                  <FormField control={form.control} name="max_teams" render={({ field }) => (

@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Award, Calendar, CheckSquare, Group, Users } from "lucide-react"
+import { Award, Calendar, CheckSquare, Group, Users, Clock } from "lucide-react"
 
 // A simplified tournament type for props to avoid passing complex objects
 export interface TournamentDetailsProps {
     tournament: {
         date: string;
+        time: string;
         prizePool: string;
         entryFee: string;
         matchType: 'Solo' | 'Duo' | 'Squad';
@@ -25,6 +26,13 @@ export default function TournamentDetails({ tournament }: TournamentDetailsProps
                         <div>
                             <p className="font-semibold">Date</p>
                             <p className="text-muted-foreground">{tournament.date}</p>
+                        </div>
+                    </div>
+                     <div className="flex items-center gap-3">
+                        <Clock className="w-8 h-8 text-primary" />
+                        <div>
+                            <p className="font-semibold">Time</p>
+                            <p className="text-muted-foreground">{tournament.time}</p>
                         </div>
                     </div>
                      <div className="flex items-center gap-3">
