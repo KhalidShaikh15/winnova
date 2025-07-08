@@ -91,13 +91,13 @@ export default function TournamentPage() {
 
   return (
     <div className="container py-12">
-      <div className="mb-8 overflow-hidden rounded-xl">
+      <div className="mb-8 flex justify-center">
         <Image
-          src={tournament.banner_url || 'https://placehold.co/1200x400.png'}
+          src={tournament.banner_url || 'https://placehold.co/150x100.png'}
           alt={tournament.title}
-          width={1200}
-          height={400}
-          className="w-full object-cover aspect-[16/6]"
+          width={150}
+          height={100}
+          className="rounded-xl object-cover"
         />
       </div>
       <div className="space-y-4 mb-12 text-center">
