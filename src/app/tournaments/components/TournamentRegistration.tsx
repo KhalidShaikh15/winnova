@@ -5,14 +5,14 @@ import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 import { firestore } from "@/lib/firebase"
-import { Award, Calendar, Gamepad2, Group, Loader2, QrCode, Send, Clock } from "lucide-react"
+import { Award, Calendar, Gamepad2, Group, Loader2, Send, Clock } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import { format } from "date-fns"
@@ -75,6 +75,21 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         ),
     },
   });
+  
+  const upiLink = useMemo(() => {
+    if (tournament.entry_fee > 0) {
+      return `upi://pay?pa=battlebucks@kotak&pn=BattleBucks&am=${tournament.entry_fee}&cu=INR`;
+    }
+    return "";
+  }, [tournament.entry_fee]);
+
+  const qrLink = useMemo(() => {
+    if (upiLink) {
+      return `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(upiLink)}`;
+    }
+    return "";
+  }, [upiLink]);
+
 
   async function onSubmit(values: RegistrationFormValues) {
     if (!firestore) return;
@@ -131,16 +146,6 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     const whatsappUrl = `https://wa.me/91${tournament.whatsapp_number}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
-
-  const qrLink = useMemo(() => {
-    if (tournament.entry_fee > 0) {
-      const upiId = tournament.upi_id || 'battlebucks@kotak';
-      const organizerName = tournament.organizer_name || 'Arena Clash';
-      const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(organizerName)}&am=${tournament.entry_fee}&cu=INR`;
-      return `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(upiUrl)}`;
-    }
-    return "";
-  }, [tournament.entry_fee, tournament.upi_id, tournament.organizer_name]);
   
   if (authLoading) {
     return (
@@ -211,19 +216,26 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         </div>
 
         {tournament.entry_fee > 0 && (
-          <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col sm:flex-row items-center gap-4 border">
-            <div className="flex-shrink-0">
-              <img src={qrLink} alt="Scan to Pay Entry Fee" width={150} height={150} className="rounded-md" />
-            </div>
-            <div className="space-y-2 text-center sm:text-left">
-                <p className="font-semibold text-lg">Entry Fee: <span className="text-primary">₹{tournament.entry_fee}</span></p>
-                <p className="text-sm text-muted-foreground">Scan the QR or pay directly to the UPI ID below:</p>
-                <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-background rounded-md">
-                   <QrCode className="w-5 h-5 text-primary" />
-                   <span className="font-mono text-primary font-bold">{tournament.upi_id || 'battlebucks@kotak'}</span>
-                </div>
-                 <p className="text-xs text-muted-foreground pt-1">Organizer: {tournament.organizer_name || 'Arena Clash'}</p>
-            </div>
+          <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col items-center border">
+            <p className="font-semibold text-lg">Pay Entry Fee: <span className="text-primary">₹{tournament.entry_fee}</span></p>
+            <img
+              src={qrLink}
+              alt="Pay with UPI"
+              style={{ width: "280px", margin: "16px 0" }}
+              className="rounded-md"
+            />
+            <a
+              href={upiLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ marginTop: "10px", display: "block" }}
+              className="text-primary underline"
+            >
+              Click to pay with UPI app
+            </a>
+             <p className="text-xs text-muted-foreground mt-4 text-center">
+                After paying, please enter your UPI ID in the form below for verification.
+             </p>
           </div>
         )}
 
@@ -255,6 +267,9 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
                 <FormItem>
                   <FormLabel>Your UPI ID (used for payment)</FormLabel>
                   <FormControl><Input placeholder="Enter the UPI ID you paid from" {...field} /></FormControl>
+                  <FormDescription>
+                    This is required to verify your payment.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )} />
