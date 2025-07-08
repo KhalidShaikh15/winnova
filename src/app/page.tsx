@@ -31,6 +31,7 @@ export default function Home() {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!firestore) return;
       setLoading(true);
       try {
         // Fetch Games

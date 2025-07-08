@@ -17,6 +17,7 @@ export default function TournamentsPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!firestore) return;
       setLoading(true);
       try {
         // Fetch Games first to map images

@@ -23,6 +23,7 @@ export default function TournamentPage() {
     if (!params.slug) return;
 
     const fetchTournamentData = async () => {
+      if (!firestore) return;
       setLoading(true);
       try {
         const tournamentDocRef = doc(firestore, 'tournaments', params.slug);

@@ -69,13 +69,14 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
         upi_id: "battlebuck@kotak",
         organizer_name: "Arena Clash",
         allow_whatsapp: true,
-        whatsapp_number: "",
+        whatsapp_number: "9653134660",
     },
   });
 
   const allowWhatsappValue = form.watch("allow_whatsapp");
 
   async function onSubmit(data: TournamentFormValues) {
+    if (!firestore) return;
     setLoading(true);
     try {
       const tournamentData = {

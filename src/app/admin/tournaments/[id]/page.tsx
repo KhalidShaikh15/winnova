@@ -38,6 +38,7 @@ export default function ManageTournamentPage() {
     if (!params.id) return;
 
     const fetchTournamentAndRegistrations = async () => {
+      if (!firestore) return;
       setLoading(true);
       try {
         const tournamentDocRef = doc(firestore, 'tournaments', params.id);
@@ -64,6 +65,7 @@ export default function ManageTournamentPage() {
   }, [params.id, toast]);
 
   const handleRegistrationStatus = async (regId: string, status: 'confirmed' | 'rejected') => {
+    if (!firestore) return;
     try {
       const regDocRef = doc(firestore, 'registrations', regId);
       await updateDoc(regDocRef, { status });
@@ -99,7 +101,7 @@ export default function ManageTournamentPage() {
   };
 
   const handleDeleteRegistration = async () => {
-    if (!selectedRegistration) return;
+    if (!selectedRegistration || !firestore) return;
     setIsDeleting(true);
     try {
       await deleteDoc(doc(firestore, 'registrations', selectedRegistration.id));

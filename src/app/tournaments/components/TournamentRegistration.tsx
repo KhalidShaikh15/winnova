@@ -83,6 +83,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   const qrCodeUrl = tournament.entry_fee > 0 ? qrCodeMap[tournament.entry_fee] : null;
 
   async function onSubmit(values: RegistrationFormValues) {
+    if (!firestore) return;
     setLoading(true);
 
     if (!user || !user.email) {
@@ -163,23 +164,23 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   }
 
   if (isSubmitted) {
-    return (
-      <Card className="max-w-2xl mx-auto">
-        <CardHeader className="text-center">
-          <CardTitle>Registration Successful!</CardTitle>
-          <CardDescription>
-            Your registration has been submitted! You will be notified once it is confirmed.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="text-center">
-            <Button size="lg" onClick={handleContactOrganizer}>
-                <Send className="mr-2 h-4 w-4"/>
-                Contact on WhatsApp
-            </Button>
-            <p className="text-sm text-muted-foreground mt-4">Click the button to confirm your slot with the organizer.</p>
-        </CardContent>
-      </Card>
-    );
+      return (
+        <Card className="max-w-2xl mx-auto">
+          <CardHeader className="text-center">
+            <CardTitle>Registration Successful!</CardTitle>
+            <CardDescription>
+              Your registration has been submitted! You will be notified once it is confirmed.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+              <Button size="lg" onClick={handleContactOrganizer}>
+                  <Send className="mr-2 h-4 w-4"/>
+                  Contact on WhatsApp
+              </Button>
+              <p className="text-sm text-muted-foreground mt-4">Click the button to confirm your slot with the organizer.</p>
+          </CardContent>
+        </Card>
+      );
   }
   
   return (

@@ -16,6 +16,7 @@ export default function LeaderboardPage() {
 
     useEffect(() => {
         const fetchTournaments = async () => {
+            if (!firestore) return;
             const tournamentsCollection = collection(firestore, 'tournaments');
             const tournamentsSnapshot = await getDocs(tournamentsCollection);
             const tournamentsList = tournamentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Tournament[];
@@ -41,6 +42,7 @@ export default function LeaderboardPage() {
         };
 
         const fetchLeaderboard = async () => {
+            if (!firestore) return;
             setLoading(true);
             const leaderboardCollection = collection(firestore, 'leaderboard');
             const q = query(

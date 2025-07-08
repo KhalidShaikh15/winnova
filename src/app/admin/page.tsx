@@ -35,6 +35,7 @@ export default function AdminDashboardPage() {
   const { toast } = useToast();
 
   const fetchGames = async () => {
+    if (!firestore) return;
     const gamesCollection = collection(firestore, 'games');
     const gamesSnapshot = await getDocs(gamesCollection);
     const gamesList = gamesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Game[];
@@ -42,6 +43,7 @@ export default function AdminDashboardPage() {
   };
   
   const fetchTournaments = async () => {
+    if (!firestore) return;
     setLoading(true);
     const tournamentsCollection = collection(firestore, 'tournaments');
     const q = query(tournamentsCollection, orderBy('tournament_date', 'desc'));
@@ -61,7 +63,7 @@ export default function AdminDashboardPage() {
   }
 
   const handleDeleteTournament = async () => {
-    if (!selectedTournament) return;
+    if (!selectedTournament || !firestore) return;
     setIsDeleting(true);
     try {
       // Delete associated registrations
