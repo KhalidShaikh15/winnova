@@ -56,9 +56,10 @@ interface CreateTournamentDialogProps {
 }
 
 const bannerOptions = [
-    '/banners/banner1.png',
-    '/banners/banner2.png',
-    '/banners/banner3.png',
+    'https://i.ibb.co/7NRRQntC/bgmi2-150.png',
+    'https://i.ibb.co/RGbVtrXb/bgmi3-150.png',
+    'https://i.ibb.co/G3PHSJ3q/coc2-150.png',
+    'https://i.ibb.co/FkP4tj3H/coc3-150.png',
 ];
 
 export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTournamentCreated }: CreateTournamentDialogProps) {
