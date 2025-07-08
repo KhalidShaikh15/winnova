@@ -106,7 +106,10 @@ export default function ManageTournamentPage() {
       <h1 className="text-3xl font-bold">Manage: {tournament.title}</h1>
       <Card>
         <CardHeader>
-          <CardTitle>Registrations</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            <span>Registrations</span>
+            <Badge variant="secondary">{registrations.length} / {tournament.max_teams} registered</Badge>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>

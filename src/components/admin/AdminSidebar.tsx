@@ -1,13 +1,13 @@
+'use client';
 import Link from 'next/link';
 import Logo from '@/components/shared/Logo';
 import { Button } from '@/components/ui/button';
-import { Home, Trophy, ClipboardList, Wallet, BarChart2 } from 'lucide-react';
+import { Home, Trophy, Wallet, BarChart2 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
   { href: '/admin', label: 'Tournaments', icon: Trophy },
-  { href: '/admin/registrations', label: 'Registrations', icon: ClipboardList },
   { href: '/admin/results', label: 'Results', icon: BarChart2 },
   { href: '/admin/payouts', label: 'Payouts', icon: Wallet },
 ];
