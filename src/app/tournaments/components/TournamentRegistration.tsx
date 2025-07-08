@@ -78,10 +78,10 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   
   const upiLink = useMemo(() => {
     if (tournament.entry_fee > 0) {
-      return `upi://pay?pa=battlebucks@kotak&pn=BattleBucks&am=${tournament.entry_fee}&cu=INR`;
+      return `upi://pay?pa=${tournament.upi_id}&pn=${tournament.organizer_name}&am=${tournament.entry_fee}&cu=INR`;
     }
     return "";
-  }, [tournament.entry_fee]);
+  }, [tournament.entry_fee, tournament.upi_id, tournament.organizer_name]);
 
   const qrLink = useMemo(() => {
     if (upiLink) {
@@ -181,7 +181,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
               Your registration has been submitted! You will be notified once it is confirmed.
             </CardDescription>
           </CardHeader>
-           {tournament.allow_whatsapp && (
+           {tournament.allow_whatsapp && submittedUpiId && (
                 <CardContent className="text-center">
                     <Button size="lg" onClick={handleContactOrganizer}>
                         <Send className="mr-2 h-4 w-4"/>
@@ -215,17 +215,18 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
             </div>
         </div>
 
-        {tournament.entry_fee > 0 && (
+        {tournament.entry_fee > 0 && qrLink && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 flex flex-col items-center border">
             <h3 className="font-bold text-lg mb-2">Scan to Pay ₹{tournament.entry_fee}</h3>
             <img
               src={qrLink}
               alt="UPI QR Code"
-              style={{ width: "200px", height: "200px", margin: "16px 0" }}
-              className="rounded-md"
+              width="200"
+              height="200"
+              className="rounded-md my-4"
             />
             <p className="text-sm text-muted-foreground mt-2 font-mono break-all text-center">
-                {upiLink}
+                Or pay to: {tournament.upi_id}
             </p>
              <p className="text-xs text-muted-foreground mt-4 text-center">
                 After paying, please enter your UPI ID in the form below for verification.
@@ -279,3 +280,5 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     </Card>
   )
 }
+
+    
