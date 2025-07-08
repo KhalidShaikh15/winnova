@@ -87,7 +87,7 @@ export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="w-full pt-12 pb-20 md:pt-16 md:pb-32 lg:pt-20 lg:pb-40 bg-card/50">
+      <section className="w-full py-12 bg-card/50">
         <div className="container px-4 md:px-6">
           <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
             <div className="flex flex-col justify-center space-y-4">
@@ -117,7 +117,7 @@ export default function Home() {
       </section>
 
       {/* Featured Games Section */}
-      <section className="w-full py-12 md:py-24 bg-card/50">
+      <section className="w-full py-12 bg-card/50">
         <div className="container">
           <h2 className="text-3xl font-bold text-center mb-8 font-headline">Featured Games</h2>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -140,7 +140,7 @@ export default function Home() {
       </section>
 
       {/* Upcoming Tournaments Section */}
-      <section className="w-full py-12 md:py-24">
+      <section className="w-full py-12">
         <div className="container">
           <h2 className="text-3xl font-bold text-center mb-8 font-headline">Upcoming Tournaments</h2>
           <div className="space-y-8">
@@ -183,7 +183,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="w-full py-12 md:py-24 bg-card/50">
+      <section className="w-full py-12 bg-card/50">
         <div className="container">
           <h2 className="text-3xl font-bold text-center mb-12 font-headline">What Our Players Say</h2>
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
