@@ -13,23 +13,17 @@ import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { addDoc, collection, Timestamp } from "firebase/firestore"
-import { firestore } from "@/lib/firebase"
+import { firestore, storage } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
 import type { Game } from "@/lib/types"
 import { Switch } from "@/components/ui/switch"
-
-const tournamentImages = [
-    { label: "BGMI Action Cover", value: "/images/bgmi1.png" },
-    { label: "BGMI Feature", value: "/images/feature bgmi.png" },
-    { label: "Clash of Clans Feature", value: "/images/feature coc.png" },
-    { label: "Free Fire Feature", value: "/images/feature ff.png" },
-];
+import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage"
+import Image from "next/image"
 
 const tournamentFormSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters."),
   game_name: z.string({ required_error: "Please select a game." }),
-  imageUrl: z.string({ required_error: "Please select an image." }),
   entry_fee: z.coerce.number().min(0),
   prize_pool: z.coerce.number().min(0),
   match_type: z.enum(["Solo", "Duo", "Squad"]),
@@ -64,11 +58,13 @@ interface CreateTournamentDialogProps {
 export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTournamentCreated }: CreateTournamentDialogProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   const form = useForm<TournamentFormValues>({
     resolver: zodResolver(tournamentFormSchema),
     defaultValues: {
         title: "",
-        imageUrl: "",
         entry_fee: 0,
         prize_pool: 0,
         match_type: "Squad",
@@ -83,13 +79,50 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
   });
 
   const allowWhatsappValue = form.watch("allow_whatsapp");
+  
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          variant: "destructive",
+          title: "File too large",
+          description: "Please upload an image smaller than 5MB.",
+        });
+        return;
+      }
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImageFile(null);
+      setImagePreview(null);
+    }
+  };
 
   async function onSubmit(data: TournamentFormValues) {
-    if (!firestore) return;
+    if (!firestore || !storage) {
+        toast({ variant: "destructive", title: "Error", description: "Firebase is not configured correctly." });
+        return;
+    }
+    
+    if (!imageFile) {
+      toast({
+        variant: "destructive",
+        title: "Image Required",
+        description: "Please select a tournament image to upload.",
+      });
+      return;
+    }
+    
     setLoading(true);
     try {
+      const imageRef = storageRef(storage, `tournaments/${Date.now()}_${imageFile.name}`);
+      const snapshot = await uploadBytes(imageRef, imageFile);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
       const tournamentData = {
         ...data,
+        imageUrl: downloadURL,
         tournament_date: Timestamp.fromDate(data.tournament_date),
         created_at: Timestamp.now(),
       };
@@ -99,6 +132,8 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
       onTournamentCreated();
       setIsOpen(false);
       form.reset();
+      setImageFile(null);
+      setImagePreview(null);
     } catch (error) {
       console.error("Error creating tournament:", error);
       toast({ variant: "destructive", title: "Error", description: "Failed to create tournament." });
@@ -119,14 +154,18 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
               <FormItem><FormLabel>Title</FormLabel><FormControl><Input placeholder="e.g., Summer Showdown Series" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
 
-             <FormField control={form.control} name="imageUrl" render={({ field }) => (
-                <FormItem><FormLabel>Tournament Image</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select an image" /></SelectTrigger></FormControl>
-                    <SelectContent>{tournamentImages.map(image => <SelectItem key={image.value} value={image.value}>{image.label}</SelectItem>)}</SelectContent>
-                  </Select><FormMessage />
-                </FormItem>
-              )} />
+            <div className="space-y-2">
+                <FormLabel>Tournament Image</FormLabel>
+                {imagePreview && (
+                    <div className="w-full relative aspect-video">
+                        <Image src={imagePreview} alt="Tournament preview" fill className="rounded-md object-cover" />
+                    </div>
+                )}
+                <FormControl>
+                    <Input type="file" accept="image/png, image/jpeg, image/webp" onChange={handleFileChange} />
+                </FormControl>
+                <FormDescription>Upload an image for the tournament (PNG, JPG, WEBP, max 5MB).</FormDescription>
+            </div>
             
             <div className="grid grid-cols-2 gap-4">
               <FormField control={form.control} name="game_name" render={({ field }) => (
