@@ -9,7 +9,6 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Game } from '@/lib/types';
 import { format } from 'date-fns';
-import { keyStats } from '@/lib/data';
 
 export default function Home() {
   const [featuredGames, setFeaturedGames] = useState<Game[]>([]);
@@ -98,28 +97,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        {/* Key Stats Section */}
-        <section className="w-full py-12 md:py-24">
-          <div className="container">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {keyStats.map((stat) => (
-                <Card key={stat.label} className="text-center transition-transform hover:scale-105 hover:shadow-lg">
-                  <CardHeader>
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                      <stat.icon className="h-6 w-6" />
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-4xl font-bold">{stat.value}</p>
-                    <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
 
         {/* Featured Games Section */}
         <section className="w-full py-12 md:py-24 bg-card/50">
