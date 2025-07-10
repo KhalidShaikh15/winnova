@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -154,10 +155,12 @@ export default function Header() {
             </nav>
           )}
           
+          <div className="hidden md:block">
+            <ThemeToggle />
+          </div>
 
           {/* Mobile Navigation */}
           <div className="flex items-center md:hidden">
-             <ThemeToggle />
              <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -165,7 +168,7 @@ export default function Header() {
                   <span className="sr-only">Toggle Menu</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-screen">
                 <DropdownMenuLabel>Navigation</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                  {navLinks.map(link => (
@@ -178,11 +181,13 @@ export default function Header() {
                       <Link href="/admin">Admin Panel</Link>
                     </DropdownMenuItem>
                   )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                     <ThemeToggle />
+                     <span className="ml-2">Toggle Theme</span>
+                  </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
-           <div className="hidden md:block">
-            <ThemeToggle />
           </div>
         </div>
       </div>
