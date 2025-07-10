@@ -16,6 +16,7 @@ import { Award, Calendar, Gamepad2, Group, Loader2, Send, Clock } from "lucide-r
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import { format } from "date-fns"
+import Image from "next/image"
 
 // Base schema for common fields
 const baseSchema = z.object({
@@ -208,15 +209,15 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         </div>
 
         {tournament.entry_fee > 0 && qrCodeUrl && (
-          <div className="mb-6 p-4 rounded-lg bg-muted/50 border flex items-center gap-6">
-            <img
+          <div className="mb-6 p-4 rounded-lg bg-muted/50 border flex flex-col sm:flex-row items-center gap-6">
+            <Image
               src={qrCodeUrl}
               alt="UPI QR Code"
               width="128"
               height="128"
               className="rounded-md"
             />
-            <div className="flex flex-col">
+            <div className="flex flex-col text-center sm:text-left">
                 <h3 className="font-bold text-lg">Scan to Pay ₹{tournament.entry_fee}</h3>
                 <p className="text-sm text-muted-foreground mt-2 font-mono break-all">
                     Or pay to: {tournament.upi_id}
