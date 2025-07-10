@@ -148,11 +148,8 @@ export default function Header() {
             </>
           ) : (
             <nav className="flex items-center gap-2">
-              <Button asChild variant="ghost">
-                <Link href="/login">Login</Link>
-              </Button>
               <Button asChild>
-                <Link href="/signup">Sign Up</Link>
+                <Link href="/login">Login</Link>
               </Button>
             </nav>
           )}
