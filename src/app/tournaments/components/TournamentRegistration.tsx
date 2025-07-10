@@ -213,8 +213,9 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         {qrCodeUrl && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 border flex flex-col sm:flex-row items-center gap-6">
             <Image
+              unoptimized
               src={qrCodeUrl}
-              alt="UPI QR Code"
+              alt="UPI QR Code for payment"
               width={128}
               height={128}
               className="rounded-md"
