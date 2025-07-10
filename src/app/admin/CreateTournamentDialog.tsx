@@ -31,7 +31,7 @@ const tournamentFormSchema = z.object({
   tournament_time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)."),
   max_teams: z.coerce.number().int().min(2),
   status: z.enum(["upcoming", "ongoing", "completed"]),
-  upi_id: z.string().min(3, "UPI ID is required."),
+  upi_id: z.string(), // Kept in schema for submission, but not in form
   organizer_name: z.string().min(3, "Organizer name is required."),
   allow_whatsapp: z.boolean().default(false),
   whatsapp_number: z.string().optional(),
@@ -281,14 +281,9 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFor
                 )} />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-                <FormField control={form.control} name="upi_id" render={({ field }) => (
-                    <FormItem><FormLabel>Organizer UPI ID</FormLabel><FormControl><Input placeholder="yourupi@oksbi" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="organizer_name" render={({ field }) => (
-                    <FormItem><FormLabel>Organizer Name</FormLabel><FormControl><Input placeholder="e.g. Winnova" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-            </div>
+            <FormField control={form.control} name="organizer_name" render={({ field }) => (
+                <FormItem><FormLabel>Organizer Name</FormLabel><FormControl><Input placeholder="e.g. Winnova" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
 
             <FormField control={form.control} name="allow_whatsapp" render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
@@ -313,5 +308,3 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFor
     </Dialog>
   )
 }
-
-    
