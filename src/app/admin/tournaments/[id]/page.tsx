@@ -21,7 +21,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { sendConfirmationEmail } from '@/ai/flows/send-confirmation-email';
 
 
 export default function ManageTournamentPage() {
@@ -79,29 +78,34 @@ export default function ManageTournamentPage() {
     try {
       const regDocRef = doc(firestore, 'registrations', regId);
       await updateDoc(regDocRef, { status });
-
-      toast({ title: 'Success', description: `Registration has been ${status}.` });
+      
       setRegistrations(regs => regs.map(r => r.id === regId ? { ...r, status } : r));
+      toast({ title: 'Success', description: `Registration has been ${status}.` });
+
 
       if (status === 'confirmed' && tournament && reg.user_email) {
-        const emailResult = await sendConfirmationEmail({
-          username: reg.username,
-          email: reg.user_email,
-          tournamentTitle: tournament.title,
-          tournamentDate: format(tournament.tournament_date.toDate(), 'PPP'),
-          tournamentTime: tournament.tournament_time,
-          entryFee: tournament.entry_fee,
-          prizePool: tournament.prize_pool,
-        });
+          const subject = `Your Registration for "${tournament.title}" is Confirmed!`;
+          const body = `
+Hi ${reg.username},
 
-        if (!emailResult.success) {
-           toast({
-            variant: 'destructive',
-            title: 'Email Failed',
-            description: `Registration confirmed, but failed to send email: ${emailResult.message}`,
-          });
-        }
+Congratulations! Your registration for the "${tournament.title}" tournament is confirmed.
+
+Match Details:
+- Date: ${format(tournament.tournament_date.toDate(), 'PPP')}
+- Time: ${tournament.tournament_time}
+- Entry Fee Paid: ₹${tournament.entry_fee}
+
+We're excited to see you in the arena! The total prize pool is ₹${tournament.prize_pool.toLocaleString()}.
+
+Good luck!
+
+The Winnova Team
+          `.trim().replace(/\n/g, '%0D%0A');
+
+          const mailtoLink = `mailto:${reg.user_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+          window.open(mailtoLink, '_blank');
       }
+
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to update registration status.' });
     } finally {
