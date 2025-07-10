@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, Loader2, ShieldCheck } from "lucide-react";
+import { User, LogOut, Loader2, ShieldCheck, Menu } from "lucide-react";
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -22,6 +22,8 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useAdmin } from "@/hooks/useAdmin";
+import { Sheet, SheetClose, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Separator } from "../ui/separator";
 
 
 export default function Header() {
@@ -106,6 +108,53 @@ export default function Header() {
              )}
           </nav>
         </div>
+
+        {/* Mobile Navigation */}
+        <div className="md:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle Menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="pr-0">
+              <Link href="/" className="mr-6 flex items-center space-x-2 mb-6">
+                <Logo />
+              </Link>
+              <Separator />
+              <div className="flex flex-col space-y-3 pt-6">
+                 {navLinks.map(link => (
+                    <SheetClose key={`mobile-${link.href}`} asChild>
+                      <Link 
+                          href={link.href}
+                          className={cn(
+                              "text-lg font-medium transition-colors hover:text-foreground/80",
+                              pathname === link.href ? "text-foreground" : "text-foreground/60"
+                          )}
+                      >
+                          {link.label}
+                      </Link>
+                    </SheetClose>
+                 ))}
+                 {isAdmin && (
+                    <SheetClose asChild>
+                      <Link
+                        href="/admin"
+                        className={cn(
+                          "text-lg font-medium transition-colors hover:text-foreground/80",
+                          pathname.startsWith('/admin') ? "text-foreground" : "text-foreground/60"
+                        )}
+                      >
+                        Admin Panel
+                      </Link>
+                    </SheetClose>
+                 )}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+
         <div className="flex flex-1 items-center justify-end space-x-2">
           {loading ? (
              <Loader2 className="h-6 w-6 animate-spin" />
@@ -147,7 +196,7 @@ export default function Header() {
               </DropdownMenu>
             </>
           ) : (
-            <nav className="flex items-center gap-2">
+            <nav className="hidden items-center gap-2 md:flex">
               <Button asChild>
                 <Link href="/login">Login</Link>
               </Button>
