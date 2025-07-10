@@ -78,11 +78,11 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   });
   
   const upiLink = useMemo(() => {
-    if (tournament.entry_fee > 0 && tournament.upi_id && tournament.organizer_name) {
-        return `upi://pay?pa=${tournament.upi_id}&pn=${encodeURIComponent(tournament.organizer_name)}&am=${tournament.entry_fee}&cu=INR`;
+    if (tournament.entry_fee > 0) {
+        return `upi://pay?pa=9653134660@kotak811&pn=Khalid%20Shaikh&am=${tournament.entry_fee}&cu=INR`;
     }
     return null;
-  }, [tournament.entry_fee, tournament.upi_id, tournament.organizer_name]);
+  }, [tournament.entry_fee]);
 
 
   async function onSubmit(values: RegistrationFormValues) {
