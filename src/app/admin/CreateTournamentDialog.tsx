@@ -96,12 +96,14 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFor
       } else {
         form.reset({
             title: "",
+            game_name: undefined,
             entry_fee: 0,
             prize_pool: 0,
             match_type: "Squad",
+            tournament_date: new Date(),
+            tournament_time: "18:00",
             max_teams: 16,
             status: "upcoming",
-            tournament_time: "18:00",
             upi_id: "battlebucks@kotak",
             organizer_name: "Arena Clash",
             allow_whatsapp: true,
@@ -170,7 +172,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFor
              <FormField
               control={form.control}
               name="banner_url"
-              render={() => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tournament Banner</FormLabel>
                   <FormControl>
@@ -182,7 +184,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFor
                             "relative w-[150px] h-[100px] cursor-pointer rounded-lg border-2 border-transparent transition-all",
                             selectedBanner === banner && "border-primary ring-2 ring-primary"
                           )}
-                          onClick={() => form.setValue("banner_url", banner, { shouldValidate: true })}
+                          onClick={() => field.onChange(banner)}
                         >
                           <Image
                             src={banner}
