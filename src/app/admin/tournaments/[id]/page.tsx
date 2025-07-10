@@ -21,6 +21,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { sendConfirmationEmail } from '@/ai/flows/send-confirmation-email';
+
 
 export default function ManageTournamentPage() {
   const params = useParams<{ id: string }>();
@@ -32,6 +34,7 @@ export default function ManageTournamentPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmingRegId, setConfirmingRegId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!params.id) return;
@@ -65,40 +68,46 @@ export default function ManageTournamentPage() {
 
   const handleRegistrationStatus = async (regId: string, status: 'confirmed' | 'rejected') => {
     if (!firestore) return;
+
+    const reg = registrations.find(r => r.id === regId);
+    if (!reg) return;
+
+    if (status === 'confirmed') {
+      setConfirmingRegId(regId);
+    }
+
     try {
       const regDocRef = doc(firestore, 'registrations', regId);
       await updateDoc(regDocRef, { status });
-      
-      const reg = registrations.find(r => r.id === regId);
-      if (status === 'confirmed' && tournament && reg && reg.user_email) {
-          const subject = `Confirmation for ${tournament.title}`;
-          const body = `
-Hi ${reg.username},
 
-Congratulations! Your registration for the "${tournament.title}" tournament is confirmed.
-
-Match Details:
-- Date: ${format(tournament.tournament_date.toDate(), 'PPP')}
-- Time: ${tournament.tournament_time}
-- Entry Fee Paid: ₹${tournament.entry_fee}
-- Squad: ${reg.squad_name}
-
-We're excited to see you in the arena! The total prize pool is ₹${tournament.prize_pool.toLocaleString()}.
-
-Good luck!
-
-The Winnova Team
-          `;
-          
-          const mailtoLink = `mailto:${reg.user_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body.trim())}`;
-          window.location.href = mailtoLink;
-      }
-      
       toast({ title: 'Success', description: `Registration has been ${status}.` });
       setRegistrations(regs => regs.map(r => r.id === regId ? { ...r, status } : r));
 
+      if (status === 'confirmed' && tournament && reg.user_email) {
+        const emailResult = await sendConfirmationEmail({
+          username: reg.username,
+          email: reg.user_email,
+          tournamentTitle: tournament.title,
+          tournamentDate: format(tournament.tournament_date.toDate(), 'PPP'),
+          tournamentTime: tournament.tournament_time,
+          entryFee: tournament.entry_fee,
+          prizePool: tournament.prize_pool,
+        });
+
+        if (!emailResult.success) {
+           toast({
+            variant: 'destructive',
+            title: 'Email Failed',
+            description: `Registration confirmed, but failed to send email: ${emailResult.message}`,
+          });
+        }
+      }
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to update registration status.' });
+    } finally {
+      if (status === 'confirmed') {
+        setConfirmingRegId(null);
+      }
     }
   };
 
@@ -160,8 +169,8 @@ The Winnova Team
                       <span className="font-mono text-xs">{reg.user_upi_id || 'N/A'}</span>
                     </TableCell>
                     <TableCell className="text-right space-x-2">
-                      <Button size="sm" variant="outline" disabled={reg.status === 'confirmed'} onClick={() => handleRegistrationStatus(reg.id, 'confirmed')}>
-                        <CheckCircle className="h-4 w-4 mr-2" />
+                       <Button size="sm" variant="outline" disabled={reg.status === 'confirmed' || confirmingRegId === reg.id} onClick={() => handleRegistrationStatus(reg.id, 'confirmed')}>
+                        {confirmingRegId === reg.id ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
                         Confirm
                       </Button>
                       <Button size="sm" variant="destructive" disabled={reg.status === 'rejected'} onClick={() => handleRegistrationStatus(reg.id, 'rejected')}>
