@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { sendConfirmationEmail } from '@/ai/flows/send-confirmation-email';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,37 +61,40 @@ export default function ManageTournamentPage() {
       }
     };
     fetchTournamentAndRegistrations();
-  }, [params.id, toast, firestore]);
+  }, [params.id, toast]);
 
   const handleRegistrationStatus = async (regId: string, status: 'confirmed' | 'rejected') => {
     if (!firestore) return;
     try {
       const regDocRef = doc(firestore, 'registrations', regId);
       await updateDoc(regDocRef, { status });
-      toast({ title: 'Success', description: `Registration has been ${status}.` });
+      
+      const reg = registrations.find(r => r.id === regId);
+      if (status === 'confirmed' && tournament && reg && reg.user_email) {
+          const subject = `Confirmation for ${tournament.title}`;
+          const body = `
+Hi ${reg.username},
 
-      if (status === 'confirmed' && tournament) {
-        const reg = registrations.find(r => r.id === regId);
-        if (reg && reg.user_email) {
-          toast({ title: 'Sending Email...', description: `Sending confirmation to ${reg.user_email}` });
-          const emailResult = await sendConfirmationEmail({
-            email: reg.user_email,
-            username: reg.username,
-            tournamentTitle: tournament.title,
-            tournamentDate: format(tournament.tournament_date.toDate(), 'PPP'),
-            tournamentTime: tournament.tournament_time,
-            entryFee: tournament.entry_fee,
-            prizePool: tournament.prize_pool,
-          });
+Congratulations! Your registration for the "${tournament.title}" tournament is confirmed.
 
-          if (emailResult.success) {
-            toast({ title: 'Email Sent', description: 'Confirmation email sent successfully.' });
-          } else {
-            toast({ variant: 'destructive', title: 'Email Failed', description: emailResult.message });
-          }
-        }
+Match Details:
+- Date: ${format(tournament.tournament_date.toDate(), 'PPP')}
+- Time: ${tournament.tournament_time}
+- Entry Fee Paid: ₹${tournament.entry_fee}
+- Squad: ${reg.squad_name}
+
+We're excited to see you in the arena! The total prize pool is ₹${tournament.prize_pool.toLocaleString()}.
+
+Good luck!
+
+The Winnova Team
+          `;
+          
+          const mailtoLink = `mailto:${reg.user_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body.trim())}`;
+          window.location.href = mailtoLink;
       }
       
+      toast({ title: 'Success', description: `Registration has been ${status}.` });
       setRegistrations(regs => regs.map(r => r.id === regId ? { ...r, status } : r));
 
     } catch (error) {
