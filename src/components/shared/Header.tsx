@@ -78,7 +78,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-7xl items-center">
-        <div className="mr-4 flex">
+        <div className="flex items-center">
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Logo />
           </Link>
@@ -107,53 +107,6 @@ export default function Header() {
                 </Link>
              )}
           </nav>
-        </div>
-
-        {/* Mobile Navigation */}
-        <div className="md:hidden">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle Menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="pr-0">
-              <SheetTitle className="sr-only">Navigation</SheetTitle>
-              <Link href="/" className="mr-6 flex items-center space-x-2 mb-6">
-                <Logo />
-              </Link>
-              <Separator />
-              <div className="flex flex-col space-y-3 pt-6">
-                 {navLinks.map(link => (
-                    <SheetClose key={`mobile-${link.href}`} asChild>
-                      <Link 
-                          href={link.href}
-                          className={cn(
-                              "text-lg font-medium transition-colors hover:text-foreground/80",
-                              pathname === link.href ? "text-foreground" : "text-foreground/60"
-                          )}
-                      >
-                          {link.label}
-                      </Link>
-                    </SheetClose>
-                 ))}
-                 {isAdmin && (
-                    <SheetClose asChild>
-                      <Link
-                        href="/admin"
-                        className={cn(
-                          "text-lg font-medium transition-colors hover:text-foreground/80",
-                          pathname.startsWith('/admin') ? "text-foreground" : "text-foreground/60"
-                        )}
-                      >
-                        Admin Panel
-                      </Link>
-                    </SheetClose>
-                 )}
-              </div>
-            </SheetContent>
-          </Sheet>
         </div>
 
         <div className="flex flex-1 items-center justify-end space-x-2">
@@ -198,12 +151,59 @@ export default function Header() {
             </>
           ) : (
             <nav className="hidden items-center gap-2 md:flex">
-              <Button asChild>
+              <Button asChild variant="default" className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 <Link href="/login">Login</Link>
               </Button>
             </nav>
           )}
           <ThemeToggle />
+
+          {/* Mobile Navigation */}
+          <div className="md:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Toggle Menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="pr-0">
+                <SheetTitle className="sr-only">Navigation</SheetTitle>
+                <Link href="/" className="mr-6 flex items-center space-x-2 mb-6">
+                  <Logo />
+                </Link>
+                <Separator />
+                <div className="flex flex-col space-y-3 pt-6">
+                  {navLinks.map(link => (
+                      <SheetClose key={`mobile-${link.href}`} asChild>
+                        <Link 
+                            href={link.href}
+                            className={cn(
+                                "text-lg font-medium transition-colors hover:text-foreground/80",
+                                pathname === link.href ? "text-foreground" : "text-foreground/60"
+                            )}
+                        >
+                            {link.label}
+                        </Link>
+                      </SheetClose>
+                  ))}
+                  {isAdmin && (
+                      <SheetClose asChild>
+                        <Link
+                          href="/admin"
+                          className={cn(
+                            "text-lg font-medium transition-colors hover:text-foreground/80",
+                            pathname.startsWith('/admin') ? "text-foreground" : "text-foreground/60"
+                          )}
+                        >
+                          Admin Panel
+                        </Link>
+                      </SheetClose>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
     </header>
