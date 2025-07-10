@@ -78,8 +78,8 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFor
         max_teams: 16,
         status: "upcoming",
         tournament_time: "18:00",
-        upi_id: "winnova@kotak",
-        organizer_name: "Winnova",
+        upi_id: "9653134660@kotak811",
+        organizer_name: "Khalid Shaikh",
         allow_whatsapp: true,
         whatsapp_number: "9653134660",
         banner_url: "",
@@ -104,8 +104,8 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFor
             tournament_time: "18:00",
             max_teams: 16,
             status: "upcoming",
-            upi_id: "winnova@kotak",
-            organizer_name: "Winnova",
+            upi_id: "9653134660@kotak811",
+            organizer_name: "Khalid Shaikh",
             allow_whatsapp: true,
             whatsapp_number: "9653134660",
             banner_url: "",
@@ -313,3 +313,5 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFor
     </Dialog>
   )
 }
+
+    
