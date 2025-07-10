@@ -31,7 +31,6 @@ const tournamentFormSchema = z.object({
   tournament_time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)."),
   max_teams: z.coerce.number().int().min(2),
   status: z.enum(["upcoming", "ongoing", "completed"]),
-  upi_id: z.string(), // Kept in schema for submission, but not in form
   organizer_name: z.string().min(3, "Organizer name is required."),
   allow_whatsapp: z.boolean().default(false),
   whatsapp_number: z.string().optional(),
@@ -78,7 +77,6 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFor
         max_teams: 16,
         status: "upcoming",
         tournament_time: "18:00",
-        upi_id: "9653134660@kotak811",
         organizer_name: "Khalid Shaikh",
         allow_whatsapp: true,
         whatsapp_number: "9653134660",
@@ -104,7 +102,6 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFor
             tournament_time: "18:00",
             max_teams: 16,
             status: "upcoming",
-            upi_id: "9653134660@kotak811",
             organizer_name: "Khalid Shaikh",
             allow_whatsapp: true,
             whatsapp_number: "9653134660",
@@ -126,9 +123,10 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFor
     
     setLoading(true);
     try {
-      const payload = {
+      const payload: Omit<Tournament, 'id' | 'created_at'> & { upi_id: string; tournament_date: Timestamp } = {
         ...data,
         tournament_date: Timestamp.fromDate(data.tournament_date),
+        upi_id: '9653134660@kotak811',
       };
       
       if (isEditMode && tournamentData) {
