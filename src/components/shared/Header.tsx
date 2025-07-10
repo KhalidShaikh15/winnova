@@ -155,9 +155,7 @@ export default function Header() {
             </nav>
           )}
           
-          <div className="hidden md:block">
-            <ThemeToggle />
-          </div>
+          <ThemeToggle />
 
           {/* Mobile Navigation */}
           <div className="flex items-center md:hidden">
@@ -182,10 +180,11 @@ export default function Header() {
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                     <ThemeToggle />
-                     <span className="ml-2">Toggle Theme</span>
-                  </DropdownMenuItem>
+                  {!user && (
+                    <DropdownMenuItem asChild>
+                        <Link href="/login">Login</Link>
+                    </DropdownMenuItem>
+                  )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
