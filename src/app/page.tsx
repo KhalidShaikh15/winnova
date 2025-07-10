@@ -211,7 +211,6 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-4 mt-auto">
                   <Avatar>
-                    <AvatarImage data-ai-hint="person" src={testimonial.avatar} alt={testimonial.name} />
                     <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
