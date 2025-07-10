@@ -22,9 +22,6 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useAdmin } from "@/hooks/useAdmin";
-import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Separator } from "../ui/separator";
-
 
 export default function Header() {
   const { user, loading: authLoading } = useAuth();
@@ -156,53 +153,36 @@ export default function Header() {
               </Button>
             </nav>
           )}
-          <ThemeToggle />
+          
 
           {/* Mobile Navigation */}
-          <div className="md:hidden">
-            <Sheet>
-              <SheetTrigger asChild>
+          <div className="flex items-center md:hidden">
+             <ThemeToggle />
+             <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <Menu className="h-5 w-5" />
                   <span className="sr-only">Toggle Menu</span>
                 </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="pr-0">
-                <SheetTitle className="sr-only">Navigation</SheetTitle>
-                <Link href="/" className="mr-6 flex items-center space-x-2 mb-6">
-                  <Logo />
-                </Link>
-                <Separator />
-                <div className="flex flex-col space-y-3 pt-6">
-                  {navLinks.map(link => (
-                      <SheetClose key={`mobile-${link.href}`} asChild>
-                        <Link 
-                            href={link.href}
-                            className={cn(
-                                "text-lg font-medium transition-colors hover:text-foreground/80",
-                                pathname === link.href ? "text-foreground" : "text-foreground/60"
-                            )}
-                        >
-                            {link.label}
-                        </Link>
-                      </SheetClose>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Navigation</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                 {navLinks.map(link => (
+                    <DropdownMenuItem key={`mobile-${link.href}`} asChild>
+                      <Link href={link.href}>{link.label}</Link>
+                    </DropdownMenuItem>
                   ))}
                   {isAdmin && (
-                      <SheetClose asChild>
-                        <Link
-                          href="/admin"
-                          className={cn(
-                            "text-lg font-medium transition-colors hover:text-foreground/80",
-                            pathname.startsWith('/admin') ? "text-foreground" : "text-foreground/60"
-                          )}
-                        >
-                          Admin Panel
-                        </Link>
-                      </SheetClose>
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin">Admin Panel</Link>
+                    </DropdownMenuItem>
                   )}
-                </div>
-              </SheetContent>
-            </Sheet>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+           <div className="hidden md:block">
+            <ThemeToggle />
           </div>
         </div>
       </div>
