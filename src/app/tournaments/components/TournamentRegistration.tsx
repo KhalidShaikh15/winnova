@@ -79,7 +79,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   
   const qrCodeUrl = useMemo(() => {
     if (tournament.entry_fee <= 0 || !tournament.upi_id || !tournament.organizer_name) return null;
-    const upiLink = `upi://pay?pa=${tournament.upi_id}&pn=${tournament.organizer_name}&am=${tournament.entry_fee}&cu=INR`;
+    const upiLink = `upi://pay?pa=${tournament.upi_id}&pn=${encodeURIComponent(tournament.organizer_name)}&am=${tournament.entry_fee}&cu=INR`;
     return `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(upiLink)}`;
   }, [tournament.entry_fee, tournament.upi_id, tournament.organizer_name]);
 
