@@ -12,11 +12,11 @@ import { CalendarIcon, Loader2 } from "lucide-react"
 import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
-import { addDoc, collection, Timestamp } from "firebase/firestore"
+import { addDoc, collection, doc, Timestamp, updateDoc } from "firebase/firestore"
 import { firestore } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
-import { useState } from "react"
-import type { Game } from "@/lib/types"
+import { useState, useEffect } from "react"
+import type { Game, Tournament } from "@/lib/types"
 import { Switch } from "@/components/ui/switch"
 import Image from "next/image"
 
@@ -52,7 +52,8 @@ interface CreateTournamentDialogProps {
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
     games: Game[];
-    onTournamentCreated: () => void;
+    onFormSubmit: () => void;
+    tournamentData?: Tournament | null;
 }
 
 const bannerOptions = [
@@ -62,9 +63,10 @@ const bannerOptions = [
     'https://i.ibb.co/FkP4tj3H/coc3-150.png',
 ];
 
-export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTournamentCreated }: CreateTournamentDialogProps) {
+export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFormSubmit, tournamentData }: CreateTournamentDialogProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const isEditMode = !!tournamentData;
 
   const form = useForm<TournamentFormValues>({
     resolver: zodResolver(tournamentFormSchema),
@@ -84,6 +86,33 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
     },
   });
 
+  useEffect(() => {
+    if (isOpen) {
+      if (isEditMode && tournamentData) {
+        form.reset({
+          ...tournamentData,
+          tournament_date: tournamentData.tournament_date.toDate(),
+        });
+      } else {
+        form.reset({
+            title: "",
+            entry_fee: 0,
+            prize_pool: 0,
+            match_type: "Squad",
+            max_teams: 16,
+            status: "upcoming",
+            tournament_time: "18:00",
+            upi_id: "battlebucks@kotak",
+            organizer_name: "Arena Clash",
+            allow_whatsapp: true,
+            whatsapp_number: "9653134660",
+            banner_url: "",
+        });
+      }
+    }
+  }, [isOpen, isEditMode, tournamentData, form]);
+
+
   const allowWhatsappValue = form.watch("allow_whatsapp");
   const selectedBanner = form.watch("banner_url");
 
@@ -95,28 +124,30 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
     
     setLoading(true);
     try {
-      const tournamentData = {
+      const payload = {
         ...data,
         tournament_date: Timestamp.fromDate(data.tournament_date),
-        created_at: Timestamp.now(),
       };
-
-      await addDoc(collection(firestore, "tournaments"), tournamentData);
-      toast({ title: "Success", description: "Tournament created successfully." });
-      onTournamentCreated();
-      setIsOpen(false);
-      form.reset();
-    } catch (error: any) {
-      console.error("Error creating tournament:", error);
-      let description = "An unknown error occurred. Please check your Firebase settings and security rules.";
       
+      if (isEditMode && tournamentData) {
+        const tournamentDocRef = doc(firestore, 'tournaments', tournamentData.id);
+        await updateDoc(tournamentDocRef, payload);
+        toast({ title: "Success", description: "Tournament updated successfully." });
+      } else {
+        await addDoc(collection(firestore, "tournaments"), { ...payload, created_at: Timestamp.now() });
+        toast({ title: "Success", description: "Tournament created successfully." });
+      }
+      
+      onFormSubmit();
+      setIsOpen(false);
+    } catch (error: any) {
+      let description = "An unknown error occurred. Please check your Firebase settings and security rules.";
       if (error instanceof Error) {
         description = error.message;
       }
-      
       toast({
         variant: "destructive",
-        title: "Creation Failed",
+        title: isEditMode ? "Update Failed" : "Creation Failed",
         description: description,
       });
     } finally {
@@ -128,7 +159,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Tournament</DialogTitle>
+          <DialogTitle>{isEditMode ? 'Edit Tournament' : 'Create New Tournament'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -172,7 +203,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
             <div className="grid grid-cols-2 gap-4">
               <FormField control={form.control} name="game_name" render={({ field }) => (
                 <FormItem><FormLabel>Game</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl><SelectTrigger><SelectValue placeholder="Select a game" /></SelectTrigger></FormControl>
                     <SelectContent>{games.map(game => <SelectItem key={game.id} value={game.name}>{game.name}</SelectItem>)}</SelectContent>
                   </Select><FormMessage />
@@ -180,7 +211,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
               )} />
               <FormField control={form.control} name="match_type" render={({ field }) => (
                 <FormItem><FormLabel>Match Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl><SelectTrigger><SelectValue placeholder="Select a type" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Solo">Solo</SelectItem>
@@ -236,7 +267,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
                 )} />
                 <FormField control={form.control} name="status" render={({ field }) => (
                     <FormItem><FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl>
                         <SelectContent>
                             <SelectItem value="upcoming">Upcoming</SelectItem>
@@ -273,7 +304,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onTou
                 )} />
             )}
 
-            <Button type="submit" disabled={loading}>{loading && <Loader2 className="h-4 w-4 animate-spin mr-2"/>}{loading ? 'Creating...' : 'Create Tournament'}</Button>
+            <Button type="submit" disabled={loading}>{loading && <Loader2 className="h-4 w-4 animate-spin mr-2"/>}{loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Tournament' : 'Create Tournament')}</Button>
           </form>
         </Form>
       </DialogContent>

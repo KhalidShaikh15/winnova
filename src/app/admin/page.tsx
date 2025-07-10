@@ -11,7 +11,7 @@ import Link from 'next/link';
 import CreateTournamentDialog from './CreateTournamentDialog';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
-import { Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,10 +28,11 @@ export default function AdminDashboardPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const { toast } = useToast();
 
   const fetchGames = useCallback(async () => {
@@ -40,7 +41,7 @@ export default function AdminDashboardPage() {
     const gamesSnapshot = await getDocs(gamesCollection);
     const gamesList = gamesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Game[];
     setGames(gamesList);
-  }, [firestore]);
+  }, []);
   
   const fetchTournaments = useCallback(async () => {
     if (!firestore) return;
@@ -51,22 +52,33 @@ export default function AdminDashboardPage() {
     const tournamentsList = tournamentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Tournament[];
     setTournaments(tournamentsList);
     setLoading(false);
-  }, [firestore]);
+  }, []);
 
   useEffect(() => {
     fetchGames();
     fetchTournaments();
   }, [fetchGames, fetchTournaments]);
 
-  const handleTournamentCreated = () => {
+  const handleFormSubmit = () => {
     fetchTournaments();
   }
+
+  const openCreateDialog = () => {
+    setEditMode(false);
+    setSelectedTournament(null);
+    setIsFormOpen(true);
+  };
+  
+  const openEditDialog = (tournament: Tournament) => {
+    setEditMode(true);
+    setSelectedTournament(tournament);
+    setIsFormOpen(true);
+  };
 
   const handleDeleteTournament = async () => {
     if (!selectedTournament || !firestore) return;
     setIsDeleting(true);
     try {
-      // Delete associated registrations
       const regsQuery = query(collection(firestore, 'registrations'), where('tournament_id', '==', selectedTournament.id));
       const regsSnapshot = await getDocs(regsQuery);
       const batch = writeBatch(firestore);
@@ -74,12 +86,11 @@ export default function AdminDashboardPage() {
         batch.delete(doc.ref);
       });
       await batch.commit();
-
-      // Delete the tournament
+      
       await deleteDoc(doc(firestore, 'tournaments', selectedTournament.id));
 
       toast({ title: 'Success', description: 'Tournament and all registrations deleted.' });
-      fetchTournaments(); // Refresh the list
+      fetchTournaments(); 
     } catch (error) {
       console.error("Error deleting tournament:", error);
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete tournament.' });
@@ -95,14 +106,15 @@ export default function AdminDashboardPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Tournament Management</h1>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>Create Tournament</Button>
+        <Button onClick={openCreateDialog}>Create Tournament</Button>
       </div>
 
       <CreateTournamentDialog 
-        isOpen={isCreateDialogOpen}
-        setIsOpen={setIsCreateDialogOpen}
+        isOpen={isFormOpen}
+        setIsOpen={setIsFormOpen}
         games={games}
-        onTournamentCreated={handleTournamentCreated}
+        onFormSubmit={handleFormSubmit}
+        tournamentData={editMode ? selectedTournament : null}
       />
       
       <Card>
@@ -143,6 +155,13 @@ export default function AdminDashboardPage() {
                     <TableCell className="text-right space-x-2">
                       <Button asChild variant="outline" size="sm">
                         <Link href={`/admin/tournaments/${t.id}`}>Manage</Link>
+                      </Button>
+                       <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => openEditDialog(t)}
+                      >
+                        <Pencil className="h-4 w-4 mr-1" /> Edit
                       </Button>
                       <Button 
                         variant="destructive" 
