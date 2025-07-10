@@ -16,7 +16,7 @@ import { Award, Calendar, Gamepad2, Group, Loader2, Send, Clock } from "lucide-r
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import { format } from "date-fns"
-import Image from "next/image"
+import { QRCodeSVG } from 'qrcode.react';
 
 // Base schema for common fields
 const baseSchema = z.object({
@@ -77,10 +77,9 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     },
   });
   
-  const qrCodeUrl = useMemo(() => {
+  const upiLink = useMemo(() => {
     if (tournament.entry_fee > 0 && tournament.upi_id && tournament.organizer_name) {
-        const upiLink = `upi://pay?pa=${tournament.upi_id}&pn=${encodeURIComponent(tournament.organizer_name)}&am=${tournament.entry_fee}&cu=INR`;
-        return `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(upiLink)}`;
+        return `upi://pay?pa=${tournament.upi_id}&pn=${encodeURIComponent(tournament.organizer_name)}&am=${tournament.entry_fee}&cu=INR`;
     }
     return null;
   }, [tournament.entry_fee, tournament.upi_id, tournament.organizer_name]);
@@ -210,16 +209,11 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
             </div>
         </div>
 
-        {qrCodeUrl && (
+        {upiLink && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 border flex flex-col sm:flex-row items-center gap-6">
-            <Image
-              unoptimized
-              src={qrCodeUrl}
-              alt="UPI QR Code for payment"
-              width={128}
-              height={128}
-              className="rounded-md"
-            />
+            <div className="bg-white p-2 rounded-md">
+              <QRCodeSVG value={upiLink} size={128} />
+            </div>
             <div className="flex flex-col text-center sm:text-left">
                 <h3 className="font-bold text-lg">Scan to Pay ₹{tournament.entry_fee}</h3>
                 <p className="text-sm text-muted-foreground mt-2 font-mono break-all">
