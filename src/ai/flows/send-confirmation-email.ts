@@ -8,7 +8,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import { sendEmail } from '@/lib/email';
 
 const SendConfirmationEmailInputSchema = z.object({
@@ -37,7 +37,7 @@ const prompt = ai.definePrompt({
     input: { schema: SendConfirmationEmailInputSchema },
     output: { format: 'text' }, // We want HTML text back
     prompt: `
-        You are an email generation assistant for a gaming platform called Arena Clash.
+        You are an email generation assistant for a gaming platform called Winnova.
         Generate a friendly and exciting confirmation email in valid, professional HTML format.
         Do not use external stylesheets or images. Use inline CSS for styling.
         
@@ -64,7 +64,7 @@ const prompt = ai.definePrompt({
 
         Good luck!
 
-        The BattleBucks Team
+        The Winnova Team
 
         Respond with ONLY the full HTML document, including <html>, <head>, and <body> tags.
         Style it professionally. Use a main container with a light grey background (#f4f4f4). Center the content. Use a clean, sans-serif font like Arial or Helvetica.

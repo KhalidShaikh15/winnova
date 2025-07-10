@@ -11,7 +11,7 @@ export async function sendEmail({
     to,
     subject,
     html,
-    from = 'Arena Clash <onboarding@resend.dev>' // Default 'from' address
+    from = 'Winnova <onboarding@resend.dev>' // Default 'from' address
 }: EmailParams): Promise<{ success: boolean; message: string }> {
     const apiKey = process.env.RESEND_API_KEY;
 

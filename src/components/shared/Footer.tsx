@@ -44,7 +44,7 @@ export default function Footer() {
         </div>
         <div className="mt-8 border-t border-border/40 pt-6 text-center">
            <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Arena Clash. All Rights Reserved.
+            © {new Date().getFullYear()} Winnova. All Rights Reserved.
           </p>
         </div>
       </div>

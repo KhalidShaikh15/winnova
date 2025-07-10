@@ -34,7 +34,7 @@ export default function Home() {
   const testimonials = [
     {
       name: "SavagePlayer47",
-      quote: "Arena Clash has the most competitive tournaments I've ever played in. The prize pools are massive and the community is fantastic!",
+      quote: "Winnova has the most competitive tournaments I've ever played in. The prize pools are massive and the community is fantastic!",
       avatar: "https://placehold.co/100x100.png",
     },
     {

@@ -78,8 +78,8 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFor
         max_teams: 16,
         status: "upcoming",
         tournament_time: "18:00",
-        upi_id: "battlebucks@kotak",
-        organizer_name: "Arena Clash",
+        upi_id: "winnova@kotak",
+        organizer_name: "Winnova",
         allow_whatsapp: true,
         whatsapp_number: "9653134660",
         banner_url: "",
@@ -104,8 +104,8 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFor
             tournament_time: "18:00",
             max_teams: 16,
             status: "upcoming",
-            upi_id: "battlebucks@kotak",
-            organizer_name: "Arena Clash",
+            upi_id: "winnova@kotak",
+            organizer_name: "Winnova",
             allow_whatsapp: true,
             whatsapp_number: "9653134660",
             banner_url: "",
@@ -286,7 +286,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFor
                     <FormItem><FormLabel>Organizer UPI ID</FormLabel><FormControl><Input placeholder="yourupi@oksbi" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="organizer_name" render={({ field }) => (
-                    <FormItem><FormLabel>Organizer Name</FormLabel><FormControl><Input placeholder="e.g. Arena Clash" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Organizer Name</FormLabel><FormControl><Input placeholder="e.g. Winnova" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
             </div>
 

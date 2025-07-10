@@ -13,7 +13,7 @@ const exo2 = Exo_2({
 });
 
 export const metadata: Metadata = {
-  title: 'Arena Clash',
+  title: 'Winnova',
   description: 'The ultimate platform for competitive gaming tournaments.',
   icons: {
     icon: "/icon.svg",
