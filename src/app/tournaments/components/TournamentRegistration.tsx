@@ -76,20 +76,11 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     },
   });
   
-  const qrImageUrl = useMemo(() => {
-    switch (tournament.entry_fee) {
-      case 500:
-        return 'https://i.ibb.co/tRtNphp/qr-500-battlebuck.png';
-      case 800:
-        return 'https://i.ibb.co/Ng788VxR/qr-800-battlebuck.png';
-      case 1000:
-        return 'https://i.ibb.co/Q3Z638nT/qr-1000-battlebuck.png';
-      case 1200:
-        return 'https://i.ibb.co/spLRR5bD/qr-1200-battlebuck.png';
-      default:
-        return '';
-    }
-  }, [tournament.entry_fee]);
+  const qrCodeUrl = useMemo(() => {
+    if (tournament.entry_fee <= 0) return null;
+    const upiLink = `upi://pay?pa=${tournament.upi_id}&pn=${tournament.organizer_name}&am=${tournament.entry_fee}&cu=INR`;
+    return `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(upiLink)}`;
+  }, [tournament.entry_fee, tournament.upi_id, tournament.organizer_name]);
 
 
   async function onSubmit(values: RegistrationFormValues) {
@@ -216,11 +207,11 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
             </div>
         </div>
 
-        {tournament.entry_fee > 0 && qrImageUrl && (
+        {tournament.entry_fee > 0 && qrCodeUrl && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 border flex items-center gap-6">
             <img
-              src={qrImageUrl}
-              alt="Tournament QR Code"
+              src={qrCodeUrl}
+              alt="UPI QR Code"
               width="128"
               height="128"
               className="rounded-md"
