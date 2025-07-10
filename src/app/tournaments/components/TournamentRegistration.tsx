@@ -78,9 +78,11 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   });
   
   const qrCodeUrl = useMemo(() => {
-    if (tournament.entry_fee <= 0 || !tournament.upi_id || !tournament.organizer_name) return null;
-    const upiLink = `upi://pay?pa=${tournament.upi_id}&pn=${encodeURIComponent(tournament.organizer_name)}&am=${tournament.entry_fee}&cu=INR`;
-    return `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(upiLink)}`;
+    if (tournament.entry_fee > 0 && tournament.upi_id && tournament.organizer_name) {
+        const upiLink = `upi://pay?pa=${tournament.upi_id}&pn=${encodeURIComponent(tournament.organizer_name)}&am=${tournament.entry_fee}&cu=INR`;
+        return `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(upiLink)}`;
+    }
+    return null;
   }, [tournament.entry_fee, tournament.upi_id, tournament.organizer_name]);
 
 
@@ -208,13 +210,13 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
             </div>
         </div>
 
-        {tournament.entry_fee > 0 && qrCodeUrl && (
+        {qrCodeUrl && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 border flex flex-col sm:flex-row items-center gap-6">
             <Image
               src={qrCodeUrl}
               alt="UPI QR Code"
-              width="128"
-              height="128"
+              width={128}
+              height={128}
               className="rounded-md"
             />
             <div className="flex flex-col text-center sm:text-left">
