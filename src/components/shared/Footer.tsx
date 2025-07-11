@@ -34,7 +34,7 @@ export default function Footer() {
                   <Link href="#"><Twitter className="h-4 w-4"/></Link>
               </Button>
               <Button variant="ghost" size="icon" asChild>
-                  <Link href="#"><Instagram className="h-4 w-4"/></Link>
+                  <Link href="https://www.instagram.com/winnova.in" target="_blank" rel="noopener noreferrer"><Instagram className="h-4 w-4"/></Link>
               </Button>
               <Button variant="ghost" size="icon" asChild>
                   <Link href="#"><Facebook className="h-4 w-4"/></Link>
