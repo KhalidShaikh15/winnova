@@ -19,7 +19,6 @@ export default function Footer() {
             <Link href="/" className="text-sm text-muted-foreground hover:text-primary">Home</Link>
             <Link href="/tournaments" className="text-sm text-muted-foreground hover:text-primary">Tournaments</Link>
             <Link href="/leaderboard" className="text-sm text-muted-foreground hover:text-primary">Leaderboard</Link>
-            <Link href="/login" className="text-sm text-muted-foreground hover:text-primary">Login/Sign Up</Link>
           </div>
           <div className="flex flex-col gap-3">
             <h4 className="font-semibold">Legal</h4>
