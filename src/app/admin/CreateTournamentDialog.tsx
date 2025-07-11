@@ -60,6 +60,7 @@ const bannerOptions = [
     'https://i.ibb.co/RGbVtrXb/bgmi3-150.png',
     'https://i.ibb.co/G3PHSJ3q/coc2-150.png',
     'https://i.ibb.co/FkP4tj3H/coc3-150.png',
+    'https://i.ibb.co/QjhSL1pg/clash-resized-150x100.jpg',
 ];
 
 export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFormSubmit, tournamentData }: CreateTournamentDialogProps) {
