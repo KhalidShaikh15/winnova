@@ -137,18 +137,20 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-center mb-8 font-headline">Featured Games</h2>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {featuredGames.map((game) => (
-              <Card key={game.name} className="overflow-hidden transition-shadow hover:shadow-xl">
-                <Image
-                  src={gameImageMap[game.name] || game.imageUrl || 'https://placehold.co/400x300.png'}
-                  alt={gameAltTextMap[game.name] || game.name}
-                  width={400}
-                  height={300}
-                  className="w-full h-48 object-cover"
-                />
-                <CardContent className="p-4">
-                  <h3 className="text-lg font-bold">{game.name}</h3>
-                </CardContent>
-              </Card>
+              <Link key={game.id} href={`/games/${game.id}`}>
+                <Card className="overflow-hidden transition-shadow hover:shadow-xl h-full">
+                  <Image
+                    src={gameImageMap[game.name] || game.imageUrl || 'https://placehold.co/400x300.png'}
+                    alt={gameAltTextMap[game.name] || game.name}
+                    width={400}
+                    height={300}
+                    className="w-full h-48 object-cover"
+                  />
+                  <CardContent className="p-4">
+                    <h3 className="text-lg font-bold">{game.name}</h3>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>
