@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, doc, getDoc, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, orderBy } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Game } from '@/lib/types';
 import { notFound, useParams } from 'next/navigation';
@@ -18,13 +18,6 @@ export default function GameDetailsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const gameImageMap: { [key: string]: string } = {
-    'BGMI': '/images/feature bgmi.png',
-    'Clash of Clans': '/images/feature coc.png',
-    'Free Fire': '/images/feature ff.png',
-    'FC25': '/images/fc feature.png',
-  };
-
   useEffect(() => {
     if (!params.id || !firestore) {
         setLoading(false);
@@ -37,10 +30,10 @@ export default function GameDetailsPage() {
         const gameDocRef = doc(firestore, 'games', params.id);
         const gameSnap = await getDoc(gameDocRef);
 
+        let gameData: Game;
         if (!gameSnap.exists()) {
-          // Fallback for special case 'fc25' which might not be in the DB
           if (params.id === 'fc25') {
-            setGame({
+            gameData = {
               id: 'fc25',
               name: 'FC25',
               max_players: 0,
@@ -48,28 +41,29 @@ export default function GameDetailsPage() {
               active: true,
               imageUrl: '',
               aiHint: '',
-            });
+            };
+            setGame(gameData);
           } else {
             notFound();
             return;
           }
         } else {
-            setGame({ id: gameSnap.id, ...gameSnap.data() } as Game);
+            gameData = { id: gameSnap.id, ...gameSnap.data() } as Game;
+            setGame(gameData);
         }
 
-        const gameName = gameSnap.exists() ? gameSnap.data().name : 'FC25';
+        const gameNameToFilter = gameData.name;
         
-        // Fetch tournaments for this game
+        // Fetch all tournaments and filter on the client
         const tournamentsQuery = query(
             collection(firestore, 'tournaments'),
-            where('game_name', '==', gameName),
             orderBy('tournament_date', 'desc')
         );
         const tournamentsSnapshot = await getDocs(tournamentsQuery);
-        const tournamentsList = tournamentsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        } as Tournament));
+        const tournamentsList = tournamentsSnapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() } as Tournament))
+            .filter(t => t.game_name === gameNameToFilter);
+            
         setTournaments(tournamentsList);
 
       } catch (error) {
@@ -80,7 +74,7 @@ export default function GameDetailsPage() {
     };
 
     fetchGameData();
-  }, [params.id, firestore]);
+  }, [params.id]);
 
   if (loading) {
     return (
