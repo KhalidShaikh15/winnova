@@ -1,3 +1,4 @@
+
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +11,7 @@ import { firestore } from '@/lib/firebase';
 import { type Tournament, type Game } from '@/lib/types';
 import { format } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import BlurText from '@/components/shared/BlurText';
 
 export default function Home() {
   const [featuredGames, setFeaturedGames] = useState<Game[]>([]);
@@ -106,15 +108,19 @@ export default function Home() {
         <div className="container px-4 md:px-6">
           <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
             <div className="flex flex-col justify-center space-y-4">
-              <div className="space-y-2">
-                <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
-                  Compete. Conquer. Collect.
-                </h1>
-                <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                  Your ultimate destination for high-stakes gaming tournaments. Join thousands of players, showcase your talent, and win incredible prizes.
-                </p>
+              <div className="space-y-2 text-center lg:text-left">
+                <BlurText
+                    text="Compete. Conquer. Collect."
+                    className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline"
+                />
+                <BlurText
+                  text="Your ultimate destination for high-stakes gaming tournaments. Join thousands of players, showcase your talent, and win incredible prizes."
+                  className="max-w-[600px] text-muted-foreground md:text-xl mx-auto lg:mx-0"
+                  stagger={0.02}
+                  duration={0.4}
+                />
               </div>
-              <div className="flex flex-col gap-2 min-[400px]:flex-row">
+              <div className="flex flex-col gap-2 min-[400px]:flex-row justify-center lg:justify-start">
                 <Button asChild size="lg">
                   <Link href="/tournaments">Browse Tournaments</Link>
                 </Button>
