@@ -1,3 +1,4 @@
+
 import type { Timestamp } from 'firebase/firestore';
 
 export interface Game {
@@ -50,6 +51,22 @@ export interface Registration {
   created_at: Timestamp;
   payment_screenshot_url?: string;
 }
+
+export interface MatchResult {
+    id: string;
+    match_id: string;
+    tournament_id: string;
+    registration_id: string;
+    squad_name: string;
+    match_number: number;
+    placement: number;
+    kills: number;
+    placement_points: number;
+    kill_points: number;
+    total_points: number;
+    created_at: Date;
+}
+
 
 export interface LeaderboardEntry {
     id: string;
