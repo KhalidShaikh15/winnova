@@ -21,10 +21,14 @@ export default function LeaderboardPage() {
             if (!firestore) return;
             setLoadingTournaments(true);
             const tournamentsCollection = collection(firestore, 'tournaments');
-            // For now, only BGMI has leaderboards
-            const q = query(tournamentsCollection, where("game_name", "==", "BGMI"), orderBy('created_at', 'desc'));
-            const tournamentsSnapshot = await getDocs(q);
-            const tournamentsList = tournamentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Tournament[];
+            
+            // Fetch all tournaments and then filter client-side to avoid composite index
+            const tournamentsSnapshot = await getDocs(query(tournamentsCollection, orderBy('created_at', 'desc')));
+            
+            const tournamentsList = tournamentsSnapshot.docs
+                .map(doc => ({ id: doc.id, ...doc.data() }) as Tournament)
+                .filter(t => t.game_name === "BGMI");
+
             setTournaments(tournamentsList);
             if (tournamentsList.length > 0) {
                 // Default to the first tournament in the list
