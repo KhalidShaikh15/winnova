@@ -142,7 +142,7 @@ export default function AdminResultsPage() {
                     tournament_id: selectedTournament,
                     registration_id: reg.id,
                     squad_name: reg.squad_name,
-                    match_number,
+                    match_number: matchNumber,
                     placement,
                     kills,
                     placement_points,
