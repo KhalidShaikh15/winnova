@@ -8,10 +8,14 @@ import TournamentLeaderboard from '../tournaments/components/TournamentLeaderboa
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 const SLOTS = ['A', 'B', 'C', 'D', 'E'];
 
 export default function LeaderboardPage() {
+    const { user, loading: authLoading } = useAuth();
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [tournaments, setTournaments] = useState<Tournament[]>([]);
     const [selectedTournament, setSelectedTournament] = useState<string>('');
@@ -20,11 +24,12 @@ export default function LeaderboardPage() {
     const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
 
     useEffect(() => {
+        if (!user || !firestore) {
+            setLoadingTournaments(false);
+            return;
+        };
+
         const fetchTournaments = async () => {
-            if (!firestore) {
-                setLoadingTournaments(false);
-                return;
-            };
             setLoadingTournaments(true);
             const tournamentsCollection = collection(firestore, 'tournaments');
             
@@ -41,10 +46,10 @@ export default function LeaderboardPage() {
             setLoadingTournaments(false);
         };
         fetchTournaments();
-    }, []);
+    }, [user]);
 
     useEffect(() => {
-        if (!selectedTournament || !firestore) {
+        if (!selectedTournament || !firestore || !user) {
             setLeaderboard([]);
             return;
         }
@@ -124,7 +129,29 @@ export default function LeaderboardPage() {
         
         fetchLeaderboard();
 
-    }, [selectedTournament, selectedSlot]);
+    }, [selectedTournament, selectedSlot, user]);
+
+    if (authLoading) {
+        return (
+             <div className="container py-12 flex justify-center">
+                <Loader2 className="h-16 w-16 animate-spin" />
+            </div>
+        )
+    }
+
+    if (!user) {
+         return (
+            <div className="container py-12 text-center">
+                 <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl font-headline">Leaderboards</h1>
+                 <p className="max-w-[700px] mx-auto text-muted-foreground md:text-xl mt-4">
+                    Please log in to view the leaderboards.
+                </p>
+                <Button asChild className="mt-6">
+                    <Link href="/login">Login or Sign Up</Link>
+                </Button>
+            </div>
+        )
+    }
 
     return (
         <div className="container py-12">
