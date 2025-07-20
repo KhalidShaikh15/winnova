@@ -59,8 +59,11 @@ export default function AdminResultsPage() {
                 return;
             };
             setLoading(true);
-            // Fetch confirmed registrations
-            const regsQuery = query(collection(firestore, 'registrations'), where('tournament_id', '==', selectedTournament), where('status', '==', 'confirmed'));
+            // Fetch confirmed and pending registrations
+            const regsQuery = query(collection(firestore, 'registrations'), 
+                where('tournament_id', '==', selectedTournament), 
+                where('status', 'in', ['pending', 'confirmed'])
+            );
             const regsSnapshot = await getDocs(regsQuery);
             const regsList = regsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Registration));
             setRegistrations(regsList);
