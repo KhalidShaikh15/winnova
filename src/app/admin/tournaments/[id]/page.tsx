@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { doc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc, writeBatch, orderBy } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Registration } from '@/lib/types';
 import { notFound, useParams } from 'next/navigation';
