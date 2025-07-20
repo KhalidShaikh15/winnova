@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { doc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Registration } from '@/lib/types';
 import { notFound, useParams } from 'next/navigation';
@@ -119,11 +119,28 @@ The Winnova Team
     if (!selectedRegistration || !firestore) return;
     setIsDeleting(true);
     try {
-      await deleteDoc(doc(firestore, 'registrations', selectedRegistration.id));
-      toast({ title: 'Success', description: 'Registration deleted successfully.' });
-      setRegistrations(regs => regs.filter(r => r.id !== selectedRegistration.id)); // Refresh list
+      const batch = writeBatch(firestore);
+
+      // 1. Find all match results for this registration
+      const matchesQuery = query(collection(firestore, 'matches'), where('registration_id', '==', selectedRegistration.id));
+      const matchesSnapshot = await getDocs(matchesQuery);
+      
+      // 2. Add delete operations for each match result to the batch
+      matchesSnapshot.forEach(matchDoc => {
+        batch.delete(matchDoc.ref);
+      });
+
+      // 3. Add delete operation for the registration itself
+      const regDocRef = doc(firestore, 'registrations', selectedRegistration.id);
+      batch.delete(regDocRef);
+      
+      // 4. Commit the batch
+      await batch.commit();
+
+      toast({ title: 'Success', description: 'Registration and all associated match data deleted.' });
+      setRegistrations(regs => regs.filter(r => r.id !== selectedRegistration.id));
     } catch (error) {
-      console.error("Error deleting registration:", error);
+      console.error("Error deleting registration and matches:", error);
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete registration.' });
     } finally {
       setIsDeleting(false);
@@ -208,7 +225,7 @@ The Winnova Team
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the registration for
-              <span className="font-bold"> &quot;{selectedRegistration?.squad_name}&quot;</span>.
+              <span className="font-bold"> &quot;{selectedRegistration?.squad_name}&quot;</span> and all associated match results.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
