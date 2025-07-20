@@ -21,7 +21,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+const SLOTS = ['A', 'B', 'C', 'D', 'E'];
 
 export default function ManageTournamentPage() {
   const params = useParams<{ id: string }>();
@@ -34,6 +36,7 @@ export default function ManageTournamentPage() {
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmingRegId, setConfirmingRegId] = useState<string | null>(null);
+  const [updatingSlotRegId, setUpdatingSlotRegId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!params.id) return;
@@ -51,7 +54,7 @@ export default function ManageTournamentPage() {
         }
         setTournament({ id: tournamentSnap.id, ...tournamentSnap.data() } as Tournament);
 
-        const regsQuery = query(collection(firestore, 'registrations'), where('tournament_id', '==', params.id));
+        const regsQuery = query(collection(firestore, 'registrations'), where('tournament_id', '==', params.id), orderBy('created_at', 'desc'));
         const regsSnapshot = await getDocs(regsQuery);
         const regsList = regsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Registration));
         setRegistrations(regsList);
@@ -64,6 +67,22 @@ export default function ManageTournamentPage() {
     };
     fetchTournamentAndRegistrations();
   }, [params.id, toast]);
+
+   const handleSlotChange = async (regId: string, slot: string) => {
+    if (!firestore) return;
+    setUpdatingSlotRegId(regId);
+    try {
+      const regDocRef = doc(firestore, 'registrations', regId);
+      await updateDoc(regDocRef, { slot });
+      setRegistrations(regs => regs.map(r => (r.id === regId ? { ...r, slot } : r)));
+      toast({ title: 'Success', description: `Team slot updated to ${slot}.` });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to update slot.' });
+    } finally {
+      setUpdatingSlotRegId(null);
+    }
+  };
+
 
   const handleRegistrationStatus = async (regId: string, status: 'confirmed' | 'rejected') => {
     if (!firestore) return;
@@ -175,6 +194,7 @@ The Winnova Team
                 <TableHead>Squad Name</TableHead>
                 <TableHead>Contact</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Slot</TableHead>
                 <TableHead>User UPI ID</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -186,6 +206,26 @@ The Winnova Team
                     <TableCell>{reg.squad_name}</TableCell>
                     <TableCell>{reg.contact_number}</TableCell>
                     <TableCell><Badge variant={reg.status === 'pending' ? 'secondary' : reg.status === 'confirmed' ? 'default' : 'destructive'}>{reg.status}</Badge></TableCell>
+                    <TableCell>
+                      {updatingSlotRegId === reg.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Select
+                          value={reg.slot}
+                          onValueChange={(value) => handleSlotChange(reg.id, value)}
+                          disabled={updatingSlotRegId === reg.id}
+                        >
+                          <SelectTrigger className="w-[80px]">
+                            <SelectValue placeholder="Slot" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {SLOTS.map(slot => (
+                              <SelectItem key={slot} value={slot}>{slot}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <span className="font-mono text-xs">{reg.user_upi_id || 'N/A'}</span>
                     </TableCell>
@@ -213,7 +253,7 @@ The Winnova Team
                   </TableRow>
                 ))
               ) : (
-                <TableRow><TableCell colSpan={5} className="text-center">No registrations yet.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center">No registrations yet.</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

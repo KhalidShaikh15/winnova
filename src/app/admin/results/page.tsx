@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -26,11 +25,13 @@ const getPlacementPoints = (placement: number): number => {
     return 0;
 };
 
+const SLOTS = ['A', 'B', 'C', 'D', 'E'];
 type ResultInput = { placement: string, kills: string, matchDocId?: string };
 
 export default function AdminResultsPage() {
     const [tournaments, setTournaments] = useState<Tournament[]>([]);
     const [selectedTournament, setSelectedTournament] = useState<string>('');
+    const [selectedSlot, setSelectedSlot] = useState<string>('');
     const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [matchNumber, setMatchNumber] = useState(1);
     const [results, setResults] = useState<Map<string, ResultInput>>(new Map());
@@ -54,14 +55,17 @@ export default function AdminResultsPage() {
 
     useEffect(() => {
         const fetchRegistrationsAndResults = async () => {
-            if (!selectedTournament || !firestore) {
+            if (!selectedTournament || !selectedSlot || !firestore) {
                 setRegistrations([]);
+                setResults(new Map());
                 return;
             };
             setLoading(true);
-            // Fetch confirmed and pending registrations
+            
+            // Fetch registrations for the selected slot
             const regsQuery = query(collection(firestore, 'registrations'), 
-                where('tournament_id', '==', selectedTournament), 
+                where('tournament_id', '==', selectedTournament),
+                where('slot', '==', selectedSlot),
                 where('status', 'in', ['pending', 'confirmed'])
             );
             const regsSnapshot = await getDocs(regsQuery);
@@ -95,7 +99,7 @@ export default function AdminResultsPage() {
             setLoading(false);
         };
         fetchRegistrationsAndResults();
-    }, [selectedTournament, matchNumber]);
+    }, [selectedTournament, selectedSlot, matchNumber]);
 
     const handleResultChange = (regId: string, field: 'placement' | 'kills', value: string) => {
         setResults(prev => {
@@ -120,7 +124,6 @@ export default function AdminResultsPage() {
                 const kills = parseInt(result.kills, 10);
 
                 if (isNaN(placement) && isNaN(kills)) {
-                    // Skip entries that are not filled out
                     continue;
                 }
                 
@@ -151,7 +154,6 @@ export default function AdminResultsPage() {
                     created_at: new Date(),
                 };
                 
-                // If matchDocId exists, it's an update. Otherwise, it's a new entry.
                 const matchDocRef = result.matchDocId 
                     ? doc(firestore, 'matches', result.matchDocId) 
                     : doc(collection(firestore, 'matches'));
@@ -179,12 +181,22 @@ export default function AdminResultsPage() {
                 <CardContent className="space-y-4">
                     <div className="flex flex-col md:flex-row gap-4">
                         <Select value={selectedTournament} onValueChange={setSelectedTournament}>
-                            <SelectTrigger>
+                            <SelectTrigger className="md:w-1/2">
                                 <SelectValue placeholder="Select a BGMI Tournament" />
                             </SelectTrigger>
                             <SelectContent>
                                 {tournaments.map(t => (
                                     <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select value={selectedSlot} onValueChange={setSelectedSlot} disabled={!selectedTournament}>
+                            <SelectTrigger className="md:w-1/4">
+                                <SelectValue placeholder="Select Slot" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {SLOTS.map(slot => (
+                                    <SelectItem key={slot} value={slot}>Slot {slot}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
@@ -194,20 +206,23 @@ export default function AdminResultsPage() {
                             value={matchNumber}
                             onChange={(e) => setMatchNumber(parseInt(e.target.value, 10) || 1)}
                             min="1"
+                            className="md:w-1/4"
                         />
                     </div>
                     {loading && !selectedTournament && <p>Select a tournament to get started.</p>}
                 </CardContent>
             </Card>
 
-            {selectedTournament && (
+            {selectedTournament && selectedSlot && (
                 <Card>
                     <CardHeader>
-                        <CardTitle>Teams for &quot;{tournaments.find(t=>t.id === selectedTournament)?.title}&quot; - Match #{matchNumber}</CardTitle>
+                        <CardTitle>Teams for &quot;{tournaments.find(t=>t.id === selectedTournament)?.title}&quot; - Slot {selectedSlot} - Match #{matchNumber}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {loading ? (
                              <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>
+                        ) : registrations.length === 0 ? (
+                            <p className="text-center text-muted-foreground p-4">No teams found for this slot. Please assign teams on the tournament management page.</p>
                         ) : (
                             <div className="space-y-4">
                                 <Table>
