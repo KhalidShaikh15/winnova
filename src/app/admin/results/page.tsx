@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, getDocs, query, where, writeBatch, doc } from 'firebase/firestore';
+import { collection, getDocs, query, where, writeBatch, doc, getDoc } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Registration, type MatchResult } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,12 +26,14 @@ const getPlacementPoints = (placement: number): number => {
     return 0;
 };
 
+type ResultInput = { placement: string, kills: string, matchDocId?: string };
+
 export default function AdminResultsPage() {
     const [tournaments, setTournaments] = useState<Tournament[]>([]);
     const [selectedTournament, setSelectedTournament] = useState<string>('');
     const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [matchNumber, setMatchNumber] = useState(1);
-    const [results, setResults] = useState<Map<string, { placement: string, kills: string }>>(new Map());
+    const [results, setResults] = useState<Map<string, ResultInput>>(new Map());
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
@@ -51,22 +53,46 @@ export default function AdminResultsPage() {
     }, []);
 
     useEffect(() => {
-        const fetchRegistrations = async () => {
+        const fetchRegistrationsAndResults = async () => {
             if (!selectedTournament || !firestore) {
                 setRegistrations([]);
                 return;
             };
             setLoading(true);
+            // Fetch confirmed registrations
             const regsQuery = query(collection(firestore, 'registrations'), where('tournament_id', '==', selectedTournament), where('status', '==', 'confirmed'));
             const regsSnapshot = await getDocs(regsQuery);
             const regsList = regsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Registration));
             setRegistrations(regsList);
-            // Reset results when tournament changes
-            setResults(new Map(regsList.map(reg => [reg.id, { placement: '', kills: '' }])));
+
+            // Fetch existing results for the current match number
+            const matchesQuery = query(collection(firestore, 'matches'), 
+                where('tournament_id', '==', selectedTournament),
+                where('match_number', '==', matchNumber)
+            );
+            const matchesSnapshot = await getDocs(matchesQuery);
+            const existingResults = matchesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MatchResult & { id: string }));
+
+            // Populate results map with existing data or defaults
+            const newResults = new Map<string, ResultInput>();
+            regsList.forEach(reg => {
+                const existingResult = existingResults.find(r => r.registration_id === reg.id);
+                if (existingResult) {
+                    newResults.set(reg.id, {
+                        placement: String(existingResult.placement),
+                        kills: String(existingResult.kills),
+                        matchDocId: existingResult.id
+                    });
+                } else {
+                    newResults.set(reg.id, { placement: '', kills: '' });
+                }
+            });
+            setResults(newResults);
+
             setLoading(false);
         };
-        fetchRegistrations();
-    }, [selectedTournament]);
+        fetchRegistrationsAndResults();
+    }, [selectedTournament, matchNumber]);
 
     const handleResultChange = (regId: string, field: 'placement' | 'kills', value: string) => {
         setResults(prev => {
@@ -90,9 +116,15 @@ export default function AdminResultsPage() {
                 const placement = parseInt(result.placement, 10);
                 const kills = parseInt(result.kills, 10);
 
-                if (isNaN(placement) || isNaN(kills)) {
+                if (isNaN(placement) && isNaN(kills)) {
                     // Skip entries that are not filled out
                     continue;
+                }
+                
+                if (isNaN(placement) || isNaN(kills)) {
+                    toast({ variant: 'destructive', title: 'Invalid Input', description: `Please fill both placement and kills for all entered teams.` });
+                    setIsSubmitting(false);
+                    return;
                 }
 
                 const reg = registrations.find(r => r.id === regId);
@@ -102,8 +134,8 @@ export default function AdminResultsPage() {
                 const kill_points = kills;
                 const total_points = placement_points + kill_points;
 
-                const matchResult: Omit<MatchResult, 'id'> = {
-                    match_id: uuidv4(),
+                const matchResultData: Omit<MatchResult, 'id' | 'created_at'> & { created_at: Date } = {
+                    match_id: result.matchDocId || uuidv4(),
                     tournament_id: selectedTournament,
                     registration_id: reg.id,
                     squad_name: reg.squad_name,
@@ -116,14 +148,16 @@ export default function AdminResultsPage() {
                     created_at: new Date(),
                 };
                 
-                const matchDocRef = doc(collection(firestore, 'matches'));
-                batch.set(matchDocRef, matchResult);
+                // If matchDocId exists, it's an update. Otherwise, it's a new entry.
+                const matchDocRef = result.matchDocId 
+                    ? doc(firestore, 'matches', result.matchDocId) 
+                    : doc(collection(firestore, 'matches'));
+                
+                batch.set(matchDocRef, matchResultData, { merge: true });
             }
 
             await batch.commit();
             toast({ title: 'Success', description: `Results for Match #${matchNumber} saved.` });
-            setResults(new Map(registrations.map(reg => [reg.id, { placement: '', kills: '' }])));
-            setMatchNumber(prev => prev + 1);
         } catch (error) {
             console.error("Error submitting results:", error);
             toast({ variant: 'destructive', title: 'Error', description: 'Failed to save results.' });
