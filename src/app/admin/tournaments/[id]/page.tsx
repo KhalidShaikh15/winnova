@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import { doc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc, writeBatch, orderBy } from 'firebase/firestore';
@@ -54,9 +55,17 @@ export default function ManageTournamentPage() {
         }
         setTournament({ id: tournamentSnap.id, ...tournamentSnap.data() } as Tournament);
 
-        const regsQuery = query(collection(firestore, 'registrations'), where('tournament_id', '==', params.id), orderBy('created_at', 'desc'));
+        const regsQuery = query(collection(firestore, 'registrations'), where('tournament_id', '==', params.id));
         const regsSnapshot = await getDocs(regsQuery);
         const regsList = regsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Registration));
+        
+        // Sort on the client to avoid needing a composite index
+        regsList.sort((a, b) => {
+          const aTimestamp = a.created_at?.toMillis() || 0;
+          const bTimestamp = b.created_at?.toMillis() || 0;
+          return bTimestamp - aTimestamp;
+        });
+
         setRegistrations(regsList);
       } catch (error) {
         console.error("Error fetching data:", error);
