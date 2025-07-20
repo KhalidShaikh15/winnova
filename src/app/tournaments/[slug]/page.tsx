@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc, collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
-import { type Tournament, type Game, type LeaderboardEntry } from '@/lib/types';
+import { type Tournament, type Game, type LeaderboardEntry, type MatchResult } from '@/lib/types';
 import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -45,16 +45,52 @@ export default function TournamentPage() {
           setGame(gameData);
         }
         
-        // Fetch leaderboard data
-        const leaderboardQuery = query(
-            collection(firestore, "leaderboard"),
-            orderBy("rank", "asc")
-        );
-        const leaderboardSnapshot = await getDocs(leaderboardQuery);
-        const leaderboardList = leaderboardSnapshot.docs
-            .map(doc => ({ id: doc.id, ...doc.data() } as LeaderboardEntry))
-            .filter(entry => entry.tournament_id === params.slug);
-        setLeaderboardData(leaderboardList);
+        // Fetch and process leaderboard data from matches collection
+        if (tournamentData.game_name === 'BGMI') {
+            const matchesQuery = query(
+                collection(firestore, 'matches'),
+                where('tournament_id', '==', params.slug)
+            );
+            const matchesSnapshot = await getDocs(matchesQuery);
+            const matchesList = matchesSnapshot.docs.map(doc => doc.data() as MatchResult);
+            
+            const teamStats = new Map<string, { squad_name: string; total_points: number; total_kills: number; matches_played: number; }>();
+
+            matchesList.forEach(match => {
+                const teamId = match.registration_id;
+                const existing = teamStats.get(teamId) || { squad_name: match.squad_name, total_points: 0, total_kills: 0, matches_played: 0 };
+                
+                existing.total_points += match.total_points;
+                existing.total_kills += match.kills;
+                existing.matches_played += 1;
+                
+                teamStats.set(teamId, existing);
+            });
+            
+            const aggregatedResults = Array.from(teamStats.entries()).map(([id, data]) => ({
+                id,
+                ...data,
+            }));
+
+            aggregatedResults.sort((a, b) => {
+                if (b.total_points !== a.total_points) {
+                    return b.total_points - a.total_points;
+                }
+                return b.total_kills - a.total_kills;
+            });
+
+            const finalLeaderboard = aggregatedResults.map((team, index) => ({
+                id: team.id,
+                tournament_id: params.slug,
+                squad_name: team.squad_name,
+                total_kills: team.total_kills,
+                matches_played: team.matches_played,
+                points: team.total_points,
+                rank: index + 1,
+            }));
+            
+            setLeaderboardData(finalLeaderboard);
+        }
 
 
       } catch (error) {
@@ -65,7 +101,7 @@ export default function TournamentPage() {
     };
 
     fetchTournamentData();
-  }, [params.slug, firestore]);
+  }, [params.slug]);
 
   if (loading) {
     return <div className="container py-12 flex justify-center"><Loader2 className="w-16 h-16 animate-spin"/></div>;
