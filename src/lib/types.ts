@@ -45,7 +45,7 @@ export interface Registration {
   player4_bgmi_id?: string;
   clan_tag?: string;
   contact_number: string;
-  match_slot?: string;
+  slot?: string;
   user_upi_id?: string;
   status: 'pending' | 'confirmed' | 'rejected';
   created_at: Timestamp;

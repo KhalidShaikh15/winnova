@@ -3,16 +3,19 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
-import { type LeaderboardEntry, type Tournament, type MatchResult } from '@/lib/types';
+import { type LeaderboardEntry, type Tournament, type MatchResult, type Registration } from '@/lib/types';
 import TournamentLeaderboard from '../tournaments/components/TournamentLeaderboard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 
+const SLOTS = ['A', 'B', 'C', 'D', 'E'];
+
 export default function LeaderboardPage() {
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [tournaments, setTournaments] = useState<Tournament[]>([]);
     const [selectedTournament, setSelectedTournament] = useState<string>('');
+    const [selectedSlot, setSelectedSlot] = useState<string>(SLOTS[0]);
     const [loadingTournaments, setLoadingTournaments] = useState(true);
     const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
 
@@ -22,7 +25,6 @@ export default function LeaderboardPage() {
             setLoadingTournaments(true);
             const tournamentsCollection = collection(firestore, 'tournaments');
             
-            // Fetch all tournaments and then filter client-side to avoid composite index
             const tournamentsSnapshot = await getDocs(query(tournamentsCollection, orderBy('created_at', 'desc')));
             
             const tournamentsList = tournamentsSnapshot.docs
@@ -31,7 +33,6 @@ export default function LeaderboardPage() {
 
             setTournaments(tournamentsList);
             if (tournamentsList.length > 0) {
-                // Default to the first tournament in the list
                 setSelectedTournament(tournamentsList[0].id);
             }
             setLoadingTournaments(false);
@@ -47,22 +48,46 @@ export default function LeaderboardPage() {
 
         const fetchLeaderboard = async () => {
             setLoadingLeaderboard(true);
+
+            // 1. Fetch registrations for the selected slot
+            const regsQuery = query(
+                collection(firestore, 'registrations'),
+                where('tournament_id', '==', selectedTournament),
+                where('slot', '==', selectedSlot)
+            );
+            const regsSnapshot = await getDocs(regsQuery);
+            const slotRegistrations = regsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Registration));
+            const slotRegistrationIds = slotRegistrations.map(reg => reg.id);
+
+            if (slotRegistrationIds.length === 0) {
+                setLeaderboard([]);
+                setLoadingLeaderboard(false);
+                return;
+            }
+
+            // 2. Fetch all match results for the tournament
             const matchesQuery = query(
                 collection(firestore, 'matches'),
                 where('tournament_id', '==', selectedTournament)
             );
             const matchesSnapshot = await getDocs(matchesQuery);
-            const matchesList = matchesSnapshot.docs.map(doc => doc.data() as MatchResult);
-            
+            const allMatchesList = matchesSnapshot.docs.map(doc => doc.data() as MatchResult);
+
+            // 3. Filter matches for the selected slot
+            const slotMatchesList = allMatchesList.filter(match => slotRegistrationIds.includes(match.registration_id));
+
+            // 4. Aggregate stats
             const teamStats = new Map<string, { squad_name: string; total_points: number; total_kills: number; matches_played: number; }>();
 
-            matchesList.forEach(match => {
+            slotMatchesList.forEach(match => {
                 const teamId = match.registration_id;
                 const existing = teamStats.get(teamId) || { squad_name: match.squad_name, total_points: 0, total_kills: 0, matches_played: 0 };
                 
                 existing.total_points += match.total_points;
                 existing.total_kills += match.kills;
-                existing.matches_played += 1;
+                // This logic might need refinement if matches_played should be per-slot
+                const matchesPlayedForTeam = slotMatchesList.filter(m => m.registration_id === teamId).length;
+                existing.matches_played = matchesPlayedForTeam;
                 
                 teamStats.set(teamId, existing);
             });
@@ -85,7 +110,7 @@ export default function LeaderboardPage() {
                 tournament_id: selectedTournament,
                 squad_name: team.squad_name,
                 total_kills: team.total_kills,
-                matches_played: team.matches_played, // This is not quite right if not all teams play all matches, but it's an estimate
+                matches_played: team.matches_played,
                 points: team.total_points,
                 rank: index + 1,
             }));
@@ -96,7 +121,7 @@ export default function LeaderboardPage() {
         
         fetchLeaderboard();
 
-    }, [selectedTournament]);
+    }, [selectedTournament, selectedSlot]);
 
     return (
         <div className="container py-12">
@@ -107,21 +132,35 @@ export default function LeaderboardPage() {
                 </p>
             </div>
 
-            <div className="max-w-md mx-auto mb-8">
-                {loadingTournaments ? (
-                     <div className="flex justify-center items-center h-10"><Loader2 className="w-6 h-6 animate-spin"/></div>
-                ): (
-                    <Select value={selectedTournament} onValueChange={setSelectedTournament} disabled={tournaments.length === 0}>
+            <div className="max-w-xl mx-auto mb-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2">
+                    {loadingTournaments ? (
+                        <div className="flex justify-center items-center h-10"><Loader2 className="w-6 h-6 animate-spin"/></div>
+                    ): (
+                        <Select value={selectedTournament} onValueChange={setSelectedTournament} disabled={tournaments.length === 0}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a tournament" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {tournaments.map(t => (
+                                    <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
+                </div>
+                <div>
+                     <Select value={selectedSlot} onValueChange={setSelectedSlot} disabled={!selectedTournament}>
                         <SelectTrigger>
-                            <SelectValue placeholder="Select a tournament" />
+                            <SelectValue placeholder="Select Slot" />
                         </SelectTrigger>
                         <SelectContent>
-                            {tournaments.map(t => (
-                                <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+                            {SLOTS.map(slot => (
+                                <SelectItem key={slot} value={slot}>Slot {slot}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
-                )}
+                </div>
             </div>
 
             {loadingLeaderboard ? (
@@ -129,7 +168,7 @@ export default function LeaderboardPage() {
             ) : leaderboard.length > 0 ? (
                 <TournamentLeaderboard data={leaderboard} />
             ) : (
-                <Card><CardContent className="p-6 text-center">No leaderboard data found for this tournament yet. Results will appear here after matches are played and scored by the admin.</CardContent></Card>
+                <Card><CardContent className="p-6 text-center">No leaderboard data found for this tournament and slot yet. Results will appear here after matches are scored.</CardContent></Card>
             )}
         </div>
     );
