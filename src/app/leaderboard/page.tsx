@@ -21,11 +21,14 @@ export default function LeaderboardPage() {
 
     useEffect(() => {
         const fetchTournaments = async () => {
-            if (!firestore) return;
+            if (!firestore) {
+                setLoadingTournaments(false);
+                return;
+            };
             setLoadingTournaments(true);
             const tournamentsCollection = collection(firestore, 'tournaments');
             
-            const tournamentsSnapshot = await getDocs(query(tournamentsCollection, orderBy('created_at', 'desc')));
+            const tournamentsSnapshot = await getDocs(query(tournamentsCollection, orderBy('tournament_date', 'desc')));
             
             const tournamentsList = tournamentsSnapshot.docs
                 .map(doc => ({ id: doc.id, ...doc.data() }) as Tournament)
