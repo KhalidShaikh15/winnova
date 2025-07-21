@@ -7,9 +7,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import React, { useState } from "react";
-import { signInWithEmailAndPassword from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { Loader2 from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Logo from "@/components/shared/Logo";
 
 export default function LoginPage() {

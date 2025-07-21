@@ -19,7 +19,7 @@ import { User, LogOut, Loader2, ShieldCheck, Menu } from "lucide-react";
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
-import { signOut from "firebase/auth";
+import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useAdmin } from "@/hooks/useAdmin";

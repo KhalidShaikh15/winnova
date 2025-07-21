@@ -1,6 +1,6 @@
 'use client';
 
-import { Button from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,15 +9,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input from "@/components/ui/input";
-import { Label from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useRouter from "next/navigation";
-import { useToast from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth from "@/lib/firebase";
-import { Loader2 from "lucide-react";
+import { auth } from "@/lib/firebase";
+import { Loader2 } from "lucide-react";
 import Logo from "@/components/shared/Logo";
 
 export default function SignupPage() {
