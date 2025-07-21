@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -5,26 +6,29 @@ import { collection, doc, getDoc, getDocs, query, orderBy } from 'firebase/fires
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Game } from '@/lib/types';
 import { notFound, useParams } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Award, Calendar, Group, Users, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function GameDetailsPage() {
   const params = useParams<{ id: string }>();
+  const { user, loading: authLoading } = useAuth();
   const [game, setGame] = useState<Game | null>(null);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!params.id || !firestore) {
+    if (!params.id) {
         setLoading(false);
         return;
     };
 
     const fetchGameData = async () => {
+      if (!firestore) return;
       setLoading(true);
       try {
         const gameDocRef = doc(firestore, 'games', params.id);
@@ -73,10 +77,19 @@ export default function GameDetailsPage() {
       }
     };
 
-    fetchGameData();
-  }, [params.id]);
+    if (!authLoading && user) {
+        fetchGameData();
+    } else if (!authLoading && !user) {
+        // Handle logged-out state gracefully
+        const gameName = params.id === 'fc25' ? 'FC25' : params.id; // Basic handling
+        setGame({id: params.id, name: gameName, max_players: 0, platform: '', active: true, imageUrl: '', aiHint: ''});
+        setTournaments([]);
+        setLoading(false);
+    }
+    
+  }, [params.id, authLoading, user]);
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="container py-12 flex justify-center">
         <Loader2 className="h-16 w-16 animate-spin" />
@@ -99,7 +112,9 @@ export default function GameDetailsPage() {
       
        <div className="space-y-8">
         <h2 className="text-3xl font-bold text-center mb-8 font-headline">Available Tournaments</h2>
-        {tournaments.length === 0 ? (
+        {!user ? (
+             <p className="text-center text-muted-foreground">Please <Link href="/login" className="underline font-semibold">log in</Link> to see tournaments for {game.name}.</p>
+        ) : tournaments.length === 0 ? (
             <p className="text-center text-muted-foreground">No upcoming tournaments for {game.name}. Check back soon!</p>
         ) : (
             tournaments.map((tournament) => (

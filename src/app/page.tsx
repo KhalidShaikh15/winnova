@@ -2,7 +2,7 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Group, Users, Star } from 'lucide-react';
+import { Calendar, Group, Users, Star, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -11,8 +11,10 @@ import { firestore } from '@/lib/firebase';
 import { type Tournament, type Game } from '@/lib/types';
 import { format } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function Home() {
+  const { user, loading: authLoading } = useAuth();
   const [featuredGames, setFeaturedGames] = useState<Game[]>([]);
   const [upcomingTournaments, setUpcomingTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +55,10 @@ export default function Home() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!firestore) return;
+      if (!firestore) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
         // Fetch Games
@@ -97,8 +102,22 @@ export default function Home() {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
+    
+    if (!authLoading && user) {
+        fetchData();
+    } else if (!authLoading && !user) {
+        setLoading(false);
+        // Set some default/empty state for logged-out users
+        setFeaturedGames([
+            { id: 'bgmi', name: 'BGMI', max_players: 0, platform: '', active: true, imageUrl: '', aiHint: '' },
+            { id: 'coc', name: 'Clash of Clans', max_players: 0, platform: '', active: true, imageUrl: '', aiHint: '' },
+            { id: 'ff', name: 'Free Fire', max_players: 0, platform: '', active: true, imageUrl: '', aiHint: '' },
+            { id: 'fc25', name: 'FC25', max_players: 0, platform: '', active: true, imageUrl: '', aiHint: '' },
+        ]);
+        setUpcomingTournaments([]);
+    }
+
+  }, [authLoading, user]);
 
   return (
     <>
@@ -136,24 +155,28 @@ export default function Home() {
       <section className="w-full py-12">
         <div className="container">
           <h2 className="text-3xl font-bold text-center mb-8 font-headline">Featured Games</h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {featuredGames.map((game) => (
-              <Link key={game.id} href={`/games/${game.id}`}>
-                <Card className="overflow-hidden transition-shadow hover:shadow-xl h-full">
-                  <Image
-                    src={gameImageMap[game.name] || game.imageUrl || 'https://placehold.co/400x300.png'}
-                    alt={gameAltTextMap[game.name] || game.name}
-                    width={400}
-                    height={300}
-                    className="w-full h-48 object-cover"
-                  />
-                  <CardContent className="p-4">
-                    <h3 className="text-lg font-bold">{game.name}</h3>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
+           {(authLoading || loading) ? (
+            <div className="flex justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
+          ) : (
+             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {featuredGames.map((game) => (
+                <Link key={game.id} href={`/games/${game.id}`}>
+                  <Card className="overflow-hidden transition-shadow hover:shadow-xl h-full">
+                    <Image
+                      src={gameImageMap[game.name] || game.imageUrl || 'https://placehold.co/400x300.png'}
+                      alt={gameAltTextMap[game.name] || game.name}
+                      width={400}
+                      height={300}
+                      className="w-full h-48 object-cover"
+                    />
+                    <CardContent className="p-4">
+                      <h3 className="text-lg font-bold">{game.name}</h3>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -161,42 +184,49 @@ export default function Home() {
       <section className="w-full py-12">
         <div className="container">
           <h2 className="text-3xl font-bold text-center mb-8 font-headline">Upcoming Tournaments</h2>
-          <div className="space-y-8">
-            {loading ? <p className="text-center">Loading tournaments...</p> : 
-            upcomingTournaments.map((tournament) => (
-              <Card key={tournament.id} className="w-full transition-all hover:shadow-md">
-                 <Link href={`/tournaments/${tournament.id}`}>
-                  <div className="grid grid-cols-1 md:grid-cols-5 items-center p-4 gap-4">
-                      <div className="md:col-span-1">
-                           <Image src={tournament.banner_url || 'https://placehold.co/150x100.png'} alt={tournament.title} width={150} height={100} className="rounded-lg object-cover w-full h-auto aspect-video"/>
-                      </div>
-                      <div className="md:col-span-2">
-                          <CardTitle>{tournament.title}</CardTitle>
-                          <CardDescription>{tournament.game_name}</CardDescription>
-                      </div>
-                      <div className="md:col-span-2 grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                              <Calendar className="w-4 h-4"/>
-                              <span>{format(tournament.tournament_date.toDate(), 'PPP')}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                              <Users className="w-4 h-4"/>
-                              <span>₹{tournament.prize_pool.toLocaleString()}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                              <Users className="w-4 h-4"/>
-                              <span>Fee: ₹{tournament.entry_fee}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                              <Group className="w-4 h-4"/>
-                              <span>{tournament.match_type}</span>
-                          </div>
-                      </div>
-                  </div>
-                  </Link>
-              </Card>
-            ))}
-          </div>
+           {(authLoading || loading) ? (
+            <div className="flex justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
+          ) : !user ? (
+            <p className="text-center text-muted-foreground">Please <Link href="/login" className="underline font-semibold">log in</Link> to see upcoming tournaments.</p>
+          ) : upcomingTournaments.length === 0 ? (
+            <p className="text-center text-muted-foreground">No upcoming tournaments found.</p>
+          ) : (
+            <div className="space-y-8">
+              {upcomingTournaments.map((tournament) => (
+                <Card key={tournament.id} className="w-full transition-all hover:shadow-md">
+                  <Link href={`/tournaments/${tournament.id}`}>
+                    <div className="grid grid-cols-1 md:grid-cols-5 items-center p-4 gap-4">
+                        <div className="md:col-span-1">
+                            <Image src={tournament.banner_url || 'https://placehold.co/150x100.png'} alt={tournament.title} width={150} height={100} className="rounded-lg object-cover w-full h-auto aspect-video"/>
+                        </div>
+                        <div className="md:col-span-2">
+                            <CardTitle>{tournament.title}</CardTitle>
+                            <CardDescription>{tournament.game_name}</CardDescription>
+                        </div>
+                        <div className="md:col-span-2 grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                                <Calendar className="w-4 h-4"/>
+                                <span>{format(tournament.tournament_date.toDate(), 'PPP')}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Users className="w-4 h-4"/>
+                                <span>₹{tournament.prize_pool.toLocaleString()}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Users className="w-4 h-4"/>
+                                <span>Fee: ₹{tournament.entry_fee}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Group className="w-4 h-4"/>
+                                <span>{tournament.match_type}</span>
+                            </div>
+                        </div>
+                    </div>
+                    </Link>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

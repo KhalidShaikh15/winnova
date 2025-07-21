@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,8 +11,10 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { Award, Calendar, Group, Users, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function TournamentsPage() {
+  const { user, loading: authLoading } = useAuth();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,8 +43,15 @@ export default function TournamentsPage() {
         setLoading(false);
       }
     };
-    fetchData();
-  }, [firestore]);
+    
+    if (!authLoading && user) {
+        fetchData();
+    } else if (!authLoading && !user) {
+        setLoading(false);
+        setTournaments([]);
+    }
+
+  }, [authLoading, user]);
 
   return (
     <div className="container py-12">
@@ -52,10 +62,12 @@ export default function TournamentsPage() {
         </p>
       </div>
 
-      {loading ? (
+      {(loading || authLoading) ? (
         <div className="flex justify-center">
           <Loader2 className="h-16 w-16 animate-spin" />
         </div>
+      ) : !user ? (
+        <p className="text-center text-muted-foreground">Please <Link href="/login" className="underline font-semibold">log in</Link> to view available tournaments.</p>
       ) : tournaments.length === 0 ? (
         <p className="text-center text-muted-foreground">No tournaments found. Check back soon!</p>
       ) : (
