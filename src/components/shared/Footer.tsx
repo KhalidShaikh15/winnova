@@ -33,7 +33,7 @@ export default function Footer() {
                   <Link href="#"><Twitter className="h-4 w-4"/></Link>
               </Button>
               <Button variant="ghost" size="icon" asChild>
-                  <Link href="https://www.instagram.com/winnova.in" target="_blank" rel="noopener noreferrer"><Instagram className="h-4 w-4"/></Link>
+                  <Link href="https://www.instagram.com/arenaclash.in" target="_blank" rel="noopener noreferrer"><Instagram className="h-4 w-4"/></Link>
               </Button>
               <Button variant="ghost" size="icon" asChild>
                   <Link href="#"><Facebook className="h-4 w-4"/></Link>
@@ -43,7 +43,7 @@ export default function Footer() {
         </div>
         <div className="mt-8 border-t border-border/40 pt-6 text-center">
            <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Winnova. All Rights Reserved.
+            © {new Date().getFullYear()} Arena Clash. All Rights Reserved.
           </p>
         </div>
       </div>

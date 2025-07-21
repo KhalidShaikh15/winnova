@@ -2,9 +2,8 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc, collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
-import { type Tournament, type Game, type LeaderboardEntry, type MatchResult } from '@/lib/types';
+import { type Tournament, type Game } from '@/lib/types';
 import { notFound, useParams } from 'next/navigation';
-import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TournamentDetails from '@/app/tournaments/components/TournamentDetails';
 import TournamentRegistration from '@/app/tournaments/components/TournamentRegistration';

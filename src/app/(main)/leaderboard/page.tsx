@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type LeaderboardEntry, type Tournament, type MatchResult, type Registration } from '@/lib/types';
-import TournamentLeaderboard from '../tournaments/components/TournamentLeaderboard';
+import TournamentLeaderboard from '../../tournaments/components/TournamentLeaderboard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
@@ -24,7 +24,7 @@ export default function LeaderboardPage() {
     const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
 
     useEffect(() => {
-        if (!user || !firestore) {
+        if (!firestore) {
             setLoadingTournaments(false);
             return;
         };
@@ -33,13 +33,12 @@ export default function LeaderboardPage() {
             setLoadingTournaments(true);
             const tournamentsCollection = collection(firestore, 'tournaments');
             
-            // Simplified query to fetch all tournaments, will filter client-side
-            const tournamentsSnapshot = await getDocs(query(tournamentsCollection));
+            const q = query(tournamentsCollection, orderBy('tournament_date', 'desc'));
+            const tournamentsSnapshot = await getDocs(q);
             
             const tournamentsList = tournamentsSnapshot.docs
                 .map(doc => ({ id: doc.id, ...doc.data() }) as Tournament)
-                .filter(t => t.game_name === "BGMI")
-                .sort((a, b) => b.tournament_date.toMillis() - a.tournament_date.toMillis());
+                .filter(t => t.game_name === "BGMI");
 
             setTournaments(tournamentsList);
             if (tournamentsList.length > 0) {
@@ -48,10 +47,10 @@ export default function LeaderboardPage() {
             setLoadingTournaments(false);
         };
         fetchTournaments();
-    }, [user]);
+    }, []);
 
     useEffect(() => {
-        if (!selectedTournament || !firestore || !user) {
+        if (!selectedTournament || !firestore) {
             setLeaderboard([]);
             return;
         }
@@ -134,7 +133,7 @@ export default function LeaderboardPage() {
         
         fetchLeaderboard();
 
-    }, [selectedTournament, selectedSlot, user]);
+    }, [selectedTournament, selectedSlot]);
 
     if (authLoading) {
         return (

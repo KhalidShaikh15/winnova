@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import { useToast } from '@/hooks/use-toast';
+import Header from '@/components/shared/Header';
 
 export default function AdminLayout({
   children,
@@ -36,9 +37,12 @@ export default function AdminLayout({
   }
 
   return (
+    <>
+    <Header/>
     <div className="flex min-h-screen">
       <AdminSidebar />
       <main className="flex-1 p-8">{children}</main>
     </div>
+    </>
   );
 }

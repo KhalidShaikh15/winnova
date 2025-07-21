@@ -77,17 +77,11 @@ export default function GameDetailsPage() {
       }
     };
 
-    if (!authLoading && user) {
+    if (!authLoading) {
         fetchGameData();
-    } else if (!authLoading && !user) {
-        // Handle logged-out state gracefully
-        const gameName = params.id === 'fc25' ? 'FC25' : params.id; // Basic handling
-        setGame({id: params.id, name: gameName, max_players: 0, platform: '', active: true, imageUrl: '', aiHint: ''});
-        setTournaments([]);
-        setLoading(false);
     }
     
-  }, [params.id, authLoading, user]);
+  }, [params.id, authLoading]);
 
   if (loading || authLoading) {
     return (

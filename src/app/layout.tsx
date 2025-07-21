@@ -4,8 +4,6 @@ import { Exo_2 } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
-import Header from '@/components/shared/Header';
-import Footer from '@/components/shared/Footer';
 
 const exo2 = Exo_2({
   subsets: ['latin'],
@@ -13,7 +11,7 @@ const exo2 = Exo_2({
 });
 
 export const metadata: Metadata = {
-  title: 'Winnova',
+  title: 'Arena Clash',
   description: 'The ultimate platform for competitive gaming tournaments.',
   icons: {
     icon: "/icon.svg",
@@ -29,11 +27,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={cn('min-h-screen bg-background font-body antialiased', exo2.variable)}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <div className="relative flex min-h-dvh flex-col bg-background">
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
+          {children}
           <Toaster />
         </ThemeProvider>
       </body>

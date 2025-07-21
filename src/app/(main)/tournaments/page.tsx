@@ -44,14 +44,11 @@ export default function TournamentsPage() {
       }
     };
     
-    if (!authLoading && user) {
+    if (!authLoading) {
         fetchData();
-    } else if (!authLoading && !user) {
-        setLoading(false);
-        setTournaments([]);
     }
 
-  }, [authLoading, user]);
+  }, [authLoading]);
 
   return (
     <div className="container py-12">

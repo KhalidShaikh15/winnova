@@ -1,47 +1,69 @@
 'use client';
+
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import React, { useState } from "react";
-import { signInWithEmailAndPassword from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { Loader2 from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Logo from "@/components/shared/Logo";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password.length < 6) {
+        toast({
+            variant: "destructive",
+            title: "Signup Failed",
+            description: "Password should be at least 6 characters.",
+        });
+        return;
+    }
     setLoading(true);
     if (!auth) {
       toast({
         variant: "destructive",
-        title: "Login Failed",
+        title: "Signup Failed",
         description: "Firebase is not configured correctly.",
       });
       setLoading(false);
       return;
     }
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      if (userCredential.user) {
+        await updateProfile(userCredential.user, {
+          displayName: username,
+        });
+      }
       toast({
-        title: "Login Successful",
-        description: "Welcome back to Arena Clash!",
+        title: "Account Created",
+        description: "Welcome to Arena Clash! You are now logged in.",
       });
       router.push('/');
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Login Failed",
+        title: "Signup Failed",
         description: error.message,
       });
     } finally {
@@ -49,20 +71,25 @@ export default function LoginPage() {
     }
   };
 
+
   return (
     <div className="w-full max-w-sm px-4">
         <div className="flex justify-center mb-6">
             <Logo />
         </div>
         <Card>
-            <form onSubmit={handleLogin}>
+            <form onSubmit={handleSignup}>
             <CardHeader>
-                <CardTitle className="text-2xl">Login</CardTitle>
+                <CardTitle className="text-2xl">Sign Up</CardTitle>
                 <CardDescription>
-                Enter your email below to login to your account.
+                Enter your information to create an account.
                 </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
+                <div className="grid gap-2">
+                <Label htmlFor="username">Username</Label>
+                <Input id="username" placeholder="gamer_tag" required value={username} onChange={(e) => setUsername(e.target.value)} />
+                </div>
                 <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -75,7 +102,7 @@ export default function LoginPage() {
             <CardFooter className="flex flex-col">
                 <Button className="w-full" type="submit" disabled={loading || !auth}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {loading ? "Signing in..." : "Sign in"}
+                {loading ? "Creating account..." : "Create account"}
                 </Button>
                 {!auth && (
                     <p className="mt-2 text-xs text-destructive text-center">
@@ -83,9 +110,9 @@ export default function LoginPage() {
                     </p>
                 )}
                 <div className="mt-4 text-center text-sm">
-                Don&apos;t have an account?{" "}
-                <Link href="/signup" className="underline">
-                    Sign up
+                Already have an account?{" "}
+                <Link href="/login" className="underline">
+                    Login
                 </Link>
                 </div>
             </CardFooter>

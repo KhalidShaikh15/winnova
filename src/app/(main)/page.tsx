@@ -37,7 +37,7 @@ export default function Home() {
   const testimonials = [
     {
       name: "SavagePlayer47",
-      quote: "Winnova has the most competitive tournaments I've ever played in. The prize pools are massive and the community is fantastic!",
+      quote: "Arena Clash has the most competitive tournaments I've ever played in. The prize pools are massive and the community is fantastic!",
       avatar: "https://placehold.co/100x100.png",
     },
     {
@@ -103,21 +103,11 @@ export default function Home() {
       }
     };
     
-    if (!authLoading && user) {
+    if (!authLoading) {
         fetchData();
-    } else if (!authLoading && !user) {
-        setLoading(false);
-        // Set some default/empty state for logged-out users
-        setFeaturedGames([
-            { id: 'bgmi', name: 'BGMI', max_players: 0, platform: '', active: true, imageUrl: '', aiHint: '' },
-            { id: 'coc', name: 'Clash of Clans', max_players: 0, platform: '', active: true, imageUrl: '', aiHint: '' },
-            { id: 'ff', name: 'Free Fire', max_players: 0, platform: '', active: true, imageUrl: '', aiHint: '' },
-            { id: 'fc25', name: 'FC25', max_players: 0, platform: '', active: true, imageUrl: '', aiHint: '' },
-        ]);
-        setUpcomingTournaments([]);
     }
 
-  }, [authLoading, user]);
+  }, [authLoading]);
 
   return (
     <>
