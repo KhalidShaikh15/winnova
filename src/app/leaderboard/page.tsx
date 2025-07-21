@@ -33,11 +33,13 @@ export default function LeaderboardPage() {
             setLoadingTournaments(true);
             const tournamentsCollection = collection(firestore, 'tournaments');
             
-            const tournamentsSnapshot = await getDocs(query(tournamentsCollection, orderBy('tournament_date', 'desc')));
+            // Simplified query to fetch all tournaments, will filter client-side
+            const tournamentsSnapshot = await getDocs(query(tournamentsCollection));
             
             const tournamentsList = tournamentsSnapshot.docs
                 .map(doc => ({ id: doc.id, ...doc.data() }) as Tournament)
-                .filter(t => t.game_name === "BGMI");
+                .filter(t => t.game_name === "BGMI")
+                .sort((a, b) => b.tournament_date.toMillis() - a.tournament_date.toMillis());
 
             setTournaments(tournamentsList);
             if (tournamentsList.length > 0) {
@@ -57,14 +59,16 @@ export default function LeaderboardPage() {
         const fetchLeaderboard = async () => {
             setLoadingLeaderboard(true);
 
-            // 1. Fetch registrations for the selected slot
-            const regsQuery = query(
+            // 1. Fetch all registrations for the selected tournament
+             const allRegsQuery = query(
                 collection(firestore, 'registrations'),
-                where('tournament_id', '==', selectedTournament),
-                where('slot', '==', selectedSlot)
+                where('tournament_id', '==', selectedTournament)
             );
-            const regsSnapshot = await getDocs(regsQuery);
-            const slotRegistrations = regsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Registration));
+            const allRegsSnapshot = await getDocs(allRegsQuery);
+            const allRegistrations = allRegsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Registration));
+            
+            // Filter registrations for the selected slot client-side
+            const slotRegistrations = allRegistrations.filter(reg => reg.slot === selectedSlot);
             const slotRegistrationIds = slotRegistrations.map(reg => reg.id);
 
             if (slotRegistrationIds.length === 0) {
@@ -81,7 +85,7 @@ export default function LeaderboardPage() {
             const matchesSnapshot = await getDocs(matchesQuery);
             const allMatchesList = matchesSnapshot.docs.map(doc => doc.data() as MatchResult);
 
-            // 3. Filter matches for the selected slot
+            // 3. Filter matches for the selected slot's registrations
             const slotMatchesList = allMatchesList.filter(match => slotRegistrationIds.includes(match.registration_id));
 
             // 4. Aggregate stats
@@ -93,8 +97,9 @@ export default function LeaderboardPage() {
                 
                 existing.total_points += match.total_points;
                 existing.total_kills += match.kills;
-                // This logic might need refinement if matches_played should be per-slot
-                const matchesPlayedForTeam = slotMatchesList.filter(m => m.registration_id === teamId).length;
+                
+                // Count unique matches played for the team within this slot's matches
+                const matchesPlayedForTeam = new Set(slotMatchesList.filter(m => m.registration_id === teamId).map(m => m.match_number)).size;
                 existing.matches_played = matchesPlayedForTeam;
                 
                 teamStats.set(teamId, existing);
