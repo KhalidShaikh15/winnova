@@ -7,7 +7,6 @@ import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TournamentDetails from '@/app/tournaments/components/TournamentDetails';
-import TournamentLeaderboard from '@/app/tournaments/components/TournamentLeaderboard';
 import TournamentRegistration from '@/app/tournaments/components/TournamentRegistration';
 import { Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -16,7 +15,6 @@ export default function TournamentPage() {
   const params = useParams<{ slug: string }>();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [game, setGame] = useState<Game | null>(null);
-  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,54 +42,6 @@ export default function TournamentPage() {
           const gameData = { id: gameSnapshot.docs[0].id, ...gameSnapshot.docs[0].data() } as Game;
           setGame(gameData);
         }
-        
-        // Fetch and process leaderboard data from matches collection
-        if (tournamentData.game_name === 'BGMI') {
-            const matchesQuery = query(
-                collection(firestore, 'matches'),
-                where('tournament_id', '==', params.slug)
-            );
-            const matchesSnapshot = await getDocs(matchesQuery);
-            const matchesList = matchesSnapshot.docs.map(doc => doc.data() as MatchResult);
-            
-            const teamStats = new Map<string, { squad_name: string; total_points: number; total_kills: number; matches_played: number; }>();
-
-            matchesList.forEach(match => {
-                const teamId = match.registration_id;
-                const existing = teamStats.get(teamId) || { squad_name: match.squad_name, total_points: 0, total_kills: 0, matches_played: 0 };
-                
-                existing.total_points += match.total_points;
-                existing.total_kills += match.kills;
-                existing.matches_played += 1;
-                
-                teamStats.set(teamId, existing);
-            });
-            
-            const aggregatedResults = Array.from(teamStats.entries()).map(([id, data]) => ({
-                id,
-                ...data,
-            }));
-
-            aggregatedResults.sort((a, b) => {
-                if (b.total_points !== a.total_points) {
-                    return b.total_points - a.total_points;
-                }
-                return b.total_kills - a.total_kills;
-            });
-
-            const finalLeaderboard = aggregatedResults.map((team, index) => ({
-                id: team.id,
-                tournament_id: params.slug,
-                squad_name: team.squad_name,
-                total_kills: team.total_kills,
-                matches_played: team.matches_played,
-                points: team.total_points,
-                rank: index + 1,
-            }));
-            
-            setLeaderboardData(finalLeaderboard);
-        }
-
 
       } catch (error) {
         console.error("Failed to fetch tournament data:", error);
@@ -123,6 +73,7 @@ export default function TournamentPage() {
       time: tournament.tournament_time,
       prizePool: `₹${tournament.prize_pool.toLocaleString()}`,
       entryFee: tournament.entry_fee > 0 ? `₹${tournament.entry_fee}`: 'Free',
+      matchType: tournament.match_type,
   }
 
   return (
@@ -134,16 +85,12 @@ export default function TournamentPage() {
       </div>
 
       <Tabs defaultValue="details" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto">
+        <TabsList className="grid w-full grid-cols-2 max-w-sm mx-auto">
           <TabsTrigger value="details">Details</TabsTrigger>
-          <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
           <TabsTrigger value="register">Register</TabsTrigger>
         </TabsList>
         <TabsContent value="details" className="mt-8">
           <TournamentDetails tournament={fullTournamentData} />
-        </TabsContent>
-        <TabsContent value="leaderboard" className="mt-8">
-           {leaderboardData.length > 0 ? <TournamentLeaderboard data={leaderboardData} /> : <div className="text-center p-8 bg-card rounded-lg">Leaderboard data is not yet available for this tournament.</div>}
         </TabsContent>
         <TabsContent value="register" className="mt-8">
           <TournamentRegistration tournament={tournament} />
