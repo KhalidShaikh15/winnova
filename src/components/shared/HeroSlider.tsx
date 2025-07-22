@@ -33,7 +33,7 @@ export default function HeroSlider() {
         {/* Right Column - Image */}
         <div className="relative w-full max-w-[600px] aspect-square">
             <Image
-                src="/images/bgmi0.png"
+                src="/images/bgmi1.png"
                 alt="Arena Clash Hero Image"
                 width={600}
                 height={600}
