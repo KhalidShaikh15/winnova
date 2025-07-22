@@ -27,9 +27,9 @@ const slides = [
 ];
 
 const imageVariants = {
-  enter: { opacity: 0 },
-  center: { opacity: 1, transition: { duration: 1, ease: 'easeInOut' } },
-  exit: { opacity: 0, transition: { duration: 1, ease: 'easeInOut' } },
+  enter: { opacity: 0, scale: 1.05 },
+  center: { opacity: 1, scale: 1, transition: { duration: 0.8, ease: 'easeOut' } },
+  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.5, ease: 'easeIn' } },
 };
 
 const textVariants = {
@@ -50,10 +50,10 @@ export default function HeroSlider() {
   }, []);
 
   return (
-    <section className="w-full bg-card/90 py-16 md:py-24 lg:py-32">
-      <div className="container grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+    <section className="w-full bg-card/90">
+      <div className="container flex flex-col md:flex-row items-center justify-between gap-10 px-10 py-20">
         {/* Left Column - Text Content */}
-        <div className="flex flex-col items-center md:items-start text-center md:text-left">
+        <div className="flex flex-col items-center md:items-start text-center md:text-left max-w-xl">
           <div className="h-48 md:h-56 lg:h-64 flex flex-col justify-center">
             <AnimatePresence mode="wait">
               <motion.h1
@@ -71,7 +71,7 @@ export default function HeroSlider() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { delay: 0.4, duration: 0.8 } }}
-            className="max-w-[600px] text-muted-foreground md:text-xl mt-4"
+            className="text-lg text-muted-foreground mt-4"
           >
             Your ultimate destination for high-stakes gaming tournaments. Join thousands of players, showcase your talent, and win incredible prizes.
           </motion.p>
@@ -80,14 +80,14 @@ export default function HeroSlider() {
             animate={{ opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut', delay: 0.6 } }}
             className="mt-8"
           >
-            <Button asChild size="lg" className="rounded-lg">
+            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-lg px-6 py-2 h-auto">
               <Link href="/tournaments">Browse Tournaments</Link>
             </Button>
           </motion.div>
         </div>
 
         {/* Right Column - Image Slider */}
-        <div className="relative w-full aspect-square max-w-[600px] mx-auto overflow-hidden">
+        <div className="relative w-full max-w-[600px] aspect-square overflow-hidden">
           <AnimatePresence initial={false}>
             <motion.div
               key={index}
@@ -102,7 +102,7 @@ export default function HeroSlider() {
                 alt={`Slide ${index + 1}: ${slides[index].slogan}`}
                 layout="fill"
                 objectFit="cover"
-                className="rounded-xl"
+                className="rounded-xl shadow-lg"
                 priority={index === 0}
               />
             </motion.div>
