@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -92,15 +93,14 @@ export default function HeroSlider() {
                         initial="enter"
                         animate="center"
                         exit="exit"
-                        className="absolute w-[600px] h-[600px]"
+                        className="absolute w-full h-full"
                     >
                         <Image
                             src={slides[index].image}
                             alt={`Slide ${index + 1}`}
-                            width={600}
-                            height={600}
-                            objectFit="cover"
-                            className="rounded-xl shadow-2xl"
+                           layout="fill"
+                            objectFit="contain"
+                            className="rounded-3xl"
                             priority={index === 0}
                         />
                     </motion.div>
