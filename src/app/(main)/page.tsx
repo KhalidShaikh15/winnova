@@ -12,6 +12,7 @@ import { type Tournament, type Game } from '@/lib/types';
 import { format } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
+import HeroSlider from '@/components/shared/HeroSlider';
 
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
@@ -112,34 +113,7 @@ export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="w-full pt-12">
-        <div className="container px-4 md:px-6">
-          <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
-            <div className="flex flex-col justify-center space-y-4">
-              <div className="space-y-2 text-center lg:text-left">
-                <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
-                  Compete. Conquer. Collect.
-                </h1>
-                <p className="max-w-[600px] text-muted-foreground md:text-xl mx-auto lg:mx-0">
-                  Your ultimate destination for high-stakes gaming tournaments. Join thousands of players, showcase your talent, and win incredible prizes.
-                </p>
-              </div>
-              <div className="flex flex-col gap-2 min-[400px]:flex-row justify-center lg:justify-start">
-                <Button asChild size="lg">
-                  <Link href="/tournaments">Browse Tournaments</Link>
-                </Button>
-              </div>
-            </div>
-            <Image
-              src="/images/bgmi1.png"
-              width="600"
-              height="400"
-              alt="Hero"
-              className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
-            />
-          </div>
-        </div>
-      </section>
+      <HeroSlider />
 
       {/* Featured Games Section */}
       <section className="w-full py-12">
