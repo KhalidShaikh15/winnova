@@ -37,7 +37,7 @@ export default function HeroSlider() {
                 alt="Arena Clash Hero Image"
                 layout="fill"
                 objectFit="contain"
-                className="rounded-[20px]"
+                className="rounded-lg"
             />
         </div>
       </div>
