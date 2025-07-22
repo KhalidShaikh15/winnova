@@ -27,14 +27,14 @@ const slides = [
 ];
 
 const imageVariants = {
-  enter: { opacity: 0, x: 100 },
-  center: { opacity: 1, x: 0, transition: { duration: 0.8, ease: 'easeInOut' } },
-  exit: { opacity: 0, x: -100, transition: { duration: 0.8, ease: 'easeInOut' } },
+  enter: { opacity: 0 },
+  center: { opacity: 1, transition: { duration: 1, ease: 'easeInOut' } },
+  exit: { opacity: 0, transition: { duration: 1, ease: 'easeInOut' } },
 };
 
 const textVariants = {
   initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut', delay: 0.3 } },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut', delay: 0.2 } },
   exit: { opacity: 0, y: -20, transition: { duration: 0.5, ease: 'easeIn' } },
 };
 
@@ -50,63 +50,65 @@ export default function HeroSlider() {
   }, []);
 
   return (
-    <section className="relative w-full bg-card/90 py-16 md:py-24 lg:py-32">
-        <div className="container grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            {/* Left Column - Text Content */}
-            <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                <AnimatePresence mode="wait">
-                    <motion.h1
-                        key={slides[index].slogan}
-                        variants={textVariants}
-                        initial="initial"
-                        animate="animate"
-                        exit="exit"
-                        className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter drop-shadow-2xl font-headline text-foreground h-48 md:h-56 lg:h-64"
-                    >
-                        {slides[index].slogan}
-                    </motion.h1>
-                </AnimatePresence>
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1, transition: { delay: 0.5, duration: 0.8 } }}
-                    className="max-w-[600px] text-muted-foreground md:text-xl mt-4"
-                >
-                    Your ultimate destination for high-stakes gaming tournaments. Join thousands of players, showcase your talent, and win incredible prizes.
-                </motion.p>
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut', delay: 0.6 } }}
-                    className="mt-8"
-                >
-                    <Button asChild size="lg">
-                        <Link href="/tournaments">Browse Tournaments</Link>
-                    </Button>
-                </motion.div>
-            </div>
-
-            {/* Right Column - Image Slider */}
-            <div className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] flex items-center justify-center overflow-hidden">
-                <AnimatePresence initial={false} mode="wait">
-                    <motion.div
-                        key={index}
-                        variants={imageVariants}
-                        initial="enter"
-                        animate="center"
-                        exit="exit"
-                        className="absolute w-full h-full"
-                    >
-                        <Image
-                            src={slides[index].image}
-                            alt={`Slide ${index + 1}`}
-                           layout="fill"
-                            objectFit="contain"
-                            className="rounded-3xl"
-                            priority={index === 0}
-                        />
-                    </motion.div>
-                </AnimatePresence>
-            </div>
+    <section className="w-full bg-card/90 py-16 md:py-24 lg:py-32">
+      <div className="container grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        {/* Left Column - Text Content */}
+        <div className="flex flex-col items-center md:items-start text-center md:text-left">
+          <div className="h-48 md:h-56 lg:h-64 flex flex-col justify-center">
+            <AnimatePresence mode="wait">
+              <motion.h1
+                key={slides[index].slogan}
+                variants={textVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter font-headline text-foreground"
+              >
+                {slides[index].slogan}
+              </motion.h1>
+            </AnimatePresence>
+          </div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: { delay: 0.4, duration: 0.8 } }}
+            className="max-w-[600px] text-muted-foreground md:text-xl mt-4"
+          >
+            Your ultimate destination for high-stakes gaming tournaments. Join thousands of players, showcase your talent, and win incredible prizes.
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut', delay: 0.6 } }}
+            className="mt-8"
+          >
+            <Button asChild size="lg" className="rounded-lg">
+              <Link href="/tournaments">Browse Tournaments</Link>
+            </Button>
+          </motion.div>
         </div>
+
+        {/* Right Column - Image Slider */}
+        <div className="relative w-full aspect-square max-w-[600px] mx-auto overflow-hidden">
+          <AnimatePresence initial={false}>
+            <motion.div
+              key={index}
+              className="absolute inset-0"
+              variants={imageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+            >
+              <Image
+                src={slides[index].image}
+                alt={`Slide ${index + 1}: ${slides[index].slogan}`}
+                layout="fill"
+                objectFit="cover"
+                className="rounded-xl"
+                priority={index === 0}
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
     </section>
   );
 }
