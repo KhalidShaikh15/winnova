@@ -8,7 +8,7 @@ import Link from 'next/link';
 export default function HeroSlider() {
   return (
     <section className="w-full bg-background">
-      <div className="container flex flex-col md:flex-row items-center justify-between gap-10 px-10 py-20">
+      <div className="container flex flex-col md:flex-row items-center justify-between gap-10 px-10 pb-20 pt-10 md:pt-20">
         {/* Left Column - Text Content */}
         <div className="flex flex-col items-center md:items-start text-center md:text-left max-w-xl">
           <h1
@@ -31,7 +31,7 @@ export default function HeroSlider() {
         </div>
 
         {/* Right Column - Image */}
-        <div className="relative w-full max-w-[600px] aspect-video">
+        <div className="relative w-full max-w-[600px] aspect-video rounded-lg overflow-hidden">
             <Image
                 src="/images/bgmi1.png"
                 alt="Arena Clash Hero Image"
