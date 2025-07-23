@@ -4,11 +4,27 @@
 import Image from 'next/image';
 import { Button } from '../ui/button';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
+
+const slogans = [
+  "Compete. Conquer. Collect.",
+  "Squad Up. Drop In. Win Big.",
+  "One Arena. Infinite Glory.",
+  "Rise to the Top. Rule the Game."
+];
+
+const images = [
+    '/images/bgmi1.png',
+    '/images/bgmi2.png',
+    '/images/bgmi3.png',
+    '/images/bgmi0.png',
+];
 
 export default function HeroSlider() {
+
   return (
     <section className="w-full bg-background">
-      <div className="container flex flex-col md:flex-row items-center justify-between gap-10 px-10 pb-20 pt-10 md:pt-20">
+      <div className="container flex flex-col md:flex-row items-center justify-between gap-10 px-10 pb-20 pt-10">
         {/* Left Column - Text Content */}
         <div className="flex flex-col items-center md:items-start text-center md:text-left max-w-xl">
           <h1
@@ -31,12 +47,12 @@ export default function HeroSlider() {
         </div>
 
         {/* Right Column - Image */}
-        <div className="relative w-full max-w-[600px] aspect-video rounded-lg overflow-hidden">
+        <div className="relative w-full max-w-[600px] aspect-square rounded-lg overflow-hidden">
             <Image
                 src="/images/bgmi1.png"
                 alt="Arena Clash Hero Image"
                 layout="fill"
-                objectFit="contain"
+                objectFit="cover"
                 className="rounded-lg"
             />
         </div>
