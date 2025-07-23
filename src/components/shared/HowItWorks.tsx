@@ -32,7 +32,7 @@ const HowItWorks = () => {
   return (
     <Section className="py-20">
       <div className="container">
-        <Card className="bg-card/95 dark:bg-zinc-900/50">
+        <Card className="bg-card/95 dark:bg-zinc-900/50 border">
             <CardHeader className="text-center">
                 <h2 
                     className="text-4xl md:text-5xl font-bold text-foreground mb-4"
