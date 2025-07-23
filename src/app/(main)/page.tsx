@@ -12,6 +12,7 @@ import { type Tournament, type Game } from '@/lib/types';
 import { format } from 'date-fns';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
+import HowItWorks from '@/components/shared/HowItWorks';
 
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
@@ -170,6 +171,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <HowItWorks />
 
       {/* Featured Games Section */}
       <section className="w-full py-12">
