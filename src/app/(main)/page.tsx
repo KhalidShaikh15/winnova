@@ -129,7 +129,7 @@ export default function Home() {
             </div>
           </div>
           {/* Right Column - Image */}
-          <div className="relative w-full max-w-[600px] rounded-[20px] overflow-hidden">
+          <div className="relative w-full max-w-[600px] rounded-[20px] overflow-hidden bg-card/10">
             <Image
                 src="/images/bgmi1.png"
                 alt="Arena Clash Hero Image"
