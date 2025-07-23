@@ -2,7 +2,7 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Group, Users, Star, Loader2 } from 'lucide-react';
+import { Calendar, Group, Users, Star, Loader2, Award } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -10,9 +10,8 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Game } from '@/lib/types';
 import { format } from 'date-fns';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
-import HeroSlider from '@/components/shared/HeroSlider';
 
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
@@ -112,37 +111,58 @@ export default function Home() {
 
   return (
     <>
-      {/* Hero Section */}
-      <HeroSlider />
-
-       {/* Second Hero Section */}
+      {/* Hero Section 1: Text Left, Image Right */}
       <section className="w-full bg-background">
         <div className="container flex flex-col md:flex-row items-center justify-between gap-10 px-10 py-20">
+          {/* Left Column - Text Content */}
+          <div className="flex flex-col items-center md:items-start text-center md:text-left max-w-xl">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter font-headline text-foreground">
+              Compete. Conquer. Collect.
+            </h1>
+            <p className="text-lg text-muted-foreground mt-4">
+              Your ultimate destination for high-stakes gaming tournaments. Join thousands of players, showcase your talent, and win incredible prizes.
+            </p>
+            <div className="mt-8">
+              <Button asChild size="lg" className="bg-[#ff6a00] hover:bg-[#ff6a00]/90 text-white font-bold rounded-lg px-6 py-3 h-auto">
+                <Link href="/tournaments">Browse Tournaments</Link>
+              </Button>
+            </div>
+          </div>
+          {/* Right Column - Image */}
+          <div className="relative w-full max-w-[600px] rounded-[20px] overflow-hidden">
+            <Image
+                src="/images/bgmi1.png"
+                alt="Arena Clash Hero Image"
+                width={600}
+                height={600}
+                className="object-cover w-full h-full"
+            />
+          </div>
+        </div>
+      </section>
+      
+      {/* Hero Section 2: Image Left, Text Right */}
+      <section className="w-full bg-background">
+        <div className="container flex flex-col-reverse md:flex-row items-center justify-between gap-10 px-10 py-20">
            {/* Left Column - Image */}
-          <div className="relative w-full max-w-[600px] rounded-lg overflow-hidden">
+          <div className="relative w-full max-w-[600px] rounded-[20px] overflow-hidden">
               <Image
                   src="/images/bgmi0.png"
                   alt="Play Bold Hero Image"
                   width={600}
                   height={600}
-                  className="object-cover w-full h-full rounded-lg"
+                  className="object-cover w-full h-full"
               />
           </div>
           {/* Right Column - Text Content */}
           <div className="flex flex-col items-center md:items-start text-center md:text-left max-w-xl">
-            <h1
-              className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter font-headline text-foreground"
-            >
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter font-headline text-foreground">
               Play Bold. Rise Higher.
             </h1>
-            <p
-              className="text-lg text-muted-foreground mt-4"
-            >
+            <p className="text-lg text-muted-foreground mt-4">
              Where legends are born and battles define destiny. Join the elite players and make your mark in history.
             </p>
-            <div
-              className="mt-8"
-            >
+            <div className="mt-8">
               <Button asChild size="lg" className="bg-[#ff6a00] hover:bg-[#ff6a00]/90 text-white font-bold rounded-lg px-6 py-3 h-auto">
                 <Link href="/tournaments">Join the Action</Link>
               </Button>
@@ -161,7 +181,7 @@ export default function Home() {
              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {featuredGames.map((game) => (
                 <Link key={game.id} href={`/games/${game.id}`}>
-                  <Card className="overflow-hidden transition-shadow hover:shadow-xl h-full">
+                  <Card className="overflow-hidden transition-shadow hover:shadow-xl h-full rounded-xl">
                     <Image
                       src={gameImageMap[game.name] || game.imageUrl || 'https://placehold.co/400x300.png'}
                       alt={gameAltTextMap[game.name] || game.name}
@@ -209,7 +229,7 @@ export default function Home() {
                                 <span>{format(tournament.tournament_date.toDate(), 'PPP')}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Users className="w-4 h-4"/>
+                                <Award className="w-4 h-4"/>
                                 <span>₹{tournament.prize_pool.toLocaleString()}</span>
                             </div>
                             <div className="flex items-center gap-2">
