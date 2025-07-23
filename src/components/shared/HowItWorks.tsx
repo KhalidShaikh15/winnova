@@ -29,10 +29,10 @@ const steps = [
 
 const HowItWorks = () => {
   return (
-    <Section className="bg-[#0e0e0e] py-20">
+    <Section className="bg-card/95 dark:bg-zinc-900/50 py-20">
       <div className="container text-center">
         <h2 
-            className="text-4xl md:text-5xl font-bold text-green-400 mb-4"
+            className="text-4xl md:text-5xl font-bold text-green-500 dark:text-green-400 mb-4"
             style={{ textShadow: '0 0 15px rgba(107, 255, 129, 0.7)' }}
         >
           HOW IT WORKS
@@ -42,11 +42,11 @@ const HowItWorks = () => {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, index) => (
-            <div key={index} className="flex flex-col items-center p-6 rounded-lg bg-card/5 border border-white/10 transition-all hover:border-green-400/50 hover:shadow-lg hover:shadow-green-500/10">
+            <div key={index} className="flex flex-col items-center p-6 rounded-lg bg-card/50 dark:border dark:border-white/10 transition-all hover:border-green-400/50 hover:shadow-lg hover:shadow-green-500/10">
               <div className="mb-6 bg-green-500/20 text-green-400 p-4 rounded-full border-2 border-green-400/50">
                 <step.icon className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">{step.heading}</h3>
+              <h3 className="text-xl font-bold text-foreground mb-2">{step.heading}</h3>
               <p className="text-muted-foreground">{step.subtext}</p>
             </div>
           ))}
