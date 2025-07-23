@@ -115,6 +115,42 @@ export default function Home() {
       {/* Hero Section */}
       <HeroSlider />
 
+       {/* Second Hero Section */}
+      <section className="w-full bg-background">
+        <div className="container flex flex-col md:flex-row items-center justify-between gap-10 px-10 py-20">
+           {/* Left Column - Image */}
+          <div className="relative w-full max-w-[600px] rounded-lg overflow-hidden">
+              <Image
+                  src="/images/bgmi0.png"
+                  alt="Play Bold Hero Image"
+                  width={600}
+                  height={600}
+                  className="object-cover w-full h-full rounded-lg"
+              />
+          </div>
+          {/* Right Column - Text Content */}
+          <div className="flex flex-col items-center md:items-start text-center md:text-left max-w-xl">
+            <h1
+              className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter font-headline text-foreground"
+            >
+              Play Bold. Rise Higher.
+            </h1>
+            <p
+              className="text-lg text-muted-foreground mt-4"
+            >
+             Where legends are born and battles define destiny. Join the elite players and make your mark in history.
+            </p>
+            <div
+              className="mt-8"
+            >
+              <Button asChild size="lg" className="bg-[#ff6a00] hover:bg-[#ff6a00]/90 text-white font-bold rounded-lg px-6 py-3 h-auto">
+                <Link href="/tournaments">Join the Action</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Featured Games Section */}
       <section className="w-full py-12">
         <div className="container">
