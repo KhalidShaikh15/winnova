@@ -1,74 +1,58 @@
 
 'use client';
 
-import Image from 'next/image';
+import { UserPlus, LogIn, Gamepad2, Trophy } from 'lucide-react';
 import Section from './Section';
 
 const steps = [
   {
-    image: '/images/bgmi0.png',
-    heading: 'Compete with the Best',
-    subtext: 'Join intense BGMI tournaments and test your skills against top-tier players.',
+    icon: UserPlus,
+    heading: '1. Register',
+    subtext: 'Create your account to get started.',
   },
   {
-    image: '/images/bgmi1.png',
-    heading: 'Win Epic Matches',
-    subtext: 'Dominate the battlefield and secure victory with your squad.',
+    icon: LogIn,
+    heading: '2. Join a Match',
+    subtext: 'Browse tournaments and secure your slot.',
   },
   {
-    image: '/images/bgmi2.png',
-    heading: 'Rank Up the Leaderboard',
-    subtext: 'Every kill and placement counts. Climb to the top with consistent performance.',
+    icon: Gamepad2,
+    heading: '3. Play & Compete',
+    subtext: 'Receive credentials, play with skill, and dominate.',
   },
   {
-    image: '/images/bgmi3.png',
-    heading: 'Earn Real Rewards',
-    subtext: 'Turn your talent into earnings with cash prizes and exclusive perks.',
+    icon: Trophy,
+    heading: '4. Win & Withdraw',
+    subtext: 'Winnings are credited to your wallet.',
   },
 ];
 
 const HowItWorks = () => {
   return (
-    <section className="bg-[#0e0e0e] py-12 md:py-24">
-      <div className="container">
-        <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-white">
-          How It Works
+    <Section className="bg-[#0e0e0e] py-20">
+      <div className="container text-center">
+        <h2 
+            className="text-4xl md:text-5xl font-bold text-green-400 mb-4"
+            style={{ textShadow: '0 0 15px rgba(107, 255, 129, 0.7)' }}
+        >
+          HOW IT WORKS
         </h2>
-        <div className="space-y-16">
+        <p className="text-lg text-muted-foreground mb-16">
+          Your Path to Victory in 4 Simple Steps
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, index) => (
-            <Section key={index}>
-              <div
-                className={`flex flex-col md:flex-row items-center gap-10 md:gap-16 ${
-                  index % 2 !== 0 ? 'md:flex-row-reverse' : ''
-                }`}
-              >
-                {/* Image Column */}
-                <div className="w-full md:w-1/2">
-                  <div className="relative w-full aspect-square max-w-[600px] mx-auto">
-                    <Image
-                      src={step.image}
-                      alt={step.heading}
-                      fill
-                      className="object-cover rounded-[20px] border-2 border-[#1f1f1f] shadow-lg"
-                    />
-                  </div>
-                </div>
-
-                {/* Text Column */}
-                <div className="w-full md:w-1/2 text-center md:text-left">
-                  <h3 className="text-3xl md:text-4xl font-bold text-white mb-4" style={{ lineHeight: '1.2' }}>
-                    {step.heading}
-                  </h3>
-                  <p className="text-lg text-gray-300 max-w-md mx-auto md:mx-0">
-                    {step.subtext}
-                  </p>
-                </div>
+            <div key={index} className="flex flex-col items-center p-6 rounded-lg bg-card/5 border border-white/10 transition-all hover:border-green-400/50 hover:shadow-lg hover:shadow-green-500/10">
+              <div className="mb-6 bg-green-500/20 text-green-400 p-4 rounded-full border-2 border-green-400/50">
+                <step.icon className="w-8 h-8" />
               </div>
-            </Section>
+              <h3 className="text-xl font-bold text-white mb-2">{step.heading}</h3>
+              <p className="text-muted-foreground">{step.subtext}</p>
+            </div>
           ))}
         </div>
       </div>
-    </section>
+    </Section>
   );
 };
 
