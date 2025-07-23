@@ -3,6 +3,7 @@
 
 import { UserPlus, LogIn, Gamepad2, Trophy } from 'lucide-react';
 import Section from './Section';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const steps = [
   {
@@ -29,27 +30,33 @@ const steps = [
 
 const HowItWorks = () => {
   return (
-    <Section className="bg-card/95 dark:bg-zinc-900/50 py-20">
-      <div className="container text-center">
-        <h2 
-            className="text-4xl md:text-5xl font-bold text-foreground mb-4"
-        >
-          HOW IT WORKS
-        </h2>
-        <p className="text-lg text-muted-foreground mb-16 max-w-2xl mx-auto">
-          Your Path to Victory in 4 Simple Steps
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {steps.map((step, index) => (
-            <div key={index} className="flex flex-col items-center p-6 rounded-lg bg-card/50 dark:border dark:border-white/10 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10">
-              <div className="mb-6 bg-primary/20 text-primary p-4 rounded-full border-2 border-primary/50">
-                <step.icon className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold text-foreground mb-2">{step.heading}</h3>
-              <p className="text-muted-foreground">{step.subtext}</p>
-            </div>
-          ))}
-        </div>
+    <Section className="py-20">
+      <div className="container">
+        <Card className="bg-card/95 dark:bg-zinc-900/50">
+            <CardHeader className="text-center">
+                <h2 
+                    className="text-4xl md:text-5xl font-bold text-foreground mb-4"
+                >
+                HOW IT WORKS
+                </h2>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Your Path to Victory in 4 Simple Steps
+                </p>
+            </CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {steps.map((step, index) => (
+                    <div key={index} className="flex flex-col items-center text-center p-6 rounded-lg bg-card/50 dark:border dark:border-white/10 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10">
+                    <div className="mb-6 bg-primary/20 text-primary p-4 rounded-full border-2 border-primary/50">
+                        <step.icon className="w-8 h-8" />
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">{step.heading}</h3>
+                    <p className="text-muted-foreground">{step.subtext}</p>
+                    </div>
+                ))}
+                </div>
+            </CardContent>
+        </Card>
       </div>
     </Section>
   );
