@@ -32,7 +32,7 @@ const HowItWorks = () => {
   return (
     <Section className="py-20">
       <div className="container">
-        <Card className="bg-card/95 dark:bg-zinc-900/50 border">
+        <Card className="bg-card/95 border">
             <CardHeader className="text-center">
                 <h2 
                     className="text-4xl md:text-5xl font-bold text-foreground mb-4"
@@ -44,16 +44,14 @@ const HowItWorks = () => {
                 </p>
             </CardHeader>
             <CardContent>
-                <div className="space-y-8 max-w-2xl mx-auto">
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
                 {steps.map((step, index) => (
-                    <div key={index} className="flex items-center justify-between p-6 rounded-lg bg-card/50 dark:border dark:border-white/10 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10">
-                        <div>
-                            <h3 className="text-xl font-bold text-foreground mb-2">{step.heading}</h3>
-                            <p className="text-muted-foreground">{step.subtext}</p>
+                    <div key={index} className="flex flex-col items-center text-center">
+                        <div className="bg-primary/20 text-primary p-4 rounded-full border-2 border-primary/50 mb-4">
+                            <step.icon className="w-10 h-10" />
                         </div>
-                        <div className="bg-primary/20 text-primary p-4 rounded-full border-2 border-primary/50 ml-6">
-                            <step.icon className="w-8 h-8" />
-                        </div>
+                        <h3 className="text-xl font-bold text-foreground mb-2">{step.heading}</h3>
+                        <p className="text-muted-foreground">{step.subtext}</p>
                     </div>
                 ))}
                 </div>
