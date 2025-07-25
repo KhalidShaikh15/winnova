@@ -55,9 +55,9 @@ const HowItWorks = () => {
               </div>
 
               {/* Right Column: Step Card */}
-              <Card className="bg-card/95 border">
-                <CardContent className="flex flex-col items-center p-6 text-center">
-                    <div className="bg-primary/20 text-primary p-4 rounded-lg border-2 border-primary/50 mb-4">
+              <Card className="bg-card/95 border w-64 h-64 mx-auto">
+                <CardContent className="flex flex-col items-center justify-center p-6 text-center h-full">
+                    <div className="bg-primary/20 text-primary p-4 rounded-full border-2 border-primary/50 mb-4">
                         <step.icon className="w-10 h-10" />
                     </div>
                     <h3 className="text-xl font-bold text-foreground mb-2">{step.heading}</h3>
