@@ -44,14 +44,16 @@ const HowItWorks = () => {
                 </p>
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="space-y-8 max-w-2xl mx-auto">
                 {steps.map((step, index) => (
-                    <div key={index} className="flex flex-col items-center text-center p-6 rounded-lg bg-card/50 dark:border dark:border-white/10 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10">
-                    <div className="mb-6 bg-primary/20 text-primary p-4 rounded-full border-2 border-primary/50">
-                        <step.icon className="w-8 h-8" />
-                    </div>
-                    <h3 className="text-xl font-bold text-foreground mb-2">{step.heading}</h3>
-                    <p className="text-muted-foreground">{step.subtext}</p>
+                    <div key={index} className="flex items-center justify-between p-6 rounded-lg bg-card/50 dark:border dark:border-white/10 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10">
+                        <div>
+                            <h3 className="text-xl font-bold text-foreground mb-2">{step.heading}</h3>
+                            <p className="text-muted-foreground">{step.subtext}</p>
+                        </div>
+                        <div className="bg-primary/20 text-primary p-4 rounded-full border-2 border-primary/50 ml-6">
+                            <step.icon className="w-8 h-8" />
+                        </div>
                     </div>
                 ))}
                 </div>
