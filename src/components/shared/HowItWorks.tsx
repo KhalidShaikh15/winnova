@@ -3,32 +3,32 @@
 
 import { UserPlus, LogIn, Gamepad2, Trophy } from 'lucide-react';
 import Section from './Section';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 const steps = [
   {
     icon: UserPlus,
     heading: '1. Register',
     subtext: 'Create your account to get started.',
-    description: 'Getting started is quick and easy. Simply create an account with your email or social login to join the Arena Clash community. Once registered, you’ll have full access to all our features, including tournament listings, leaderboards, and your personal player dashboard.'
+    description: 'Getting started is quick and easy. Simply create an account with your email or social login to join the Arena Clash community.'
   },
   {
     icon: LogIn,
     heading: '2. Join a Match',
     subtext: 'Browse tournaments and secure your slot.',
-    description: 'Explore our list of upcoming tournaments for various games. Filter by game, match type, or prize pool to find the perfect challenge. Once you’ve found a match, complete the registration form and pay the entry fee to secure your spot in the arena.'
+    description: 'Explore our list of upcoming tournaments for various games. Filter by game, match type, or prize pool to find the perfect challenge.'
   },
   {
     icon: Gamepad2,
     heading: '3. Play & Compete',
     subtext: 'Receive credentials, play with skill, and dominate.',
-    description: 'Before the match begins, you’ll receive all necessary details, including room IDs and passwords. Join the lobby at the scheduled time, coordinate with your team, and get ready to showcase your skills. Play fair, play hard, and aim for victory.'
+    description: 'Before the match begins, you’ll receive all necessary details. Join the lobby at the scheduled time, coordinate with your team, and get ready to play.'
   },
   {
     icon: Trophy,
     heading: '4. Win & Withdraw',
     subtext: 'Winnings are credited to your wallet.',
-    description: 'After the tournament concludes, results are verified, and the leaderboard is updated. If you’re one of the winners, your prize money will be credited directly to your account. You can easily withdraw your earnings or use them to enter future tournaments.'
+    description: 'After the tournament concludes, results are verified, and the leaderboard is updated. If you’re a winner, your prize money will be credited.'
   },
 ];
 
@@ -57,7 +57,7 @@ const HowItWorks = () => {
               {/* Right Column: Step Card */}
               <Card className="bg-card/95 border">
                 <CardContent className="flex flex-col items-center p-6 text-center">
-                    <div className="bg-primary/20 text-primary p-4 rounded-full border-2 border-primary/50 mb-4">
+                    <div className="bg-primary/20 text-primary p-4 rounded-lg border-2 border-primary/50 mb-4">
                         <step.icon className="w-10 h-10" />
                     </div>
                     <h3 className="text-xl font-bold text-foreground mb-2">{step.heading}</h3>
