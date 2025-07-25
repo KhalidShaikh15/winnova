@@ -4,6 +4,7 @@
 import { UserPlus, LogIn, Gamepad2, Trophy } from 'lucide-react';
 import Section from './Section';
 import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 const steps = [
   {
@@ -49,22 +50,25 @@ const HowItWorks = () => {
             </div>
             <div className="space-y-16">
             {steps.map((step, index) => (
-                <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                {/* Left Column: Description */}
-                <div className="text-muted-foreground text-center md:text-left">
-                    <p>{step.description}</p>
-                </div>
+                <div key={index}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    {/* Left Column: Description */}
+                    <div className="text-muted-foreground text-center md:text-left">
+                        <p className="text-lg">{step.description}</p>
+                    </div>
 
-                {/* Right Column: Step Card */}
-                <Card className="bg-card/95 border w-64 h-64 mx-auto">
-                    <CardContent className="flex flex-col items-center justify-center p-6 text-center h-full">
-                        <div className="bg-primary/20 text-primary p-4 rounded-full border-2 border-primary/50 mb-4">
-                            <step.icon className="w-10 h-10" />
-                        </div>
-                        <h3 className="text-xl font-bold text-foreground mb-2">{step.heading}</h3>
-                        <p className="text-muted-foreground">{step.subtext}</p>
-                    </CardContent>
-                </Card>
+                    {/* Right Column: Step Card */}
+                    <Card className="bg-card/95 border w-64 h-64 mx-auto">
+                        <CardContent className="flex flex-col items-center justify-center p-6 text-center h-full">
+                            <div className="bg-primary/20 text-primary p-4 rounded-full border-2 border-primary/50 mb-4">
+                                <step.icon className="w-10 h-10" />
+                            </div>
+                            <h3 className="text-xl font-bold text-foreground mb-2">{step.heading}</h3>
+                            <p className="text-muted-foreground">{step.subtext}</p>
+                        </CardContent>
+                    </Card>
+                    </div>
+                    {index < steps.length - 1 && <Separator className="my-12" />}
                 </div>
             ))}
             </div>
