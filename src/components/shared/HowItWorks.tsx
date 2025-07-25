@@ -32,31 +32,29 @@ const HowItWorks = () => {
   return (
     <Section className="py-20">
       <div className="container">
-        <Card className="bg-card/95 border">
-            <CardHeader className="text-center">
-                <h2 
-                    className="text-4xl md:text-5xl font-bold text-foreground mb-4"
-                >
-                HOW IT WORKS
-                </h2>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Your Path to Victory in 4 Simple Steps
-                </p>
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-                {steps.map((step, index) => (
-                    <div key={index} className="flex flex-col items-center text-center">
-                        <div className="bg-primary/20 text-primary p-4 rounded-full border-2 border-primary/50 mb-4">
-                            <step.icon className="w-10 h-10" />
-                        </div>
-                        <h3 className="text-xl font-bold text-foreground mb-2">{step.heading}</h3>
-                        <p className="text-muted-foreground">{step.subtext}</p>
+        <div className="text-center mb-12">
+            <h2 
+                className="text-4xl md:text-5xl font-bold text-foreground mb-4"
+            >
+            HOW IT WORKS
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Your Path to Victory in 4 Simple Steps
+            </p>
+        </div>
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+          {steps.map((step, index) => (
+            <Card key={index} className="bg-card/95 border text-center">
+                <CardContent className="flex flex-col items-center p-6">
+                    <div className="bg-primary/20 text-primary p-4 rounded-full border-2 border-primary/50 mb-4">
+                        <step.icon className="w-10 h-10" />
                     </div>
-                ))}
-                </div>
-            </CardContent>
-        </Card>
+                    <h3 className="text-xl font-bold text-foreground mb-2">{step.heading}</h3>
+                    <p className="text-muted-foreground">{step.subtext}</p>
+                </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </Section>
   );
