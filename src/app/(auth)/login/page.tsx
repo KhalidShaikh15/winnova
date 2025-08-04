@@ -35,7 +35,7 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       toast({
         title: "Login Successful",
-        description: "Welcome back to Arena Clash!",
+        description: "Welcome back to Winnova!",
       });
       router.push('/');
     } catch (error: any) {

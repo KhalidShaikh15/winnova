@@ -38,7 +38,7 @@ export default function Home() {
   const testimonials = [
     {
       name: "SavagePlayer47",
-      quote: "Arena Clash has the most competitive tournaments I've ever played in. The prize pools are massive and the community is fantastic!",
+      quote: "Winnova has the most competitive tournaments I've ever played in. The prize pools are massive and the community is fantastic!",
       avatar: "https://placehold.co/100x100.png",
     },
     {
@@ -133,7 +133,7 @@ export default function Home() {
           <div className="relative w-full max-w-[600px] rounded-[20px] overflow-hidden bg-card/10">
             <Image
                 src="/images/bgmi1.png"
-                alt="Arena Clash Hero Image"
+                alt="Winnova Hero Image"
                 width={600}
                 height={600}
                 className="object-cover w-full h-full"

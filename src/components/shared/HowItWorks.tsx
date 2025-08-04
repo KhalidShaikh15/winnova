@@ -11,7 +11,7 @@ const steps = [
     icon: UserPlus,
     heading: '1. Register',
     subtext: 'Create your account to get started.',
-    description: 'Getting started is quick and easy. Simply create an account to join the Arena Clash community.'
+    description: 'Getting started is quick and easy. Simply create an account to join the Winnova community.'
   },
   {
     icon: LogIn,

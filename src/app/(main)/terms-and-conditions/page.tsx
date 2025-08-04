@@ -5,7 +5,7 @@ export default function TermsAndConditionsPage() {
     <div className="container py-12">
       <Card className="max-w-4xl mx-auto">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold text-center">Terms &amp; Conditions – Arena Clash Tournaments</CardTitle>
+          <CardTitle className="text-3xl font-bold text-center">Terms &amp; Conditions – Winnova Tournaments</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6 text-muted-foreground">
           <div>
@@ -46,7 +46,7 @@ export default function TermsAndConditionsPage() {
           <div>
             <h3 className="text-xl font-semibold text-foreground mb-2">6. Admin Rights</h3>
             <ul className="list-disc list-inside space-y-1">
-              <li>Arena Clash reserves the right to change rules, reschedule matches, or disqualify players if needed.</li>
+              <li>Winnova reserves the right to change rules, reschedule matches, or disqualify players if needed.</li>
             </ul>
           </div>
           <div>

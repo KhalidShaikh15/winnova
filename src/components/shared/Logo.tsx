@@ -7,7 +7,7 @@ export default function Logo() {
       <div className="p-2 bg-primary/20 text-primary rounded-lg">
         <Swords className="h-5 w-5" />
       </div>
-      <span>Arena Clash</span>
+      <span>Winnova</span>
     </Link>
   );
 }

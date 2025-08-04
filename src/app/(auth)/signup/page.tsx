@@ -57,7 +57,7 @@ export default function SignupPage() {
       }
       toast({
         title: "Account Created",
-        description: "Welcome to Arena Clash! You are now logged in.",
+        description: "Welcome to Winnova! You are now logged in.",
       });
       router.push('/');
     } catch (error: any) {
