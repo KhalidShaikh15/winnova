@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -12,11 +12,11 @@ import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 import { firestore } from "@/lib/firebase"
-import { Award, Calendar, Gamepad2, Group, Loader2, Send, Clock } from "lucide-react"
+import { Award, Calendar, Gamepad2, Group, Loader2, Send, Clock, Download } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import { format } from "date-fns"
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 
 // Base schema for common fields
 const baseSchema = z.object({
@@ -45,6 +45,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   const { user, loading: authLoading } = useAuth();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedUpiId, setSubmittedUpiId] = useState("");
+  const qrRef = useRef<HTMLDivElement>(null);
 
   const registrationSchema = useMemo(() => {
     const dynamicSchema = tournament.game_name === "Clash of Clans" ? strategyGameSchema : shooterGameSchema;
@@ -83,6 +84,21 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     }
     return null;
   }, [tournament.entry_fee]);
+
+  const handleDownloadQR = () => {
+    if (qrRef.current) {
+        const canvas = qrRef.current.querySelector('canvas');
+        if (canvas) {
+            const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+            let downloadLink = document.createElement("a");
+            downloadLink.href = pngUrl;
+            downloadLink.download = `winnova-payment-qr.png`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+    }
+  };
 
 
   async function onSubmit(values: RegistrationFormValues) {
@@ -210,15 +226,21 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         </div>
 
         {upiLink && (
-          <div className="mb-6 p-4 rounded-lg bg-muted/50 border flex flex-col sm:flex-row items-center gap-6">
-            <div className="bg-white p-2 rounded-md">
-              <QRCodeSVG value={upiLink} size={128} />
+          <div className="mb-6 p-4 rounded-lg bg-muted/50 border flex flex-col items-center gap-6">
+            <div className="flex flex-col items-center text-center gap-4">
+              <div ref={qrRef} className="bg-white p-2 rounded-md">
+                <QRCodeCanvas value={upiLink} size={128} />
+              </div>
+              <h3 className="font-bold text-lg">Scan to Pay ₹{tournament.entry_fee}</h3>
+              <p className="text-sm text-muted-foreground mt-2 font-mono break-all">
+                  Or pay to: {tournament.upi_id}
+              </p>
+              <Button onClick={handleDownloadQR} variant="outline" size="sm">
+                  <Download className="mr-2 h-4 w-4"/>
+                  Download QR
+              </Button>
             </div>
-            <div className="flex flex-col text-center sm:text-left">
-                <h3 className="font-bold text-lg">Scan to Pay ₹{tournament.entry_fee}</h3>
-                <p className="text-sm text-muted-foreground mt-2 font-mono break-all">
-                    Or pay to: {tournament.upi_id}
-                </p>
+            <div className="w-full text-center">
                 <p className="text-xs text-muted-foreground mt-4">
                     After paying, please enter your UPI ID in the form below for verification.
                 </p>
