@@ -167,21 +167,21 @@ export default function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-screen">
-                <DropdownMenuLabel>Navigation</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-center">Navigation</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                  {navLinks.map(link => (
-                    <DropdownMenuItem key={`mobile-${link.href}`} asChild>
+                    <DropdownMenuItem key={`mobile-${link.href}`} asChild className="justify-center">
                       <Link href={link.href}>{link.label}</Link>
                     </DropdownMenuItem>
                   ))}
                   {isAdmin && (
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="justify-center">
                       <Link href="/admin">Admin Panel</Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   {!user && (
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="justify-center">
                         <Link href="/login">Login</Link>
                     </DropdownMenuItem>
                   )}
