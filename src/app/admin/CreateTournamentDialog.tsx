@@ -127,7 +127,7 @@ export default function CreateTournamentDialog({ isOpen, setIsOpen, games, onFor
       const payload: Omit<Tournament, 'id' | 'created_at'> & { upi_id: string; tournament_date: Timestamp } = {
         ...data,
         tournament_date: Timestamp.fromDate(data.tournament_date),
-        upi_id: '9653134660@kotak811',
+        upi_id: 'shaikh464@ybl',
       };
       
       if (isEditMode && tournamentData) {

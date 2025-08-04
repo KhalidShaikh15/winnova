@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 import { firestore } from "@/lib/firebase"
-import { Award, Calendar, Gamepad2, Group, Loader2, Send, Clock, Download } from "lucide-react"
+import { Award, Calendar, Gamepad2, Group, Loader2, Send, Clock, Download, ClipboardCopy, Check } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import { format } from "date-fns"
@@ -46,6 +46,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedUpiId, setSubmittedUpiId] = useState("");
   const qrRef = useRef<HTMLDivElement>(null);
+  const [isCopied, setIsCopied] = useState(false);
 
   const registrationSchema = useMemo(() => {
     const dynamicSchema = tournament.game_name === "Clash of Clans" ? strategyGameSchema : shooterGameSchema;
@@ -80,10 +81,10 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   
   const upiLink = useMemo(() => {
     if (tournament.entry_fee > 0) {
-        return `upi://pay?pa=9653134660@kotak811&pn=Khalid%20Shaikh&am=${tournament.entry_fee}&cu=INR`;
+        return `upi://pay?pa=${tournament.upi_id}&pn=Khalid%20Shaikh&am=${tournament.entry_fee}&cu=INR`;
     }
     return null;
-  }, [tournament.entry_fee]);
+  }, [tournament.entry_fee, tournament.upi_id]);
 
   const handleDownloadQR = () => {
     if (qrRef.current) {
@@ -98,6 +99,13 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
             document.body.removeChild(downloadLink);
         }
     }
+  };
+
+  const handleCopyUpi = () => {
+    navigator.clipboard.writeText(tournament.upi_id);
+    setIsCopied(true);
+    toast({ title: "UPI ID Copied!", description: "You can now paste it in your payment app." });
+    setTimeout(() => setIsCopied(false), 2000); // Reset after 2 seconds
   };
 
 
@@ -126,6 +134,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         game_name: tournament.game_name,
         status: 'pending' as const,
         created_at: serverTimestamp(),
+        slot: 'A', // Default slot
       };
       
       await addDoc(collection(firestore, 'registrations'), docData);
@@ -232,9 +241,17 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
                 <QRCodeCanvas value={upiLink} size={128} />
               </div>
               <h3 className="font-bold text-lg">Scan to Pay ₹{tournament.entry_fee}</h3>
-              <p className="text-sm text-muted-foreground mt-2 font-mono break-all">
-                  Or pay to: {tournament.upi_id}
-              </p>
+               <div className="text-center">
+                 <p className="text-sm text-muted-foreground">Or pay to:</p>
+                 <div className="flex items-center gap-2 mt-1 bg-background px-3 py-2 rounded-md border">
+                    <span className="font-mono text-sm break-all">
+                        {tournament.upi_id}
+                    </span>
+                    <Button variant="ghost" size="icon" onClick={handleCopyUpi} className="h-7 w-7">
+                        {isCopied ? <Check className="h-4 w-4 text-green-500" /> : <ClipboardCopy className="h-4 w-4" />}
+                    </Button>
+                 </div>
+               </div>
               <Button onClick={handleDownloadQR} variant="outline" size="sm">
                   <Download className="mr-2 h-4 w-4"/>
                   Download QR
