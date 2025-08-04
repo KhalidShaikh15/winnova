@@ -105,8 +105,8 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Tournament Management</h1>
-        <Button onClick={openCreateDialog}>Create Tournament</Button>
+        <h1 className="text-2xl md:text-3xl font-bold">Tournament Management</h1>
+        <Button onClick={openCreateDialog}>Create</Button>
       </div>
 
       <CreateTournamentDialog 
@@ -126,8 +126,8 @@ export default function AdminDashboardPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Title</TableHead>
-                <TableHead>Game</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead className="hidden md:table-cell">Game</TableHead>
+                <TableHead className="hidden md:table-cell">Date</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -145,27 +145,30 @@ export default function AdminDashboardPage() {
                 tournaments.map(t => (
                   <TableRow key={t.id}>
                     <TableCell className="font-medium">{t.title}</TableCell>
-                    <TableCell>{t.game_name}</TableCell>
-                    <TableCell>{format(t.tournament_date.toDate(), 'PPP')}</TableCell>
+                    <TableCell className="hidden md:table-cell">{t.game_name}</TableCell>
+                    <TableCell className="hidden md:table-cell">{format(t.tournament_date.toDate(), 'PPP')}</TableCell>
                     <TableCell>
                       <Badge variant={t.status === 'upcoming' ? 'default' : t.status === 'completed' ? 'secondary' : 'destructive'}>
                         {t.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right space-x-2">
+                    <TableCell className="text-right space-x-1">
                       <Button asChild variant="outline" size="sm">
                         <Link href={`/admin/tournaments/${t.id}`}>Manage</Link>
                       </Button>
                        <Button 
                         variant="outline" 
                         size="sm"
+                        className="hidden sm:inline-flex"
                         onClick={() => openEditDialog(t)}
                       >
-                        <Pencil className="h-4 w-4 mr-1" /> Edit
+                        <Pencil className="h-4 w-4 md:mr-1" />
+                        <span className="hidden md:inline">Edit</span>
                       </Button>
                       <Button 
                         variant="destructive" 
-                        size="sm"
+                        size="icon"
+                        className="h-9 w-9"
                         onClick={() => {
                           setSelectedTournament(t);
                           setIsDeleteDialogOpen(true);

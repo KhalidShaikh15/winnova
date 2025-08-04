@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, Loader2, ShieldCheck, Menu } from "lucide-react";
+import { User, LogOut, Loader2, ShieldCheck, Menu, Trophy, Wallet, BarChart2 } from "lucide-react";
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -37,6 +37,12 @@ export default function Header() {
     { href: '/', label: 'Home' },
     { href: '/tournaments', label: 'Tournaments' },
     { href: '/leaderboard', label: 'Leaderboard' },
+  ];
+
+  const adminNavLinks = [
+    { href: '/admin', label: 'Tournaments', icon: Trophy },
+    { href: '/admin/results', label: 'Results', icon: BarChart2 },
+    { href: '/admin/payouts', label: 'Payouts', icon: Wallet },
   ];
   
   const getInitials = (name: string | null | undefined, email: string | null | undefined): string => {
@@ -72,6 +78,7 @@ export default function Header() {
     }
   };
 
+  const isAnAdminPage = pathname.startsWith('/admin');
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -93,7 +100,7 @@ export default function Header() {
                     {link.label}
                  </Link>
              ))}
-             {isAdmin && (
+             {isAdmin && !isAnAdminPage && (
                 <Link
                   href="/admin"
                   className={cn(
@@ -166,29 +173,44 @@ export default function Header() {
                   <span className="sr-only">Toggle Menu</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-screen max-w-sm p-4">
-                 {navLinks.map((link, index) => (
-                   <React.Fragment key={`mobile-${link.href}`}>
-                    <DropdownMenuItem asChild className="justify-center py-2 text-base">
-                      <Link href={link.href}>{link.label}</Link>
-                    </DropdownMenuItem>
-                    {index < navLinks.length -1 && <DropdownMenuSeparator />}
-                   </React.Fragment>
-                  ))}
-                  {isAdmin && (
-                    <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild className="justify-center py-2 text-base">
-                      <Link href="/admin">Admin Panel</Link>
-                    </DropdownMenuItem>
-                    </>
-                  )}
-                  <DropdownMenuSeparator />
-                  {!user && (
-                    <DropdownMenuItem asChild className="justify-center py-2 text-base">
-                        <Link href="/login">Login</Link>
-                    </DropdownMenuItem>
-                  )}
+              <DropdownMenuContent align="end" className="w-screen max-w-[calc(100vw-2rem)] mx-auto p-4">
+                 {isAnAdminPage && isAdmin ? (
+                   <>
+                    {adminNavLinks.map((link, index) => (
+                      <React.Fragment key={`mobile-admin-${link.href}`}>
+                       <DropdownMenuItem asChild className="justify-center py-2 text-base">
+                         <Link href={link.href}><link.icon className="mr-2 h-4 w-4"/>{link.label}</Link>
+                       </DropdownMenuItem>
+                       {index < adminNavLinks.length - 1 && <DropdownMenuSeparator />}
+                      </React.Fragment>
+                     ))}
+                   </>
+                 ) : (
+                   <>
+                    {navLinks.map((link, index) => (
+                      <React.Fragment key={`mobile-${link.href}`}>
+                        <DropdownMenuItem asChild className="justify-center py-2 text-base">
+                          <Link href={link.href}>{link.label}</Link>
+                        </DropdownMenuItem>
+                        {index < navLinks.length -1 && <DropdownMenuSeparator />}
+                      </React.Fragment>
+                      ))}
+                      {isAdmin && (
+                        <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild className="justify-center py-2 text-base">
+                          <Link href="/admin">Admin Panel</Link>
+                        </DropdownMenuItem>
+                        </>
+                      )}
+                      <DropdownMenuSeparator />
+                      {!user && !loading && (
+                        <DropdownMenuItem asChild className="justify-center py-2 text-base">
+                            <Link href="/login">Login</Link>
+                        </DropdownMenuItem>
+                      )}
+                   </>
+                 )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

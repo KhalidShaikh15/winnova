@@ -173,7 +173,7 @@ export default function AdminResultsPage() {
 
     return (
         <div className="space-y-8">
-            <h1 className="text-3xl font-bold">Results Management (BGMI)</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">Results Management (BGMI)</h1>
             <Card>
                 <CardHeader>
                     <CardTitle>Enter Match Results</CardTitle>
@@ -181,7 +181,7 @@ export default function AdminResultsPage() {
                 <CardContent className="space-y-4">
                     <div className="flex flex-col md:flex-row gap-4">
                         <Select value={selectedTournament} onValueChange={setSelectedTournament}>
-                            <SelectTrigger className="md:w-1/2">
+                            <SelectTrigger className="w-full md:w-1/2">
                                 <SelectValue placeholder="Select a BGMI Tournament" />
                             </SelectTrigger>
                             <SelectContent>
@@ -191,7 +191,7 @@ export default function AdminResultsPage() {
                             </SelectContent>
                         </Select>
                         <Select value={selectedSlot} onValueChange={setSelectedSlot} disabled={!selectedTournament}>
-                            <SelectTrigger className="md:w-1/4">
+                            <SelectTrigger className="w-full md:w-1/4">
                                 <SelectValue placeholder="Select Slot" />
                             </SelectTrigger>
                             <SelectContent>
@@ -206,7 +206,7 @@ export default function AdminResultsPage() {
                             value={matchNumber}
                             onChange={(e) => setMatchNumber(parseInt(e.target.value, 10) || 1)}
                             min="1"
-                            className="md:w-1/4"
+                            className="w-full md:w-1/4"
                         />
                     </div>
                     {loading && !selectedTournament && <p>Select a tournament to get started.</p>}
@@ -225,11 +225,12 @@ export default function AdminResultsPage() {
                             <p className="text-center text-muted-foreground p-4">No teams found for this slot. Please assign teams on the tournament management page.</p>
                         ) : (
                             <div className="space-y-4">
+                                <div className="overflow-x-auto">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Squad Name</TableHead>
-                                            <TableHead>Placement (1-20)</TableHead>
+                                            <TableHead>Placement</TableHead>
                                             <TableHead>Kills</TableHead>
                                             <TableHead>Points</TableHead>
                                         </TableRow>
@@ -244,7 +245,7 @@ export default function AdminResultsPage() {
 
                                             return (
                                                 <TableRow key={reg.id}>
-                                                    <TableCell className="font-medium">{reg.squad_name}</TableCell>
+                                                    <TableCell className="font-medium min-w-[150px]">{reg.squad_name}</TableCell>
                                                     <TableCell>
                                                         <Input
                                                             type="number"
@@ -270,6 +271,7 @@ export default function AdminResultsPage() {
                                         })}
                                     </TableBody>
                                 </Table>
+                                </div>
                                 <Button onClick={handleSubmitResults} disabled={isSubmitting}>
                                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     {isSubmitting ? 'Saving...' : 'Save Match Results'}
