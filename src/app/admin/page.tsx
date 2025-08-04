@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -79,17 +80,24 @@ export default function AdminDashboardPage() {
     if (!selectedTournament || !firestore) return;
     setIsDeleting(true);
     try {
+      const batch = writeBatch(firestore);
+
+      // Delete registrations
       const regsQuery = query(collection(firestore, 'registrations'), where('tournament_id', '==', selectedTournament.id));
       const regsSnapshot = await getDocs(regsQuery);
-      const batch = writeBatch(firestore);
-      regsSnapshot.forEach(doc => {
-        batch.delete(doc.ref);
-      });
-      await batch.commit();
-      
-      await deleteDoc(doc(firestore, 'tournaments', selectedTournament.id));
+      regsSnapshot.forEach(doc => batch.delete(doc.ref));
 
-      toast({ title: 'Success', description: 'Tournament and all registrations deleted.' });
+      // Delete match results
+      const matchesQuery = query(collection(firestore, 'matches'), where('tournament_id', '==', selectedTournament.id));
+      const matchesSnapshot = await getDocs(matchesQuery);
+      matchesSnapshot.forEach(doc => batch.delete(doc.ref));
+
+      // Delete tournament
+      batch.delete(doc(firestore, 'tournaments', selectedTournament.id));
+
+      await batch.commit();
+
+      toast({ title: 'Success', description: 'Tournament and all associated data deleted.' });
       fetchTournaments(); 
     } catch (error) {
       console.error("Error deleting tournament:", error);
@@ -122,66 +130,68 @@ export default function AdminDashboardPage() {
           <CardTitle>All Tournaments</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead className="hidden md:table-cell">Game</TableHead>
-                <TableHead className="hidden md:table-cell">Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">Loading tournaments...</TableCell>
+                  <TableHead>Title</TableHead>
+                  <TableHead className="hidden md:table-cell">Game</TableHead>
+                  <TableHead className="hidden md:table-cell">Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ) : tournaments.length === 0 ? (
-                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">No tournaments found.</TableCell>
-                </TableRow>
-              ) : (
-                tournaments.map(t => (
-                  <TableRow key={t.id}>
-                    <TableCell className="font-medium">{t.title}</TableCell>
-                    <TableCell className="hidden md:table-cell">{t.game_name}</TableCell>
-                    <TableCell className="hidden md:table-cell">{format(t.tournament_date.toDate(), 'PPP')}</TableCell>
-                    <TableCell>
-                      <Badge variant={t.status === 'upcoming' ? 'default' : t.status === 'completed' ? 'secondary' : 'destructive'}>
-                        {t.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right space-x-1">
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={`/admin/tournaments/${t.id}`}>Manage</Link>
-                      </Button>
-                       <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="hidden sm:inline-flex"
-                        onClick={() => openEditDialog(t)}
-                      >
-                        <Pencil className="h-4 w-4 md:mr-1" />
-                        <span className="hidden md:inline">Edit</span>
-                      </Button>
-                      <Button 
-                        variant="destructive" 
-                        size="icon"
-                        className="h-9 w-9"
-                        onClick={() => {
-                          setSelectedTournament(t);
-                          setIsDeleteDialogOpen(true);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center">Loading tournaments...</TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : tournaments.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center">No tournaments found.</TableCell>
+                  </TableRow>
+                ) : (
+                  tournaments.map(t => (
+                    <TableRow key={t.id}>
+                      <TableCell className="font-medium">{t.title}</TableCell>
+                      <TableCell className="hidden md:table-cell">{t.game_name}</TableCell>
+                      <TableCell className="hidden md:table-cell">{format(t.tournament_date.toDate(), 'PPP')}</TableCell>
+                      <TableCell>
+                        <Badge variant={t.status === 'upcoming' ? 'default' : t.status === 'completed' ? 'secondary' : 'destructive'}>
+                          {t.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right space-x-1 whitespace-nowrap">
+                        <Button asChild variant="outline" size="sm">
+                          <Link href={`/admin/tournaments/${t.id}`}>Manage</Link>
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="hidden sm:inline-flex"
+                          onClick={() => openEditDialog(t)}
+                        >
+                          <Pencil className="h-4 w-4 md:mr-1" />
+                          <span className="hidden md:inline">Edit</span>
+                        </Button>
+                        <Button 
+                          variant="destructive" 
+                          size="icon"
+                          className="h-9 w-9"
+                          onClick={() => {
+                            setSelectedTournament(t);
+                            setIsDeleteDialogOpen(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
       
@@ -192,7 +202,7 @@ export default function AdminDashboardPage() {
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the tournament
               <span className="font-bold"> &quot;{selectedTournament?.title}&quot; </span>
-              and all of its associated registrations.
+              and all of its associated registrations and match results.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

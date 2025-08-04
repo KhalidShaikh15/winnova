@@ -197,75 +197,78 @@ The Winnova Team
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Squad Name</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Slot</TableHead>
-                <TableHead>User UPI ID</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {registrations.length > 0 ? (
-                registrations.map(reg => (
-                  <TableRow key={reg.id}>
-                    <TableCell>{reg.squad_name}</TableCell>
-                    <TableCell>{reg.contact_number}</TableCell>
-                    <TableCell><Badge variant={reg.status === 'pending' ? 'secondary' : reg.status === 'confirmed' ? 'default' : 'destructive'}>{reg.status}</Badge></TableCell>
-                    <TableCell>
-                      {updatingSlotRegId === reg.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Select
-                          value={reg.slot}
-                          onValueChange={(value) => handleSlotChange(reg.id, value)}
-                          disabled={updatingSlotRegId === reg.id}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Squad Name</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Slot</TableHead>
+                  <TableHead>User UPI ID</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {registrations.length > 0 ? (
+                  registrations.map(reg => (
+                    <TableRow key={reg.id}>
+                      <TableCell>{reg.squad_name}</TableCell>
+                      <TableCell>{reg.contact_number}</TableCell>
+                      <TableCell><Badge variant={reg.status === 'pending' ? 'secondary' : reg.status === 'confirmed' ? 'default' : 'destructive'}>{reg.status}</Badge></TableCell>
+                      <TableCell>
+                        {updatingSlotRegId === reg.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Select
+                            value={reg.slot}
+                            onValueChange={(value) => handleSlotChange(reg.id, value)}
+                            disabled={updatingSlotRegId === reg.id}
+                          >
+                            <SelectTrigger className="w-[80px]">
+                              <SelectValue placeholder="Slot" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {SLOTS.map(slot => (
+                                <SelectItem key={slot} value={slot}>{slot}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-mono text-xs">{reg.user_upi_id || 'N/A'}</span>
+                      </TableCell>
+                      <TableCell className="text-right space-x-1">
+                        <Button size="sm" variant="outline" disabled={reg.status === 'confirmed' || confirmingRegId === reg.id} onClick={() => handleRegistrationStatus(reg.id, 'confirmed')}>
+                          {confirmingRegId === reg.id ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-1" />}
+                          Confirm
+                        </Button>
+                        <Button size="sm" variant="destructive" disabled={reg.status === 'rejected'} onClick={() => handleRegistrationStatus(reg.id, 'rejected')}>
+                          <XCircle className="h-4 w-4 mr-1" />
+                          Reject
+                        </Button>
+                        <Button 
+                          variant="destructive" 
+                          size="icon"
+                          className="h-9 w-9"
+                          onClick={() => {
+                            setSelectedRegistration(reg);
+                            setIsDeleteDialogOpen(true);
+                          }}
                         >
-                          <SelectTrigger className="w-[80px]">
-                            <SelectValue placeholder="Slot" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {SLOTS.map(slot => (
-                              <SelectItem key={slot} value={slot}>{slot}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-mono text-xs">{reg.user_upi_id || 'N/A'}</span>
-                    </TableCell>
-                    <TableCell className="text-right space-x-2">
-                       <Button size="sm" variant="outline" disabled={reg.status === 'confirmed' || confirmingRegId === reg.id} onClick={() => handleRegistrationStatus(reg.id, 'confirmed')}>
-                        {confirmingRegId === reg.id ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
-                        Confirm
-                      </Button>
-                      <Button size="sm" variant="destructive" disabled={reg.status === 'rejected'} onClick={() => handleRegistrationStatus(reg.id, 'rejected')}>
-                        <XCircle className="h-4 w-4 mr-2" />
-                        Reject
-                      </Button>
-                       <Button 
-                        variant="destructive" 
-                        size="icon"
-                        onClick={() => {
-                          setSelectedRegistration(reg);
-                          setIsDeleteDialogOpen(true);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                         <span className="sr-only">Delete</span>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow><TableCell colSpan={6} className="text-center">No registrations yet.</TableCell></TableRow>
-              )}
-            </TableBody>
-          </Table>
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Delete</span>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow><TableCell colSpan={6} className="text-center">No registrations yet.</TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

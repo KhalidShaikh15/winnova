@@ -53,7 +53,6 @@ export interface Registration {
 }
 
 export interface MatchResult {
-    id: string;
     match_id: string;
     tournament_id: string;
     registration_id: string;

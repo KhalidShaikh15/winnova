@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, getDocs, query, where, writeBatch, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, writeBatch, doc } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Registration, type MatchResult } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -127,8 +128,8 @@ export default function AdminResultsPage() {
                     continue;
                 }
                 
-                if (isNaN(placement) || isNaN(kills)) {
-                    toast({ variant: 'destructive', title: 'Invalid Input', description: `Please fill both placement and kills for all entered teams.` });
+                if (isNaN(placement) || isNaN(kills) || placement < 1 || kills < 0) {
+                    toast({ variant: 'destructive', title: 'Invalid Input', description: `Please fill valid placement and kills for all entered teams.` });
                     setIsSubmitting(false);
                     return;
                 }

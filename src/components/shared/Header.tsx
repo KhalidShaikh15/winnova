@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, Loader2, ShieldCheck, Menu, Trophy, Wallet, BarChart2 } from "lucide-react";
+import { User, LogOut, Loader2, ShieldCheck, Menu, Trophy, Wallet, BarChart2, Home } from "lucide-react";
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -43,6 +43,7 @@ export default function Header() {
     { href: '/admin', label: 'Tournaments', icon: Trophy },
     { href: '/admin/results', label: 'Results', icon: BarChart2 },
     { href: '/admin/payouts', label: 'Payouts', icon: Wallet },
+    { href: '/', label: 'Back to Site', icon: Home },
   ];
   
   const getInitials = (name: string | null | undefined, email: string | null | undefined): string => {
