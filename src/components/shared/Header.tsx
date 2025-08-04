@@ -166,22 +166,26 @@ export default function Header() {
                   <span className="sr-only">Toggle Menu</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-screen">
-                <DropdownMenuLabel className="text-center">Navigation</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                 {navLinks.map(link => (
-                    <DropdownMenuItem key={`mobile-${link.href}`} asChild className="justify-center">
+              <DropdownMenuContent align="end" className="w-screen max-w-sm p-4">
+                 {navLinks.map((link, index) => (
+                   <React.Fragment key={`mobile-${link.href}`}>
+                    <DropdownMenuItem asChild className="justify-center py-2 text-base">
                       <Link href={link.href}>{link.label}</Link>
                     </DropdownMenuItem>
+                    {index < navLinks.length -1 && <DropdownMenuSeparator />}
+                   </React.Fragment>
                   ))}
                   {isAdmin && (
-                    <DropdownMenuItem asChild className="justify-center">
+                    <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild className="justify-center py-2 text-base">
                       <Link href="/admin">Admin Panel</Link>
                     </DropdownMenuItem>
+                    </>
                   )}
                   <DropdownMenuSeparator />
                   {!user && (
-                    <DropdownMenuItem asChild className="justify-center">
+                    <DropdownMenuItem asChild className="justify-center py-2 text-base">
                         <Link href="/login">Login</Link>
                     </DropdownMenuItem>
                   )}
