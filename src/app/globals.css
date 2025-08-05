@@ -1,50 +1,69 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 24 9.8% 10%;
-    --card: 0 0% 100%;
-    --card-foreground: 24 9.8% 10%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 24 9.8% 10%;
-    --primary: 24.6 95% 53.1%;
-    --primary-foreground: 60 9.1% 97.8%;
-    --secondary: 60 4.8% 95.9%;
-    --secondary-foreground: 24 9.8% 10%;
-    --muted: 60 4.8% 95.9%;
-    --muted-foreground: 25 5.3% 44.7%;
-    --accent: 60 4.8% 95.9%;
-    --accent-foreground: 24 9.8% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 60 9.1% 97.8%;
-    --border: 20 5.9% 90%;
-    --input: 20 5.9% 90%;
-    --ring: 24.6 95% 53.1%;
-    --radius: 0.8rem;
-  }
-  .dark {
     --background: 20 14.3% 4.1%;
     --foreground: 60 9.1% 97.8%;
+    
     --card: 24 9.8% 10%;
     --card-foreground: 60 9.1% 97.8%;
+
     --popover: 20 14.3% 4.1%;
     --popover-foreground: 60 9.1% 97.8%;
-    --primary: 24.6 95% 53.1%;
-    --primary-foreground: 60 9.1% 97.8%;
+
+    --primary: 33 84% 60%; /* Sunset Orange: #FEBE8C */
+    --primary-foreground: 20 14.3% 4.1%;
+    
     --secondary: 12 6.5% 15.1%;
     --secondary-foreground: 60 9.1% 97.8%;
+
     --muted: 12 6.5% 15.1%;
     --muted-foreground: 24 5.4% 63.9%;
-    --accent: 12 6.5% 15.1%;
+    
+    --accent: 12 6.5% 15.1%; /* Accent: Sky Blue #87CEEB */
     --accent-foreground: 60 9.1% 97.8%;
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 60 9.1% 97.8%;
+
     --border: 12 6.5% 15.1%;
     --input: 12 6.5% 15.1%;
-    --ring: 24.6 95% 53.1%;
+    --ring: 33 84% 60%;
+    
+    --radius: 0.8rem;
+  }
+
+  .dark {
+    --background: 220 20% 6%; /* Dark Slate Gray based */
+    --foreground: 210 40% 98%;
+
+    --card: 220 20% 10%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 220 20% 6%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 6 90% 71%; /* Coral: #FF8072 */
+    --primary-foreground: 355 100% 97%;
+
+    --secondary: 220 20% 12%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 220 20% 12%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 6 90% 71%;
+    --accent-foreground: 355 100% 97%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --border: 220 20% 12%;
+    --input: 220 20% 12%;
+    --ring: 6 90% 71%;
   }
 }
 
@@ -53,13 +72,13 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-[#0d0d0d] text-foreground;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    user-select: none;
+    /* user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
-    -ms-user-select: none;
+    -ms-user-select: none; */
   }
 }
 
