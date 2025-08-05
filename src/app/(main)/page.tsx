@@ -43,30 +43,22 @@ const howItWorksSteps = [
     {
         title: "Compete",
         description: "Join daily tournaments and battle against top players to prove your skills and climb the ranks.",
-        image: "/images/compete.png",
         icon: Gamepad2,
-        aiHint: "esports competition"
     },
     {
         title: "Win",
         description: "Dominate the competition and secure victory. Every match is a chance to showcase your talent.",
-        image: "/images/win.png",
         icon: Award,
-        aiHint: "gaming trophy"
     },
     {
         title: "Rank Up",
         description: "Earn points for every win and kill. Climb the leaderboard and become a legend in the community.",
-        image: "/images/rank.png",
         icon: Medal,
-        aiHint: "leaderboard ranking"
     },
     {
         title: "Earn",
         description: "Claim your share of massive prize pools. Your skill translates directly into real rewards.",
-        image: "/images/earn.png",
         icon: Crown,
-        aiHint: "winning prize money"
     }
 ]
 
@@ -142,31 +134,15 @@ export default function Home() {
           <div className="container mx-auto">
               <h2 className="text-4xl font-bold text-center mb-16">How It Works</h2>
               <div className="space-y-16">
-                  {howItWorksSteps.map((step, index) => {
-                      if (step.title === 'Rank Up') {
-                          return (
-                              <div key={index} className="grid grid-cols-1 gap-12 items-center">
-                                  <div className="text-center">
-                                      <step.icon className="w-12 h-12 text-primary mx-auto mb-4"/>
-                                      <h3 className="text-3xl font-bold mb-4">{step.title}</h3>
-                                      <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{step.description}</p>
-                                  </div>
-                              </div>
-                          );
-                      }
-                      return (
-                          <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                              <div className={`flex justify-center ${index % 2 === 1 ? 'md:order-2' : ''}`}>
-                                  <Image src={step.image} alt={step.title} width={500} height={500} className="rounded-lg" data-ai-hint={step.aiHint} />
-                              </div>
-                              <div className={`text-center md:text-left ${index % 2 === 1 ? 'md:order-1' : ''}`}>
-                                  <step.icon className="w-12 h-12 text-primary mx-auto md:mx-0 mb-4"/>
-                                  <h3 className="text-3xl font-bold mb-4">{step.title}</h3>
-                                  <p className="text-lg text-muted-foreground">{step.description}</p>
-                              </div>
+                  {howItWorksSteps.map((step, index) => (
+                      <div key={index} className="grid grid-cols-1 gap-12 items-center">
+                          <div className="text-center">
+                              <step.icon className="w-12 h-12 text-primary mx-auto mb-4"/>
+                              <h3 className="text-3xl font-bold mb-4">{step.title}</h3>
+                              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{step.description}</p>
                           </div>
-                      );
-                  })}
+                      </div>
+                  ))}
               </div>
           </div>
       </Section>
