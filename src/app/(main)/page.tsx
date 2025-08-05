@@ -131,20 +131,22 @@ export default function Home() {
       </Section>
       
       <Section className="py-20 px-6">
-          <div className="container mx-auto">
-              <h2 className="text-4xl font-bold text-center mb-16">How It Works</h2>
-              <div className="space-y-16">
-                  {howItWorksSteps.map((step, index) => (
-                      <div key={index} className="grid grid-cols-1 gap-12 items-center">
-                          <div className="text-center">
-                              <step.icon className="w-12 h-12 text-primary mx-auto mb-4"/>
-                              <h3 className="text-3xl font-bold mb-4">{step.title}</h3>
-                              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{step.description}</p>
-                          </div>
-                      </div>
-                  ))}
-              </div>
+        <div className="container mx-auto">
+          <h2 className="text-4xl font-bold text-center mb-16">How It Works</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {howItWorksSteps.map((step, index) => (
+              <Card key={index} className="bg-card/50 shadow-lg rounded-xl hover:shadow-primary/20 transition-shadow duration-300">
+                <CardContent className="p-8 text-center flex flex-col items-center justify-center h-full">
+                  <div className="p-4 bg-primary/20 text-primary rounded-full mb-4 inline-block">
+                    <step.icon className="w-10 h-10" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3">{step.title}</h3>
+                  <p className="text-muted-foreground">{step.description}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
+        </div>
       </Section>
 
 
