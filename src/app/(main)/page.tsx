@@ -14,6 +14,7 @@ import TournamentCarousel from '@/components/shared/TournamentCarousel';
 import Section from '@/components/shared/Section';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Star } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 const testimonials = [
     {
@@ -136,6 +137,10 @@ export default function Home() {
         </div>
       </Section>
       
+      <div className="container my-12">
+          <Separator />
+      </div>
+
       <Section className="py-20 px-6">
         <div className="container mx-auto">
           <h2 className="text-4xl font-bold text-center mb-16">How It Works</h2>
