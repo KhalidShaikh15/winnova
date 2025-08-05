@@ -1,7 +1,7 @@
 
 'use client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Award, Gamepad2, Medal, Crown } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -104,29 +104,31 @@ export default function Home() {
   return (
     <div className="bg-background text-foreground">
       <Section className="w-full py-20 px-6">
-        <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <div className="flex flex-col items-center md:items-start text-center md:text-left">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter leading-tight">
-              Compete. Conquer. Collect.
-            </h1>
-            <p className="text-lg text-muted-foreground mt-4 max-w-md">
-              Your ultimate destination for high-stakes gaming tournaments. Join thousands of players, showcase your talent, and win incredible prizes.
-            </p>
-            <div className="mt-8">
-              <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-lg px-8 py-3 h-auto text-base">
-                <Link href="/tournaments">Browse Tournaments</Link>
-              </Button>
+        <div className="container">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="flex flex-col items-center md:items-start text-center md:text-left">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter leading-tight">
+                Compete. Conquer. Collect.
+              </h1>
+              <p className="text-lg text-muted-foreground mt-4 max-w-md">
+                Your ultimate destination for high-stakes gaming tournaments. Join thousands of players, showcase your talent, and win incredible prizes.
+              </p>
+              <div className="mt-8">
+                <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-lg px-8 py-3 h-auto text-base">
+                  <Link href="/tournaments">Browse Tournaments</Link>
+                </Button>
+              </div>
             </div>
-          </div>
-          <div className="flex justify-center">
-            <div className="relative w-full max-w-[600px] h-auto aspect-square rounded-2xl overflow-hidden shadow-2xl shadow-primary/20">
-                <Image
-                    src="/images/bgmi1.png"
-                    alt="Winnova Hero Image"
-                    fill
-                    className="object-cover"
-                    data-ai-hint="gaming action shot"
-                />
+            <div className="flex justify-center">
+              <div className="relative w-full max-w-[600px] h-auto aspect-square rounded-2xl overflow-hidden shadow-2xl shadow-primary/20">
+                  <Image
+                      src="/images/bgmi1.png"
+                      alt="Winnova Hero Image"
+                      fill
+                      className="object-cover"
+                      data-ai-hint="gaming action shot"
+                  />
+              </div>
             </div>
           </div>
         </div>
