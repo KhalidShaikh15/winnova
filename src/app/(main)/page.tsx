@@ -104,12 +104,12 @@ export default function Home() {
   return (
     <div className="bg-background text-foreground">
       <Section className="w-full py-20 px-6">
-        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-10">
-          <div className="flex flex-col items-center md:items-start text-center md:text-left max-w-xl">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter">
+        <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter leading-tight">
               Compete. Conquer. Collect.
             </h1>
-            <p className="text-lg text-muted-foreground mt-4">
+            <p className="text-lg text-muted-foreground mt-4 max-w-md">
               Your ultimate destination for high-stakes gaming tournaments. Join thousands of players, showcase your talent, and win incredible prizes.
             </p>
             <div className="mt-8">
@@ -118,14 +118,16 @@ export default function Home() {
               </Button>
             </div>
           </div>
-          <div className="relative w-full max-w-[600px] h-[600px] rounded-[20px] overflow-hidden">
-            <Image
-                src="/images/bgmi1.png"
-                alt="Winnova Hero Image"
-                fill
-                className="object-cover"
-                data-ai-hint="gaming action shot"
-            />
+          <div className="flex justify-center">
+            <div className="relative w-full max-w-[600px] h-auto aspect-square rounded-2xl overflow-hidden shadow-2xl shadow-primary/20">
+                <Image
+                    src="/images/bgmi1.png"
+                    alt="Winnova Hero Image"
+                    fill
+                    className="object-cover"
+                    data-ai-hint="gaming action shot"
+                />
+            </div>
           </div>
         </div>
       </Section>
