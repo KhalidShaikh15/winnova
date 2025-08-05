@@ -174,7 +174,7 @@ export default function Header() {
                   <span className="sr-only">Toggle Menu</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-screen max-w-[calc(100vw-2rem)] mx-auto p-4">
+              <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] p-2">
                  {isAnAdminPage && isAdmin ? (
                    <>
                     {adminNavLinks.map((link, index) => (

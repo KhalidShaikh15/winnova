@@ -10,7 +10,6 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
-import HowItWorks from '@/components/shared/HowItWorks';
 import TournamentCarousel from '@/components/shared/TournamentCarousel';
 import Section from '@/components/shared/Section';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -111,7 +110,7 @@ export default function Home() {
   }, [authLoading]);
 
   return (
-    <div className="bg-[#0d0d0d] text-white">
+    <div className="bg-background text-foreground">
       <Section className="w-full py-20 px-6">
         <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-10">
           <div className="flex flex-col items-center md:items-start text-center md:text-left max-w-xl">
@@ -122,7 +121,7 @@ export default function Home() {
               Your ultimate destination for high-stakes gaming tournaments. Join thousands of players, showcase your talent, and win incredible prizes.
             </p>
             <div className="mt-8">
-              <Button asChild size="lg" className="bg-[#FEBE8C] hover:bg-[#FEBE8C]/90 text-black font-bold rounded-lg px-8 py-3 h-auto text-base">
+              <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-lg px-8 py-3 h-auto text-base">
                 <Link href="/tournaments">Browse Tournaments</Link>
               </Button>
             </div>
@@ -149,7 +148,7 @@ export default function Home() {
                               <Image src={step.image} alt={step.title} width={500} height={500} className="rounded-lg" data-ai-hint={step.aiHint} />
                           </div>
                           <div className={`text-center md:text-left ${index % 2 === 1 ? 'md:order-1' : ''}`}>
-                            <step.icon className="w-12 h-12 text-[#FEBE8C] mx-auto md:mx-0 mb-4"/>
+                            <step.icon className="w-12 h-12 text-primary mx-auto md:mx-0 mb-4"/>
                             <h3 className="text-3xl font-bold mb-4">{step.title}</h3>
                             <p className="text-lg text-muted-foreground">{step.description}</p>
                           </div>
@@ -172,7 +171,7 @@ export default function Home() {
           <h2 className="text-4xl font-bold text-center mb-12">What Our Players Say</h2>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="bg-[#1a1a1a] border-[#2a2a2a] p-6 flex flex-col">
+              <Card key={index} className="bg-card border-border p-6 flex flex-col">
                 <div className="flex items-start gap-4">
                     <Avatar className="w-12 h-12">
                         <AvatarImage src={testimonial.avatar} data-ai-hint={testimonial.aiHint} />
@@ -180,7 +179,7 @@ export default function Home() {
                     </Avatar>
                     <div>
                         <p className="font-semibold text-lg">{testimonial.name}</p>
-                        <p className="text-sm text-[#FEBE8C]">{testimonial.prize}</p>
+                        <p className="text-sm text-primary">{testimonial.prize}</p>
                     </div>
                 </div>
                 <blockquote className="text-muted-foreground italic mt-4 flex-grow">

@@ -43,7 +43,7 @@ export default function TournamentCarousel({ tournaments, loading }: TournamentC
         {tournaments.map((tournament) => (
           <CarouselItem key={tournament.id} className="md:basis-1/2 lg:basis-1/3">
             <div className="p-1 h-full">
-              <Card className="bg-[#1a1a1a] border-[#2a2a2a] text-white flex flex-col h-full">
+              <Card className="bg-card border-border flex flex-col h-full">
                 <CardHeader>
                   <div className="relative w-full h-40 mb-4 rounded-lg overflow-hidden">
                     <Image
@@ -59,24 +59,24 @@ export default function TournamentCarousel({ tournaments, loading }: TournamentC
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 gap-4 text-sm flex-grow">
                     <div className="flex items-center gap-2">
-                        <Award className="w-4 h-4 text-[#FEBE8C]"/>
+                        <Award className="w-4 h-4 text-primary"/>
                         <span>₹{tournament.prize_pool.toLocaleString()}</span>
                     </div>
                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-[#FEBE8C]"/>
+                        <Users className="w-4 h-4 text-primary"/>
                         <span>Fee: ₹{tournament.entry_fee}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-[#FEBE8C]"/>
+                        <Calendar className="w-4 h-4 text-primary"/>
                         <span>{format(tournament.tournament_date.toDate(), 'PPP')}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Group className="w-4 h-4 text-[#FEBE8C]"/>
+                        <Group className="w-4 h-4 text-primary"/>
                         <span>{tournament.match_type}</span>
                     </div>
                 </CardContent>
                 <CardFooter>
-                  <Button asChild className="w-full bg-[#FEBE8C] hover:bg-[#FEBE8C]/90 text-black font-bold">
+                  <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
                     <Link href={`/tournaments/${tournament.id}`}>View Details</Link>
                   </Button>
                 </CardFooter>
@@ -85,8 +85,8 @@ export default function TournamentCarousel({ tournaments, loading }: TournamentC
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious className="text-white bg-[#1a1a1a] border-[#2a2a2a] hover:bg-[#2a2a2a]"/>
-      <CarouselNext className="text-white bg-[#1a1a1a] border-[#2a2a2a] hover:bg-[#2a2a2a]"/>
+      <CarouselPrevious className="text-foreground bg-background border-border hover:bg-accent"/>
+      <CarouselNext className="text-foreground bg-background border-border hover:bg-accent"/>
     </Carousel>
   )
 }
