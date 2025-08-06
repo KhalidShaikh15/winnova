@@ -124,7 +124,7 @@ export default function Home() {
               <div className="flex justify-center">
                 <div className="w-full max-w-[600px] h-auto rounded-2xl shadow-2xl shadow-primary/20">
                     <Image
-                        src="/images/bgmi0.png"
+                        src="/images/bgmi2.png"
                         alt="Winnova Hero Image"
                         width={600}
                         height={600}
