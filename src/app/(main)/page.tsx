@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Award, Gamepad2, Medal, Crown } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament } from '@/lib/types';
@@ -15,29 +15,34 @@ import Section from '@/components/shared/Section';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Star } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import Autoplay from "embla-carousel-autoplay";
 
 const testimonials = [
     {
       name: "SavagePlayer47",
-      prize: "Won ₹10,000",
       quote: "Winnova has the most competitive tournaments I've ever played in. The prize pools are massive and the community is fantastic!",
-      avatar: "https://placehold.co/100x100.png",
-      aiHint: "gamer portrait"
     },
     {
       name: "NinjaGamerX",
-      prize: "Won ₹5,000",
       quote: "The registration process is so smooth, and getting payouts is quick and easy. Highly recommend this platform for any serious gamer.",
-      avatar: "https://placehold.co/100x100.png",
-      aiHint: "esports player"
     },
     {
       name: "ClasherQueen",
-      prize: "Won ₹2,500",
       quote: "I won my first big tournament here! The support team was super helpful with my questions. Can't wait for the next event.",
-      avatar: "https://placehold.co/100x100.png",
-      aiHint: "woman gamer"
     },
+    {
+        name: "MaxPower",
+        quote: "The variety of games is great. Always something new to compete in. The leaderboards are a great touch!",
+    },
+    {
+        name: "Luna",
+        quote: "Fair play is taken seriously here, which I appreciate. The admins are responsive and the matches start on time.",
+    },
+    {
+        name: "Ghost",
+        quote: "A fantastic platform for both casual and pro players. The UI is clean and it's easy to find everything you need.",
+    }
 ];
 
 const howItWorksSteps = [
@@ -67,6 +72,8 @@ export default function Home() {
   const { user, loading: authLoading } = useAuth();
   const [upcomingTournaments, setUpcomingTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
+  const autoplayPlugin = useRef(Autoplay({ delay: 3000, stopOnInteraction: true }));
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -146,7 +153,7 @@ export default function Home() {
       <Section className="py-20 px-6">
         <div className="container mx-auto">
           <h2 className="text-4xl font-bold text-center mb-16">How It Works</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {howItWorksSteps.map((step, index) => (
               <Card key={index} className="bg-card/50 shadow-lg rounded-xl hover:shadow-primary/20 transition-shadow duration-300">
                 <CardContent className="p-8 text-center flex flex-col items-center justify-center h-full">
@@ -173,25 +180,39 @@ export default function Home() {
       <Section className="w-full py-20 px-6">
         <div className="container mx-auto">
           <h2 className="text-4xl font-bold text-center mb-12">What Our Players Say</h2>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="bg-card border-border p-6 flex flex-col">
-                <div className="flex items-start gap-4">
-                    <Avatar className="w-12 h-12">
-                        <AvatarImage src={testimonial.avatar} data-ai-hint={testimonial.aiHint} />
-                        <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                        <p className="font-semibold text-lg">{testimonial.name}</p>
-                        <p className="text-sm text-primary">{testimonial.prize}</p>
+           <Carousel
+            plugins={[autoplayPlugin.current]}
+            opts={{ align: "start", loop: true }}
+            className="w-full"
+            onMouseEnter={autoplayPlugin.current.stop}
+            onMouseLeave={autoplayPlugin.current.reset}
+          >
+            <CarouselContent>
+                {testimonials.map((testimonial, index) => (
+                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                    <div className="p-1 h-full">
+                    <Card className="bg-card border-border p-6 flex flex-col h-full">
+                        <div className="flex items-center gap-4 mb-4">
+                            <Avatar className="w-12 h-12">
+                                <AvatarFallback className="bg-primary/80 text-primary-foreground font-bold text-lg">
+                                {testimonial.name.charAt(0)}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="font-semibold text-lg">{testimonial.name}</p>
+                            </div>
+                        </div>
+                        <blockquote className="text-muted-foreground italic flex-grow">
+                            &ldquo;{testimonial.quote}&rdquo;
+                        </blockquote>
+                    </Card>
                     </div>
-                </div>
-                <blockquote className="text-muted-foreground italic mt-4 flex-grow">
-                    &ldquo;{testimonial.quote}&rdquo;
-                </blockquote>
-              </Card>
-            ))}
-          </div>
+                </CarouselItem>
+                ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden sm:flex" />
+            <CarouselNext className="hidden sm:flex" />
+            </Carousel>
         </div>
       </Section>
     </div>
