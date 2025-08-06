@@ -18,6 +18,7 @@ export default function Footer() {
           <div className="flex flex-col gap-3">
             <h4 className="font-semibold">Legal</h4>
             <Link href="/terms-and-conditions" className="text-sm text-white hover:text-primary">Terms of Service</Link>
+            <Link href="/refund-policy" className="text-sm text-white hover:text-primary">Refund Policy</Link>
             <Link href="#" className="text-sm text-white hover:text-primary">Privacy Policy</Link>
             <Link href="#" className="text-sm text-white hover:text-primary">Contact Us</Link>
           </div>
