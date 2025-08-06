@@ -122,13 +122,15 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex justify-center">
-                <div className="relative w-full max-w-[400px] lg:max-w-[600px] h-auto aspect-square rounded-2xl overflow-hidden shadow-2xl shadow-primary/20">
+                <div className="w-full max-w-[600px] h-auto rounded-2xl shadow-2xl shadow-primary/20">
                     <Image
-                        src="/images/bgmi2.png"
+                        src="/images/bgmi1.png"
                         alt="Winnova Hero Image"
-                        fill
-                        className="object-cover"
+                        width={600}
+                        height={600}
+                        className="rounded-2xl"
                         data-ai-hint="gaming action shot"
+                        priority
                     />
                 </div>
               </div>
