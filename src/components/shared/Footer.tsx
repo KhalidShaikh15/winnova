@@ -33,7 +33,7 @@ export default function Footer() {
              <h4 className="font-semibold">Follow Us</h4>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" asChild>
-                  <Link href="https://www.instagram.com/arenaclash.in" target="_blank" rel="noopener noreferrer"><Instagram className="h-4 w-4"/></Link>
+                  <Link href="https://www.instagram.com/winnova.in" target="_blank" rel="noopener noreferrer"><Instagram className="h-4 w-4"/></Link>
               </Button>
             </div>
           </div>

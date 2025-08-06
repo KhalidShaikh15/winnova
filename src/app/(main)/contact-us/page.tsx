@@ -19,9 +19,9 @@ export default function ContactUsPage() {
                     <Mail className="w-5 h-5"/>
                     <span>Email: support@winnova.in</span>
                 </a>
-                <a href="https://www.instagram.com/arenaclash.in" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-foreground hover:text-primary font-semibold">
+                <a href="https://www.instagram.com/winnova.in" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-foreground hover:text-primary font-semibold">
                     <Instagram className="w-5 h-5"/>
-                    <span>Instagram: arenaclash.in</span>
+                    <span>Instagram: winnova.in</span>
                 </a>
             </div>
             <p className="text-sm">We typically respond within 24 hours.</p>
