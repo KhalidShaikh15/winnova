@@ -6,7 +6,7 @@ import { Instagram, Mail } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="w-full border-t border-white/10 bg-[#0d0d0d] text-white">
+    <footer className="w-full border-t bg-background text-foreground">
       <div className="container mx-auto py-12 px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="flex flex-col gap-4">
@@ -17,17 +17,17 @@ export default function Footer() {
           </div>
           <div className="flex flex-col gap-3">
             <h4 className="font-semibold">Legal</h4>
-            <Link href="/terms-and-conditions" className="text-sm text-white hover:text-primary">Terms of Service</Link>
-            <Link href="/refund-policy" className="text-sm text-white hover:text-primary">Refund Policy</Link>
-            <Link href="/privacy-policy" className="text-sm text-white hover:text-primary">Privacy Policy</Link>
+            <Link href="/terms-and-conditions" className="text-sm text-muted-foreground hover:text-primary">Terms of Service</Link>
+            <Link href="/refund-policy" className="text-sm text-muted-foreground hover:text-primary">Refund Policy</Link>
+            <Link href="/privacy-policy" className="text-sm text-muted-foreground hover:text-primary">Privacy Policy</Link>
           </div>
           <div className="flex flex-col gap-3">
              <h4 className="font-semibold">Support</h4>
-             <a href="mailto:support@winnova.com" className="flex items-center gap-2 text-sm text-white hover:text-primary">
+             <a href="mailto:support@winnova.com" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">
                 <Mail className="w-4 h-4" />
                 support@winnova.com
              </a>
-             <Link href="/contact-us" className="text-sm text-white hover:text-primary">Contact Us</Link>
+             <Link href="/contact-us" className="text-sm text-muted-foreground hover:text-primary">Contact Us</Link>
           </div>
           <div className="flex flex-col gap-3">
              <h4 className="font-semibold">Follow Us</h4>
@@ -38,7 +38,7 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        <div className="mt-8 border-t border-white/10 pt-6 text-center">
+        <div className="mt-8 border-t pt-6 text-center">
            <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Winnova. All Rights Reserved.
           </p>
