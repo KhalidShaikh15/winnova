@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Logo from "./Logo";
 import { Button } from "../ui/button";
-import { Twitter, Instagram, Facebook, Mail, MessageCircle } from "lucide-react";
+import { Instagram, Mail } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -20,7 +20,6 @@ export default function Footer() {
             <Link href="/terms-and-conditions" className="text-sm text-white hover:text-primary">Terms of Service</Link>
             <Link href="/refund-policy" className="text-sm text-white hover:text-primary">Refund Policy</Link>
             <Link href="/privacy-policy" className="text-sm text-white hover:text-primary">Privacy Policy</Link>
-            <Link href="#" className="text-sm text-white hover:text-primary">Contact Us</Link>
           </div>
           <div className="flex flex-col gap-3">
              <h4 className="font-semibold">Support</h4>
@@ -28,22 +27,13 @@ export default function Footer() {
                 <Mail className="w-4 h-4" />
                 support@winnova.com
              </a>
-             <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-white hover:text-primary">
-                <MessageCircle className="w-4 h-4" />
-                WhatsApp
-             </a>
+             <Link href="/contact-us" className="text-sm text-white hover:text-primary">Contact Us</Link>
           </div>
           <div className="flex flex-col gap-3">
              <h4 className="font-semibold">Follow Us</h4>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" asChild>
-                  <Link href="#"><Twitter className="h-4 w-4"/></Link>
-              </Button>
-              <Button variant="ghost" size="icon" asChild>
                   <Link href="https://www.instagram.com/arenaclash.in" target="_blank" rel="noopener noreferrer"><Instagram className="h-4 w-4"/></Link>
-              </Button>
-              <Button variant="ghost" size="icon" asChild>
-                  <Link href="#"><Facebook className="h-4 w-4"/></Link>
               </Button>
             </div>
           </div>
