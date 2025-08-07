@@ -24,11 +24,12 @@ export default function Logo() {
     );
   }
 
-  const logoSrc = resolvedTheme === 'dark' ? '/images/logo-dark.png' : '/images/logo-light.png';
+  const logoSrc = resolvedTheme === 'dark' ? '/images/64x64.png' : '/images/logo_64x64 (1).png';
+  const logoAlt = resolvedTheme === 'dark' ? 'Winnova Logo Dark' : 'Winnova Logo Light';
 
   return (
     <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
-      <Image src={logoSrc} alt="Winnova Logo" width={32} height={32} />
+      <Image src={logoSrc} alt={logoAlt} width={32} height={32} />
       <span>Winnova</span>
     </Link>
   );
