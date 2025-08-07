@@ -15,7 +15,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, type ActionCodeSettings } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
 import Logo from "@/components/shared/Logo";
@@ -27,6 +27,12 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isSignedUp, setIsSignedUp] = useState(false);
+
+  const actionCodeSettings: ActionCodeSettings = {
+    url: 'https://battlebuck-15.firebaseapp.com/__/auth/action',
+    handleCodeInApp: true,
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,12 +60,13 @@ export default function SignupPage() {
         await updateProfile(userCredential.user, {
           displayName: username,
         });
+        await sendEmailVerification(userCredential.user, actionCodeSettings);
       }
+      setIsSignedUp(true);
       toast({
-        title: "Account Created",
-        description: "Welcome to Winnova! You are now logged in.",
+        title: "Account Created!",
+        description: "A verification email has been sent. Please check your inbox.",
       });
-      router.push('/');
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -70,6 +77,32 @@ export default function SignupPage() {
       setLoading(false);
     }
   };
+
+  if (isSignedUp) {
+    return (
+        <div className="w-full max-w-sm px-4 text-center">
+             <div className="flex justify-center mb-6">
+                <Logo />
+            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Verify Your Email</CardTitle>
+                    <CardDescription>
+                        We&apos;ve sent a verification link to <strong>{email}</strong>. Please check your inbox (and spam folder) to complete your registration.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground">After verifying, you can log in.</p>
+                </CardContent>
+                <CardFooter>
+                     <Button asChild className="w-full">
+                        <Link href="/login">Back to Login</Link>
+                    </Button>
+                </CardFooter>
+            </Card>
+        </div>
+    )
+  }
 
 
   return (

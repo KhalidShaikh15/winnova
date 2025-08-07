@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import React, { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, sendEmailVerification, type ActionCodeSettings } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
 import Logo from "@/components/shared/Logo";
@@ -18,6 +18,33 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  
+  const actionCodeSettings: ActionCodeSettings = {
+    url: 'https://battlebuck-15.firebaseapp.com/__/auth/action',
+    handleCodeInApp: true,
+  };
+
+  const handleResendVerification = async () => {
+    if (!auth || !auth.currentUser) return;
+    setResending(true);
+    try {
+        await sendEmailVerification(auth.currentUser, actionCodeSettings);
+        toast({
+            title: "Verification Email Sent",
+            description: "A new verification link has been sent to your email address."
+        });
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Failed to Resend",
+            description: error.message
+        });
+    } finally {
+        setResending(false);
+    }
+  }
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +59,20 @@ export default function LoginPage() {
       return;
     }
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      if (!userCredential.user.emailVerified) {
+        toast({
+            variant: "destructive",
+            title: "Email Not Verified",
+            description: "Please verify your email before logging in.",
+            action: <Button variant="secondary" size="sm" onClick={handleResendVerification} disabled={resending}>{resending ? 'Sending...': 'Resend'}</Button>
+        });
+        await auth.signOut();
+        setLoading(false);
+        return;
+      }
+      
       toast({
         title: "Login Successful",
         description: "Welcome back to Winnova!",
@@ -68,8 +108,13 @@ export default function LoginPage() {
                 <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
                 </div>
                 <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <div className="flex items-center">
+                        <Label htmlFor="password">Password</Label>
+                        <Link href="/forgot-password" className="ml-auto inline-block text-sm underline">
+                            Forgot your password?
+                        </Link>
+                    </div>
+                    <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
                 </div>
             </CardContent>
             <CardFooter className="flex flex-col">
