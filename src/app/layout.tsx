@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: 'Winnova',
   description: 'The ultimate platform for competitive gaming tournaments.',
   icons: {
-    icon: "/icon.svg",
+    icon: "/32x32.png",
   },
 };
 
