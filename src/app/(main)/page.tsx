@@ -147,40 +147,42 @@ export default function Home() {
       <section className="w-full py-12">
         <div className="container">
           <div className="bg-card/30 rounded-2xl p-8 md:p-12 min-h-[500px] flex items-center">
-            <div className="relative w-full grid md:grid-cols-2 gap-12 items-center">
-                {heroSlides.map((slide, index) => (
-                    <div
-                        key={index}
-                        className={`w-full h-full grid md:grid-cols-2 gap-12 items-center transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0 absolute inset-0'}`}
-                    >
-                        <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter leading-tight">
-                                {slide.slogan}
-                            </h1>
-                            <p className="text-lg text-muted-foreground mt-4 max-w-md">
-                                {slide.subtext}
-                            </p>
-                            <div className="mt-8">
-                                <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-lg px-8 py-3 h-auto text-base">
-                                    <Link href="/tournaments">Browse Tournaments</Link>
-                                </Button>
-                            </div>
-                        </div>
-                        <div className="flex justify-center">
-                            <div className="w-full max-w-[600px] h-auto rounded-2xl shadow-2xl shadow-primary/20">
-                                <Image
-                                    src={slide.image}
-                                    alt={slide.alt}
-                                    width={600}
-                                    height={600}
-                                    className="rounded-2xl w-full h-auto"
-                                    data-ai-hint={slide.dataAiHint}
-                                    priority={index === 0}
-                                />
-                            </div>
+            <div className="relative w-full">
+              {heroSlides.map((slide, index) => (
+                <div
+                  key={index}
+                  className={`w-full h-full transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0 absolute inset-0'}`}
+                >
+                  <div className="flex flex-col md:flex-row gap-12 items-center">
+                    <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left">
+                      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter leading-tight">
+                        {slide.slogan}
+                      </h1>
+                      <p className="text-lg text-muted-foreground mt-4 max-w-md">
+                        {slide.subtext}
+                      </p>
+                      <div className="mt-8">
+                        <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-lg px-8 py-3 h-auto text-base">
+                          <Link href="/tournaments">Browse Tournaments</Link>
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex-1 flex justify-center">
+                        <div className="w-full max-w-[600px] h-auto rounded-2xl shadow-2xl shadow-primary/20">
+                            <Image
+                                src={slide.image}
+                                alt={slide.alt}
+                                width={600}
+                                height={600}
+                                className="rounded-2xl w-full h-auto"
+                                data-ai-hint={slide.dataAiHint}
+                                priority={index === 0}
+                            />
                         </div>
                     </div>
-                ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
