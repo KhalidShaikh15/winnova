@@ -18,6 +18,30 @@ import { Separator } from '@/components/ui/separator';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import Autoplay from "embla-carousel-autoplay";
 
+const heroSlides = [
+    {
+        slogan: "Compete. Conquer. Collect.",
+        subtext: "Your ultimate destination for high-stakes gaming tournaments. Join thousands of players, showcase your talent, and win incredible prizes.",
+        image: "/images/bgmi2.png",
+        alt: "Gaming action shot",
+        dataAiHint: "gaming action shot"
+    },
+    {
+        slogan: "Battle with Skill. Rise with Glory.",
+        subtext: "Prove your mettle in intense matches. Every victory brings you closer to the top of the leaderboards.",
+        image: "/images/bgmi0.png",
+        alt: "Intense gaming battle",
+        dataAiHint: "intense gaming battle"
+    },
+    {
+        slogan: "Play Bold. Win Big. Be Legendary.",
+        subtext: "Step into the arena where legends are born. Claim massive prizes and write your name in Winnova history.",
+        image: "/images/bgmi1.png",
+        alt: "Legendary gaming moment",
+        dataAiHint: "legendary gaming moment"
+    }
+];
+
 const testimonials = [
     {
       name: "SavagePlayer47",
@@ -73,6 +97,15 @@ export default function Home() {
   const [upcomingTournaments, setUpcomingTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const autoplayPlugin = useRef(Autoplay({ delay: 3000, stopOnInteraction: true }));
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const slideInterval = setInterval(() => {
+        setCurrentSlide(prevSlide => (prevSlide + 1) % heroSlides.length);
+    }, 4000); // 4 seconds
+
+    return () => clearInterval(slideInterval);
+  }, []);
 
 
   useEffect(() => {
@@ -111,40 +144,47 @@ export default function Home() {
 
   return (
     <div className="bg-background text-foreground">
-      <Section className="w-full py-12">
+      <section className="w-full py-12">
         <div className="container">
-          <div className="bg-card/30 rounded-2xl p-8 md:p-12">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter leading-tight">
-                  Compete. Conquer. Collect.
-                </h1>
-                <p className="text-lg text-muted-foreground mt-4 max-w-md">
-                  Your ultimate destination for high-stakes gaming tournaments. Join thousands of players, showcase your talent, and win incredible prizes.
-                </p>
-                <div className="mt-8">
-                  <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-lg px-8 py-3 h-auto text-base">
-                    <Link href="/tournaments">Browse Tournaments</Link>
-                  </Button>
-                </div>
-              </div>
-              <div className="flex justify-center">
-                <div className="w-full max-w-[600px] h-auto rounded-2xl shadow-2xl shadow-primary/20">
-                    <Image
-                        src="/images/bgmi2.png"
-                        alt="Winnova Hero Image"
-                        width={600}
-                        height={600}
-                        className="rounded-2xl w-full h-auto"
-                        data-ai-hint="gaming action shot"
-                        priority
-                    />
-                </div>
-              </div>
+          <div className="bg-card/30 rounded-2xl p-8 md:p-12 min-h-[500px] flex items-center">
+            <div className="relative w-full grid md:grid-cols-2 gap-12 items-center">
+                {heroSlides.map((slide, index) => (
+                    <div
+                        key={index}
+                        className={`w-full h-full grid md:grid-cols-2 gap-12 items-center transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0 absolute inset-0'}`}
+                    >
+                        <div className="flex flex-col items-center md:items-start text-center md:text-left">
+                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter leading-tight">
+                                {slide.slogan}
+                            </h1>
+                            <p className="text-lg text-muted-foreground mt-4 max-w-md">
+                                {slide.subtext}
+                            </p>
+                            <div className="mt-8">
+                                <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-lg px-8 py-3 h-auto text-base">
+                                    <Link href="/tournaments">Browse Tournaments</Link>
+                                </Button>
+                            </div>
+                        </div>
+                        <div className="flex justify-center">
+                            <div className="w-full max-w-[600px] h-auto rounded-2xl shadow-2xl shadow-primary/20">
+                                <Image
+                                    src={slide.image}
+                                    alt={slide.alt}
+                                    width={600}
+                                    height={600}
+                                    className="rounded-2xl w-full h-auto"
+                                    data-ai-hint={slide.dataAiHint}
+                                    priority={index === 0}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
           </div>
         </div>
-      </Section>
+      </section>
       
       <div className="container my-12">
           <Separator />
