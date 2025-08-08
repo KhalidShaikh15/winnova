@@ -17,6 +17,7 @@ import { Star } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import Autoplay from "embla-carousel-autoplay";
+import { motion, AnimatePresence } from 'framer-motion';
 
 const heroSlides = [
     {
@@ -92,6 +93,12 @@ const howItWorksSteps = [
     }
 ]
 
+const slideVariants = {
+  hidden: { x: '100%', opacity: 0 },
+  visible: { x: '0%', opacity: 1 },
+  exit: { x: '-100%', opacity: 0 },
+};
+
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
   const [upcomingTournaments, setUpcomingTournaments] = useState<Tournament[]>([]);
@@ -146,20 +153,25 @@ export default function Home() {
     <div className="bg-background text-foreground">
       <section className="w-full py-12">
         <div className="container">
-          <div className="bg-card/30 rounded-2xl p-8 md:p-12 min-h-[500px] flex items-center">
-            <div className="relative w-full">
-              {heroSlides.map((slide, index) => (
-                <div
-                  key={index}
-                  className={`w-full h-full transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0 absolute inset-0'}`}
+          <div className="bg-card/30 rounded-2xl p-8 md:p-12 min-h-[500px] flex items-center overflow-hidden">
+            <div className="relative w-full h-full">
+              <AnimatePresence initial={false} mode="wait">
+                <motion.div
+                  key={currentSlide}
+                  variants={slideVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                  className="w-full h-full"
                 >
                   <div className="flex flex-col md:flex-row gap-12 items-center">
                     <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left">
                       <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter leading-tight">
-                        {slide.slogan}
+                        {heroSlides[currentSlide].slogan}
                       </h1>
                       <p className="text-lg text-muted-foreground mt-4 max-w-md">
-                        {slide.subtext}
+                        {heroSlides[currentSlide].subtext}
                       </p>
                       <div className="mt-8">
                         <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-lg px-8 py-3 h-auto text-base">
@@ -170,19 +182,19 @@ export default function Home() {
                     <div className="flex-1 flex justify-center">
                         <div className="w-full max-w-[600px] h-auto rounded-2xl shadow-2xl shadow-primary/20">
                             <Image
-                                src={slide.image}
-                                alt={slide.alt}
+                                src={heroSlides[currentSlide].image}
+                                alt={heroSlides[currentSlide].alt}
                                 width={600}
                                 height={600}
                                 className="rounded-2xl w-full h-auto"
-                                data-ai-hint={slide.dataAiHint}
-                                priority={index === 0}
+                                data-ai-hint={heroSlides[currentSlide].dataAiHint}
+                                priority={currentSlide === 0}
                             />
                         </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </div>
