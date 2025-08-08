@@ -37,7 +37,7 @@ const heroSlides = [
     {
         slogan: "Play Bold. Win Big. Be Legendary.",
         subtext: "Step into the arena where legends are born. Claim massive prizes and write your name in Winnova history.",
-        image: "/images/bgmi1.png",
+        image: "/images/bgmi3.png",
         alt: "Legendary gaming moment",
         dataAiHint: "legendary gaming moment"
     }
