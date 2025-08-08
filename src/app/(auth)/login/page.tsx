@@ -80,10 +80,16 @@ export default function LoginPage() {
       });
       router.push('/');
     } catch (error: any) {
+      let description = "An unknown error occurred.";
+      if (error.code === 'auth/invalid-credential') {
+        description = "Invalid credentials. Please check your email and password.";
+      } else {
+        description = error.message;
+      }
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.message,
+        description: description,
       });
     } finally {
       setLoading(false);
