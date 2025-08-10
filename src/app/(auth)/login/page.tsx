@@ -4,59 +4,24 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import React, { useState, useEffect } from "react";
-import { signInWithEmailAndPassword, sendEmailVerification, type ActionCodeSettings, isSignInWithEmailLink, signInWithEmailLink, applyActionCode } from "firebase/auth";
+import React, { useState, Suspense } from "react";
+import { signInWithEmailAndPassword, sendEmailVerification, type ActionCodeSettings } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Logo from "@/components/shared/Logo";
+import LoginHandler from "./LoginHandler";
+import LoginLoading from "./loading";
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
-  useEffect(() => {
-    const actionCode = searchParams.get('oobCode');
-
-    if (auth && actionCode && typeof window !== 'undefined' && isSignInWithEmailLink(auth, window.location.href)) {
-        let storedEmail = window.localStorage.getItem('emailForSignIn');
-        if (!storedEmail) {
-            // If the email is not in storage, the user may be on a different device.
-            // You could prompt for it, but for a pure verification flow, we handle the code directly.
-            // For password resets, Firebase handles this case automatically.
-        }
-
-        setLoading(true);
-        // This function handles email verification and password resets.
-        applyActionCode(auth, actionCode)
-            .then(() => {
-                toast({
-                    title: "Email Verified!",
-                    description: "Your email has been successfully verified. Redirecting...",
-                });
-                // Redirect to the main marketing site after successful verification.
-                window.location.href = 'https://winnova.in';
-            })
-            .catch((error) => {
-                toast({
-                    variant: "destructive",
-                    title: "Verification Failed",
-                    description: error.message,
-                });
-            })
-            .finally(() => {
-                // In case of failure, stop loading so the user can try to log in manually.
-                 setLoading(false);
-            });
-    }
-  }, [searchParams, toast]);
 
   const actionCodeSettings: ActionCodeSettings = {
     url: 'https://app.winnova.in/login',
@@ -116,7 +81,8 @@ export default function LoginPage() {
         description: "Welcome back to Winnova!",
       });
       router.push('/');
-    } catch (error: any) {
+    } catch (error: any)
+{
       let description = "An unknown error occurred.";
       if (error.code === 'auth/invalid-credential') {
         description = "Incorrect password or this email is not registered. Please check your credentials or sign up.";
@@ -135,6 +101,9 @@ export default function LoginPage() {
 
   return (
     <div className="w-full max-w-sm px-4">
+        <Suspense fallback={<LoginLoading />}>
+            <LoginHandler setLoading={setLoading} />
+        </Suspense>
         <div className="flex justify-center mb-6">
             <Logo />
         </div>
