@@ -16,7 +16,8 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, type ActionCodeSettings } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, firestore } from "@/lib/firebase";
+import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Logo from "@/components/shared/Logo";
 
@@ -46,7 +47,7 @@ export default function SignupPage() {
         return;
     }
     setLoading(true);
-    if (!auth) {
+    if (!auth || !firestore) {
       toast({
         variant: "destructive",
         title: "Signup Failed",
@@ -56,11 +57,36 @@ export default function SignupPage() {
       return;
     }
     try {
+      // Check if username is already taken
+      const usersRef = collection(firestore, "users");
+      const q = query(usersRef, where("username", "==", username));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        toast({
+            variant: "destructive",
+            title: "Signup Failed",
+            description: "Username is already taken. Please choose another one.",
+        });
+        setLoading(false);
+        return;
+      }
+
+
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       if (userCredential.user) {
         await updateProfile(userCredential.user, {
           displayName: username,
         });
+
+        // Create user document in firestore
+        await setDoc(doc(firestore, "users", userCredential.user.uid), {
+            uid: userCredential.user.uid,
+            username: username,
+            email: email,
+            createdAt: new Date(),
+        });
+
         window.localStorage.setItem('emailForSignIn', email);
         await sendEmailVerification(userCredential.user, actionCodeSettings);
       }

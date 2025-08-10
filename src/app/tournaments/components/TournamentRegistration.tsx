@@ -10,13 +10,15 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
-import { addDoc, collection, serverTimestamp } from "firebase/firestore"
+import { addDoc, collection, getDocs, query, where, serverTimestamp } from "firebase/firestore"
 import { firestore } from "@/lib/firebase"
 import { Award, Calendar, Gamepad2, Group, Loader2, Send, Clock, Download, ClipboardCopy, Check } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import { format } from "date-fns"
 import { QRCodeCanvas } from 'qrcode.react';
+
+const UPI_ID_REGEX = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
 
 // Base schema for common fields
 const baseSchema = z.object({
@@ -31,7 +33,15 @@ const shooterGameSchema = baseSchema.extend({
     player2_bgmi_id: z.string().min(2, `Player 2 ID is required.`),
     player3_bgmi_id: z.string().min(2, `Player 3 ID is required.`),
     player4_bgmi_id: z.string().min(2, `Player 4 ID is required.`),
+}).refine(data => {
+    const ids = [data.player1_bgmi_id, data.player2_bgmi_id, data.player3_bgmi_id, data.player4_bgmi_id];
+    const uniqueIds = new Set(ids);
+    return uniqueIds.size === ids.length;
+}, {
+    message: "Player IDs must be unique.",
+    path: ["player1_bgmi_id"], // Or a general path if preferred
 });
+
 
 // Schema for Clash of Clans
 const strategyGameSchema = baseSchema.extend({
@@ -53,7 +63,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     
     if (tournament.entry_fee > 0) {
       return dynamicSchema.extend({
-        user_upi_id: z.string().min(3, "Please enter the UPI ID you used for payment."),
+        user_upi_id: z.string().regex(UPI_ID_REGEX, "Please enter a valid UPI ID (e.g., name@bank)."),
       })
     }
     return dynamicSchema;
@@ -102,6 +112,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   };
 
   const handleCopyUpi = () => {
+    if (!tournament.upi_id) return;
     navigator.clipboard.writeText(tournament.upi_id);
     setIsCopied(true);
     toast({ title: "UPI ID Copied!", description: "You can now paste it in your payment app." });
@@ -124,8 +135,45 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     }
     
     try {
+      let player_ids: string[] = [];
+       if ('player1_bgmi_id' in values) {
+         player_ids = [
+           values.player1_bgmi_id,
+           values.player2_bgmi_id,
+           values.player3_bgmi_id,
+           values.player4_bgmi_id
+         ].filter(Boolean) as string[];
+       } else if ('clan_tag' in values) {
+         player_ids = [values.clan_tag as string];
+       }
+
+      // Check if any player ID is already registered for this tournament
+       if (player_ids.length > 0) {
+         const registrationsRef = collection(firestore, 'registrations');
+         const q = query(
+           registrationsRef,
+           where('tournament_id', '==', tournament.id),
+           where('player_ids', 'array-contains-any', player_ids)
+         );
+         const querySnapshot = await getDocs(q);
+
+         if (!querySnapshot.empty) {
+           const existingReg = querySnapshot.docs[0].data();
+           const duplicateId = player_ids.find(id => existingReg.player_ids.includes(id));
+           toast({
+             variant: "destructive",
+             title: "Registration Failed",
+             description: `Player ID "${duplicateId}" is already registered for this tournament in squad "${existingReg.squad_name}".`,
+           });
+           setLoading(false);
+           return;
+         }
+       }
+
+
       const docData = {
         ...values,
+        player_ids,
         user_id: user.uid,
         username: user.displayName || user.email || 'Anonymous',
         user_email: user.email,
