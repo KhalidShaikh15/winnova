@@ -23,7 +23,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   
   useEffect(() => {
-    if (auth && isSignInWithEmailLink(auth, window.location.href)) {
+    if (auth && typeof window !== 'undefined' && isSignInWithEmailLink(auth, window.location.href)) {
         let email = window.localStorage.getItem('emailForSignIn');
         if (!email) {
             email = window.prompt('Please provide your email for confirmation');
@@ -57,7 +57,7 @@ export default function LoginPage() {
   }, [router, toast]);
 
   const actionCodeSettings: ActionCodeSettings = {
-    url: `${window.location.origin}/login`,
+    url: 'https://app.winnova.in/login',
     handleCodeInApp: true,
   };
 
