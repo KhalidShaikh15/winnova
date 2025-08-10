@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
   const [submitted, setSubmitted] = useState(false);
 
   const actionCodeSettings: ActionCodeSettings = {
-    url: 'https://battlebuck-15.firebaseapp.com/__/auth/action',
+    url: `${window.location.origin}/login`,
     handleCodeInApp: true,
   };
 

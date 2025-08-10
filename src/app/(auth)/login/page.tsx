@@ -4,16 +4,17 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import React, { useState } from "react";
-import { signInWithEmailAndPassword, sendEmailVerification, type ActionCodeSettings } from "firebase/auth";
+import React, { useState, useEffect } from "react";
+import { signInWithEmailAndPassword, sendEmailVerification, type ActionCodeSettings, isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Logo from "@/components/shared/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,8 +22,42 @@ export default function LoginPage() {
   const [resending, setResending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
+  useEffect(() => {
+    if (auth && isSignInWithEmailLink(auth, window.location.href)) {
+        let email = window.localStorage.getItem('emailForSignIn');
+        if (!email) {
+            email = window.prompt('Please provide your email for confirmation');
+        }
+        if(email) {
+            setLoading(true);
+            signInWithEmailLink(auth, email, window.location.href)
+                .then(async (result) => {
+                    window.localStorage.removeItem('emailForSignIn');
+                    if (result.user.emailVerified) {
+                       toast({
+                           title: "Email Verified!",
+                           description: "Your email has been successfully verified. You can now log in.",
+                       });
+                    }
+                    // Clear the URL from the auth action params
+                    router.replace('/login');
+                })
+                .catch((error) => {
+                    toast({
+                        variant: "destructive",
+                        title: "Verification Failed",
+                        description: error.message,
+                    });
+                })
+                .finally(() => {
+                    setLoading(false);
+                });
+        }
+    }
+  }, [router, toast]);
+
   const actionCodeSettings: ActionCodeSettings = {
-    url: 'https://battlebuck-15.firebaseapp.com/__/auth/action',
+    url: `${window.location.origin}/login`,
     handleCodeInApp: true,
   };
 

@@ -31,7 +31,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const actionCodeSettings: ActionCodeSettings = {
-    url: 'https://battlebuck-15.firebaseapp.com/__/auth/action',
+    url: `${window.location.origin}/login`,
     handleCodeInApp: true,
   };
 
@@ -61,6 +61,7 @@ export default function SignupPage() {
         await updateProfile(userCredential.user, {
           displayName: username,
         });
+        window.localStorage.setItem('emailForSignIn', email);
         await sendEmailVerification(userCredential.user, actionCodeSettings);
       }
       setIsSignedUp(true);
