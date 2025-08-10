@@ -21,35 +21,6 @@ import { QRCodeCanvas } from 'qrcode.react';
 
 const UPI_ID_REGEX = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
 
-// Base schema for common fields
-const baseSchema = z.object({
-    squad_name: z.string().min(3, "Squad name must be at least 3 characters."),
-    contact_number: z.string().min(10, "A valid contact number is required."),
-    user_upi_id: z.string().optional(),
-});
-
-// Schema for BGMI/Free Fire
-const shooterGameSchema = baseSchema.extend({
-    player1_bgmi_id: z.string().min(2, `Player 1 ID is required.`),
-    player2_bgmi_id: z.string().min(2, `Player 2 ID is required.`),
-    player3_bgmi_id: z.string().min(2, `Player 3 ID is required.`),
-    player4_bgmi_id: z.string().min(2, `Player 4 ID is required.`),
-}).refine(data => {
-    const ids = [data.player1_bgmi_id, data.player2_bgmi_id, data.player3_bgmi_id, data.player4_bgmi_id];
-    const uniqueIds = new Set(ids);
-    return uniqueIds.size === ids.length;
-}, {
-    message: "Player IDs must be unique.",
-    path: ["player1_bgmi_id"], // Or a general path if preferred
-});
-
-
-// Schema for Clash of Clans
-const strategyGameSchema = baseSchema.extend({
-    clan_tag: z.string().min(2, "Clan Tag is required."),
-});
-
-
 export default function TournamentRegistration({ tournament }: { tournament: Tournament }) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -63,18 +34,48 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   useEffect(() => {
     setIsClient(true)
   }, [])
+  
+  // Define schemas inside the component to ensure they are correctly instantiated.
+  const baseSchema = z.object({
+    squad_name: z.string().min(3, "Squad name must be at least 3 characters."),
+    contact_number: z.string().min(10, "A valid contact number is required."),
+    user_upi_id: z.string().optional(),
+  });
+
+  const shooterGameSchema = baseSchema.extend({
+      player1_bgmi_id: z.string().min(2, `Player 1 ID is required.`),
+      player2_bgmi_id: z.string().min(2, `Player 2 ID is required.`),
+      player3_bgmi_id: z.string().min(2, `Player 3 ID is required.`),
+      player4_bgmi_id: z.string().min(2, `Player 4 ID is required.`),
+  }).refine(data => {
+      const ids = [data.player1_bgmi_id, data.player2_bgmi_id, data.player3_bgmi_id, data.player4_bgmi_id];
+      const uniqueIds = new Set(ids);
+      return uniqueIds.size === ids.length;
+  }, {
+      message: "Player IDs must be unique.",
+      path: ["player1_bgmi_id"],
+  });
+
+  const strategyGameSchema = baseSchema.extend({
+      clan_tag: z.string().min(2, "Clan Tag is required."),
+  });
+
 
   const registrationSchema = useMemo(() => {
-    const baseDynamicSchema = tournament.game_name === "Clash of Clans" ? strategyGameSchema : shooterGameSchema;
+    let schema = tournament.game_name === "Clash of Clans" 
+      ? strategyGameSchema 
+      : shooterGameSchema;
     
     if (tournament.entry_fee > 0) {
-      return baseDynamicSchema.extend({
+      // The issue was here. `extend` needs to be called on a schema.
+      // And the result needs to be a new schema.
+      schema = schema.extend({
         user_upi_id: z.string().regex(UPI_ID_REGEX, "Please enter a valid UPI ID (e.g., name@bank)."),
       });
     }
 
-    return baseDynamicSchema;
-  }, [tournament.game_name, tournament.entry_fee]);
+    return schema;
+  }, [tournament.game_name, tournament.entry_fee, shooterGameSchema, strategyGameSchema]);
   
   type RegistrationFormValues = z.infer<typeof registrationSchema>;
 
