@@ -1,3 +1,4 @@
+
 'use client'
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -64,17 +65,15 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   }, [])
 
   const registrationSchema = useMemo(() => {
-    let schema = tournament.game_name === "Clash of Clans" ? strategyGameSchema : shooterGameSchema;
+    const baseDynamicSchema = tournament.game_name === "Clash of Clans" ? strategyGameSchema : shooterGameSchema;
     
     if (tournament.entry_fee > 0) {
-      // The issue was here. `extend` needs to be called on a schema.
-      // And the result needs to be a new schema.
-      schema = schema.extend({
+      return baseDynamicSchema.extend({
         user_upi_id: z.string().regex(UPI_ID_REGEX, "Please enter a valid UPI ID (e.g., name@bank)."),
       });
     }
 
-    return schema;
+    return baseDynamicSchema;
   }, [tournament.game_name, tournament.entry_fee]);
   
   type RegistrationFormValues = z.infer<typeof registrationSchema>;
