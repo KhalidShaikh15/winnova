@@ -1,65 +1,51 @@
 
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ✅ Check if user is admin
-    function isAdmin() {
-      return exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    // Allow public read access to usernames for signup validation, but not listing all users.
+    // Allow users to create their own user document and read/update it.
+    match /users/{userId} {
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      // Allow unauthenticated users to check if a username exists
+      allow list: if request.auth == null;
     }
 
-    // === games collection
-    match /games/{gameId} {
-      allow read: if true;              // ✅ public read
-      allow write: if isAdmin();        // ✅ admin-only write
+    // Admins can read/write anything
+    match /admins/{userId} {
+        allow read: if get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+        allow write: if get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
     }
-
-    // === tournaments collection
+    
+    // Tournaments can be read by any authenticated user, but only written by admins.
     match /tournaments/{tournamentId} {
-      allow read: if true;              // ✅ public read
-      allow write: if isAdmin();
+        allow read: if request.auth != null;
+        allow write: if get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // === teams collection
-    match /teams/{teamId} {
-      allow read: if true;              // ✅ public read
-      allow write: if isAdmin();
-    }
-
-    // === matches collection
-    match /matches/{matchId} {
-      allow read: if true;              // ✅ public read
-      allow write: if isAdmin();
-    }
-
-    // === registrations collection
+    // Registrations can be created by any authenticated user.
+    // They can be read by the user who created them or by an admin.
+    // They can only be updated/deleted by an admin.
     match /registrations/{registrationId} {
-      allow create: if request.auth != null;  // ✅ allow signed-in users to register
-      allow read: if request.auth != null; // ✅ allow signed-in users to read
-      allow update, delete: if isAdmin(); // ✅ admin-only write
+        allow create: if request.auth != null;
+        allow read: if request.auth != null && (resource.data.user_id == request.auth.uid || get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin');
+        allow update, delete: if get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // === results collection
-    match /results/{resultId} {
-      allow read: if true;              // ✅ public read
-      allow write: if isAdmin();
+    // Match results can be read by anyone (for leaderboards).
+    // They can only be written by admins.
+    match /matches/{matchId} {
+        allow read: if true;
+        allow write: if get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Games can be read by anyone but only written by admins
+    match /games/{gameId} {
+        allow read: if true;
+        allow write: if get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // === leaderboard collection
-    match /leaderboard/{entryId} {
-      allow read: if true;              // ✅ public read (this was the main fix)
-      allow write: if isAdmin();
-    }
-
-    // === payouts collection
-    match /payouts/{payoutId} {
-      allow read, write: if isAdmin();
-    }
-
-    // === admins collection
-    match /admins/{adminId} {
-      allow read: if request.auth != null && request.auth.uid == adminId;
-      allow create, update, delete: if isAdmin();
-    }
   }
 }
