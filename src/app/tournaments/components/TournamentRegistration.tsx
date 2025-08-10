@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { useState, useMemo, useRef } from "react"
+import { useState, useMemo, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -57,6 +57,11 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   const [submittedUpiId, setSubmittedUpiId] = useState("");
   const qrRef = useRef<HTMLDivElement>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const registrationSchema = useMemo(() => {
     const dynamicSchema = tournament.game_name === "Clash of Clans" ? strategyGameSchema : shooterGameSchema;
@@ -282,7 +287,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
             </div>
         </div>
 
-        {upiLink && (
+        {isClient && upiLink && (
           <div className="mb-6 p-4 rounded-lg bg-muted/50 border flex flex-col items-center gap-6">
             <div className="flex flex-col items-center text-center gap-4">
               <div ref={qrRef} className="bg-white p-2 rounded-md">
