@@ -32,7 +32,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const actionCodeSettings: ActionCodeSettings = {
-    url: 'https://app.winnova.in/login',
+    url: 'https://www.winnova.in',
     handleCodeInApp: true,
   };
 

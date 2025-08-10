@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
   const [submitted, setSubmitted] = useState(false);
 
   const actionCodeSettings: ActionCodeSettings = {
-    url: 'https://app.winnova.in/login',
+    url: 'https://www.winnova.in',
     handleCodeInApp: true,
   };
 
