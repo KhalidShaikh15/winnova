@@ -31,7 +31,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const actionCodeSettings: ActionCodeSettings = {
-    url: `${window.location.origin}/login`,
+    url: `${typeof window !== 'undefined' ? window.location.origin : ''}/login`,
     handleCodeInApp: true,
   };
 
@@ -70,10 +70,16 @@ export default function SignupPage() {
         description: "A verification email has been sent. Please check your inbox.",
       });
     } catch (error: any) {
+      let description = "An unknown error occurred.";
+      if (error.code === 'auth/email-already-in-use') {
+        description = "This email is already in use. Please try another one.";
+      } else {
+        description = error.message;
+      }
       toast({
         variant: "destructive",
         title: "Signup Failed",
-        description: error.message,
+        description: description,
       });
     } finally {
       setLoading(false);
