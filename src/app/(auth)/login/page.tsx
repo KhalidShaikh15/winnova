@@ -57,7 +57,7 @@ export default function LoginPage() {
   }, [router, toast]);
 
   const actionCodeSettings: ActionCodeSettings = {
-    url: 'https://www.winnova.in',
+    url: 'https://app.winnova.in/login',
     handleCodeInApp: true,
   };
 
