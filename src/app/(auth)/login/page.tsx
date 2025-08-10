@@ -119,7 +119,7 @@ export default function LoginPage() {
     } catch (error: any) {
       let description = "An unknown error occurred.";
       if (error.code === 'auth/invalid-credential') {
-        description = "Invalid credentials. Please check your email and password.";
+        description = "Incorrect password or this email is not registered. Please check your credentials or sign up.";
       } else {
         description = error.message;
       }
