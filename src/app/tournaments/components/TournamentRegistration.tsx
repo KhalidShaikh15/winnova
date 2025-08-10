@@ -36,41 +36,42 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   }, [])
   
   const registrationSchema = useMemo(() => {
-    const baseSchema = z.object({
+    const baseFields = {
       squad_name: z.string().min(3, "Squad name must be at least 3 characters."),
       contact_number: z.string().min(10, "A valid contact number is required."),
-      user_upi_id: z.string().optional(),
-    });
+    };
 
-    const shooterGameSchema = baseSchema.extend({
-        player1_bgmi_id: z.string().min(2, `Player 1 ID is required.`),
-        player2_bgmi_id: z.string().min(2, `Player 2 ID is required.`),
-        player3_bgmi_id: z.string().min(2, `Player 3 ID is required.`),
-        player4_bgmi_id: z.string().min(2, `Player 4 ID is required.`),
-    }).refine(data => {
-        const ids = [data.player1_bgmi_id, data.player2_bgmi_id, data.player3_bgmi_id, data.player4_bgmi_id];
-        const uniqueIds = new Set(ids);
-        return uniqueIds.size === ids.length;
-    }, {
-        message: "Player IDs must be unique.",
-        path: ["player1_bgmi_id"],
-    });
+    const gameSpecificFields = tournament.game_name === "Clash of Clans"
+      ? { clan_tag: z.string().min(2, "Clan Tag is required.") }
+      : {
+          player1_bgmi_id: z.string().min(2, "Player 1 ID is required."),
+          player2_bgmi_id: z.string().min(2, "Player 2 ID is required."),
+          player3_bgmi_id: z.string().min(2, "Player 3 ID is required."),
+          player4_bgmi_id: z.string().min(2, "Player 4 ID is required."),
+        };
 
-    const strategyGameSchema = baseSchema.extend({
-        clan_tag: z.string().min(2, "Clan Tag is required."),
+    const paymentField = tournament.entry_fee > 0
+      ? { user_upi_id: z.string().regex(UPI_ID_REGEX, "Please enter a valid UPI ID (e.g., name@bank).") }
+      : { user_upi_id: z.string().optional() };
+
+    const combinedSchema = z.object({
+      ...baseFields,
+      ...gameSpecificFields,
+      ...paymentField,
     });
     
-    let dynamicSchema = tournament.game_name === "Clash of Clans"
-      ? strategyGameSchema
-      : shooterGameSchema;
-
-    if (tournament.entry_fee > 0) {
-      return dynamicSchema.extend({
-        user_upi_id: z.string().regex(UPI_ID_REGEX, "Please enter a valid UPI ID (e.g., name@bank)."),
-      });
+    if (tournament.game_name !== "Clash of Clans") {
+       return combinedSchema.refine(data => {
+            const ids = [data.player1_bgmi_id, data.player2_bgmi_id, data.player3_bgmi_id, data.player4_bgmi_id];
+            const uniqueIds = new Set(ids);
+            return uniqueIds.size === ids.length;
+        }, {
+            message: "Player IDs must be unique.",
+            path: ["player1_bgmi_id"], // You can set the path for the error message
+        });
     }
 
-    return dynamicSchema;
+    return combinedSchema;
   }, [tournament.game_name, tournament.entry_fee]);
   
   type RegistrationFormValues = z.infer<typeof registrationSchema>;
