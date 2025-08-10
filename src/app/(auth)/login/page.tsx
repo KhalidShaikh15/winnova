@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import React, { useState, useEffect } from "react";
-import { signInWithEmailAndPassword, sendEmailVerification, type ActionCodeSettings, isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
+import { signInWithEmailAndPassword, sendEmailVerification, type ActionCodeSettings, isSignInWithEmailLink, signInWithEmailLink, applyActionCode } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Logo from "@/components/shared/Logo";
@@ -23,38 +23,40 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   
   useEffect(() => {
-    if (auth && typeof window !== 'undefined' && isSignInWithEmailLink(auth, window.location.href)) {
-        let email = window.localStorage.getItem('emailForSignIn');
-        if (!email) {
-            email = window.prompt('Please provide your email for confirmation');
+    const actionCode = searchParams.get('oobCode');
+
+    if (auth && actionCode && typeof window !== 'undefined' && isSignInWithEmailLink(auth, window.location.href)) {
+        let storedEmail = window.localStorage.getItem('emailForSignIn');
+        if (!storedEmail) {
+            // If the email is not in storage, the user may be on a different device.
+            // You could prompt for it, but for a pure verification flow, we handle the code directly.
+            // For password resets, Firebase handles this case automatically.
         }
-        if(email) {
-            setLoading(true);
-            signInWithEmailLink(auth, email, window.location.href)
-                .then(async (result) => {
-                    window.localStorage.removeItem('emailForSignIn');
-                    if (result.user.emailVerified) {
-                       toast({
-                           title: "Email Verified!",
-                           description: "Your email has been successfully verified. You can now log in.",
-                       });
-                    }
-                    // Clear the URL from the auth action params
-                    router.replace('/login');
-                })
-                .catch((error) => {
-                    toast({
-                        variant: "destructive",
-                        title: "Verification Failed",
-                        description: error.message,
-                    });
-                })
-                .finally(() => {
-                    setLoading(false);
+
+        setLoading(true);
+        // This function handles email verification and password resets.
+        applyActionCode(auth, actionCode)
+            .then(() => {
+                toast({
+                    title: "Email Verified!",
+                    description: "Your email has been successfully verified. Redirecting...",
                 });
-        }
+                // Redirect to the main marketing site after successful verification.
+                window.location.href = 'https://winnova.in';
+            })
+            .catch((error) => {
+                toast({
+                    variant: "destructive",
+                    title: "Verification Failed",
+                    description: error.message,
+                });
+            })
+            .finally(() => {
+                // In case of failure, stop loading so the user can try to log in manually.
+                 setLoading(false);
+            });
     }
-  }, [router, toast]);
+  }, [searchParams, toast]);
 
   const actionCodeSettings: ActionCodeSettings = {
     url: 'https://app.winnova.in/login',
