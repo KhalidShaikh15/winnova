@@ -64,14 +64,17 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   }, [])
 
   const registrationSchema = useMemo(() => {
-    const dynamicSchema = tournament.game_name === "Clash of Clans" ? strategyGameSchema : shooterGameSchema;
+    let schema = tournament.game_name === "Clash of Clans" ? strategyGameSchema : shooterGameSchema;
     
     if (tournament.entry_fee > 0) {
-      return dynamicSchema.extend({
+      // The issue was here. `extend` needs to be called on a schema.
+      // And the result needs to be a new schema.
+      schema = schema.extend({
         user_upi_id: z.string().regex(UPI_ID_REGEX, "Please enter a valid UPI ID (e.g., name@bank)."),
-      })
+      });
     }
-    return dynamicSchema;
+
+    return schema;
   }, [tournament.game_name, tournament.entry_fee]);
   
   type RegistrationFormValues = z.infer<typeof registrationSchema>;
