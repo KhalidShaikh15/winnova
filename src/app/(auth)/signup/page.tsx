@@ -99,6 +99,8 @@ export default function SignupPage() {
       let description = "An unknown error occurred.";
       if (error.code === 'auth/email-already-in-use') {
         description = "This email is already in use. Please try another one.";
+      } else if (error.code === 'missing-or-insufficient-permissions') {
+        description = "We couldn't verify your username. Please check your network and try again.";
       } else {
         description = error.message;
       }
