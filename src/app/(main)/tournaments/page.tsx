@@ -44,11 +44,9 @@ export default function TournamentsPage() {
       }
     };
     
-    if (!authLoading) {
-        fetchData();
-    }
+    fetchData();
 
-  }, [authLoading]);
+  }, []);
 
   return (
     <div className="container py-12">
@@ -63,8 +61,6 @@ export default function TournamentsPage() {
         <div className="flex justify-center">
           <Loader2 className="h-16 w-16 animate-spin" />
         </div>
-      ) : !user ? (
-        <p className="text-center text-muted-foreground">Please <Link href="/login" className="underline font-semibold">log in</Link> to view available tournaments.</p>
       ) : tournaments.length === 0 ? (
         <p className="text-center text-muted-foreground">No tournaments found. Check back soon!</p>
       ) : (

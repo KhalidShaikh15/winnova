@@ -77,11 +77,9 @@ export default function GameDetailsPage() {
       }
     };
 
-    if (!authLoading) {
-        fetchGameData();
-    }
+    fetchGameData();
     
-  }, [params.id, authLoading]);
+  }, [params.id]);
 
   if (loading || authLoading) {
     return (
@@ -106,9 +104,7 @@ export default function GameDetailsPage() {
       
        <div className="space-y-8">
         <h2 className="text-3xl font-bold text-center mb-8 font-headline">Available Tournaments</h2>
-        {!user ? (
-             <p className="text-center text-muted-foreground">Please <Link href="/login" className="underline font-semibold">log in</Link> to see tournaments for {game.name}.</p>
-        ) : tournaments.length === 0 ? (
+        {tournaments.length === 0 ? (
             <p className="text-center text-muted-foreground">No upcoming tournaments for {game.name}. Check back soon!</p>
         ) : (
             tournaments.map((tournament) => (
