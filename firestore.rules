@@ -1,57 +1,52 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to check for admin role
     function isAdmin() {
-      return exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+      // Check if the user's UID exists in the 'admins' collection.
+      // request.auth is null if the user is not authenticated.
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
-    // Users can only read/update their own data.
+    // By default, deny all access to collections not explicitly matched.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Users can read/update their own data. Creation happens on signup.
     match /users/{userId} {
       allow read, update: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null;
+      allow create: if request.auth != null; // Allow user creation during signup
     }
 
-    // Games are publicly readable, but only writable by admins.
+    // Games and Tournaments are public to read, but only admins can modify.
     match /games/{gameId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    
-    // Tournaments are publicly readable, but only writable by admins.
     match /tournaments/{tournamentId} {
       allow read: if true;
       allow write: if isAdmin();
     }
     
-    // Leaderboard is publicly readable, but only writable by admins.
-    match /leaderboard/{entryId} {
+    // Match results need to be public for the leaderboard calculation.
+    match /matches/{matchId} {
         allow read: if true;
         allow write: if isAdmin();
     }
 
     // Registrations can be created by any authenticated user.
-    // Admins can read/write all registrations.
-    // Users can only read their own registrations.
+    // Only the user who created it or an admin can read it.
+    // Only admins can update/delete it.
     match /registrations/{registrationId} {
       allow create: if request.auth != null;
-      allow read: if isAdmin() || (request.auth != null && request.auth.uid == resource.data.user_id);
+      allow read: if (request.auth != null && request.auth.uid == resource.data.user_id) || isAdmin();
       allow update, delete: if isAdmin();
     }
-
-    // Match results can only be written by admins.
-    // Authenticated users can read all match results for leaderboard purposes.
-    match /matches/{matchId} {
-        allow read: if request.auth != null;
-        allow write: if isAdmin();
-    }
-
-    // Admins collection can only be read/written by other admins.
-    // This prevents users from discovering who the admins are.
+    
+    // Admins collection is private. Only backend services should write to this.
     match /admins/{adminId} {
-        allow read, write: if isAdmin();
+      allow read, write: if false;
     }
   }
 }
