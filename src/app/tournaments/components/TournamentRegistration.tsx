@@ -67,7 +67,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
             return uniqueIds.size === ids.length;
         }, {
             message: "Player IDs must be unique.",
-            path: ["player1_bgmi_id"], // You can set the path for the error message
+            path: ["player1_bgmi_id"],
         });
     }
 
@@ -121,7 +121,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     navigator.clipboard.writeText(tournament.upi_id);
     setIsCopied(true);
     toast({ title: "UPI ID Copied!", description: "You can now paste it in your payment app." });
-    setTimeout(() => setIsCopied(false), 2000); // Reset after 2 seconds
+    setTimeout(() => setIsCopied(false), 2000);
   };
 
 
@@ -206,7 +206,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         game_name: tournament.game_name,
         status: 'pending' as const,
         created_at: serverTimestamp(),
-        slot: 'A', // Default slot
+        slot: 'A',
       };
       
       await addDoc(collection(firestore, 'registrations'), docData);
