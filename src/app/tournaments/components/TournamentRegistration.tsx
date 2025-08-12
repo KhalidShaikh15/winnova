@@ -1,4 +1,3 @@
-
 'use client'
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -140,25 +139,8 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     }
     
     try {
-      // Check for duplicate squad name (case-insensitive)
-      const registrationsRef = collection(firestore, 'registrations');
-      const squadNameLower = values.squad_name.toLowerCase();
-      const squadNameQuery = query(
-          registrationsRef,
-          where('tournament_id', '==', tournament.id),
-          where('squad_name_lowercase', '==', squadNameLower)
-      );
-      const squadNameSnapshot = await getDocs(squadNameQuery);
-      if (!squadNameSnapshot.empty) {
-          toast({
-              variant: "destructive",
-              title: "Registration Failed",
-              description: `A squad with the name "${values.squad_name}" is already registered for this tournament.`,
-          });
-          setLoading(false);
-          return;
-      }
-
+      // The duplicate check is now handled by a Cloud Function.
+      // We still check for duplicate player IDs on the client for immediate feedback.
       let player_ids: string[] = [];
        if ('player1_bgmi_id' in values) {
          player_ids = [
@@ -174,7 +156,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       // Check if any player ID is already registered for this tournament
        if (player_ids.length > 0) {
          const q = query(
-           registrationsRef,
+           collection(firestore, 'registrations'),
            where('tournament_id', '==', tournament.id),
            where('player_ids', 'array-contains-any', player_ids)
          );
@@ -193,10 +175,9 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
          }
        }
 
-
       const docData = {
         ...values,
-        squad_name_lowercase: squadNameLower,
+        squad_name_lowercase: values.squad_name.toLowerCase(),
         player_ids,
         user_id: user.uid,
         username: user.displayName || user.email || 'Anonymous',
@@ -218,14 +199,23 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       setSubmittedUpiId(values.user_upi_id || "");
       setIsSubmitted(true);
       form.reset();
-    } catch (error) {
-      console.error("Registration submission error:", error);
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred. Please try again.";
-      toast({
-        variant: 'destructive',
-        title: "Registration Failed",
-        description: errorMessage,
-      });
+    } catch (error: any) {
+        console.error("Registration submission error:", error);
+        // Handle specific error from Cloud Function
+        if (error.code === 'already-exists') {
+             toast({
+                variant: "destructive",
+                title: "Squad Name Taken",
+                description: `A squad with the name "${values.squad_name}" is already registered. Please choose another name.`,
+             });
+        } else {
+             const errorMessage = error.message || "An unexpected error occurred. Please try again.";
+             toast({
+                variant: 'destructive',
+                title: "Registration Failed",
+                description: errorMessage,
+             });
+        }
     } finally {
       setLoading(false);
     }
@@ -383,5 +373,4 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     </Card>
   )
 }
-
     

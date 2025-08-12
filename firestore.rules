@@ -9,16 +9,20 @@ service cloud.firestore {
     }
 
     // ===== DEFAULT DENY =====
-    // Deny all reads and writes by default.
+    // Deny all reads and writes by default. We will open up collections
+    // one by one. This is more secure than a default allow.
     match /{document=**} {
       allow read, write: if false;
     }
 
     // ===== USERS =====
     match /users/{userId} {
-      // Signed-in user can manage their own profile, Admins can manage any.
-      allow read, update, delete: if (request.auth != null && request.auth.uid == userId) || isAdmin();
+      // The signed-in user can read/update their own profile.
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      // Allow a user to create their own document.
       allow create: if request.auth != null && request.auth.uid == userId;
+      // Only an admin can delete a user document.
+      allow delete: if isAdmin();
     }
 
     // ===== GAMES (Public Read) =====
@@ -40,26 +44,25 @@ service cloud.firestore {
     }
 
     // ===== REGISTRATIONS =====
+    // The most sensitive collection.
     match /registrations/{registrationId} {
-      // Allow the query for duplicate squad names to proceed.
-      // This is secure because the client query also includes tournament_id.
-      allow list: if request.auth != null &&
-                   request.query.keys().hasOnly(['tournament_id', 'squad_name_lowercase']);
-
-      // Any logged-in user can create their own registration
+      // Any logged-in user can create a registration.
+      // The validation is handled by a Cloud Function.
       allow create: if request.auth != null;
 
-      // User can read their own registration or admin can read all
-      allow read: if isAdmin() ||
+      // Only the user who created the registration or an admin can read it.
+      allow read: if isAdmin() || 
                    (request.auth != null && request.auth.uid == resource.data.user_id);
-                   
-      // Admin can update/delete
+
+      // Only an admin can update or delete.
       allow update, delete: if isAdmin();
     }
-    
+
     // ===== ADMINS (Private) =====
     match /admins/{adminId} {
-      allow read, write: if false; // Fully private
+      // No one can read or write this collection from the client.
+      // This is for server-side checks only.
+      allow read, write: if false;
     }
   }
 }
