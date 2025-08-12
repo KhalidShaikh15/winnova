@@ -9,16 +9,16 @@ service cloud.firestore {
     }
 
     // ===== DEFAULT DENY =====
-    // Deny all reads and writes by default to ensure security.
+    // This is not strictly necessary if all paths are covered, but it's good practice.
     match /{document=**} {
       allow read, write: if false;
     }
 
     // ===== USERS =====
     match /users/{userId} {
-      // A user can create their own document, and can read/update it.
-      // Only admins can delete user documents.
-      allow create, read, update: if request.auth != null && request.auth.uid == userId;
+      // Only the signed-in user can read/update their own profile
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
       allow delete: if isAdmin();
     }
 
@@ -36,27 +36,26 @@ service cloud.firestore {
 
     // ===== MATCHES (Public Read for Leaderboard) =====
     match /matches/{matchId} {
-      // This collection needs to be public so the leaderboard can be built
-      // by anyone, authenticated or not.
-      allow read: if true;
+      allow read: if true;           // Needed for leaderboard building
       allow write: if isAdmin();
     }
 
     // ===== REGISTRATIONS (Protected) =====
     match /registrations/{registrationId} {
-      // Any authenticated user can create a registration.
       allow create: if request.auth != null;
-      // Only an admin or the user who created the registration can read it.
-      allow read: if isAdmin() || (request.auth != null && request.auth.uid == resource.data.user_id);
-      // Only an admin can update (e.g., confirm/reject) or delete a registration.
-      allow update, delete: if isAdmin();
+      // User can read their own registration, admin can read any
+      allow read, update: if isAdmin() || 
+                   (request.auth != null && request.auth.uid == resource.data.user_id);
+      
+      // Allows the client to query for duplicate squad names securely
+      allow list: if request.query.keys().hasAll(['squad_name_lowercase', 'tournament_id']);
+
+      allow delete: if isAdmin();
     }
 
     // ===== ADMINS (Private) =====
     match /admins/{adminId} {
-      // This collection is fully private. Nobody can read or write to it from the client.
-      // This prevents users from being able to see who the admins are.
-      allow read, write: if false;
+      allow read, write: if false;   // Fully private
     }
   }
 }
