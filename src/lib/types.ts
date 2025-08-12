@@ -39,6 +39,7 @@ export interface Registration {
   tournament_title?: string;
   game_name: string;
   squad_name: string;
+  squad_name_lowercase: string;
   player_ids: string[];
   player1_bgmi_id?: string;
   player2_bgmi_id?: string;
@@ -77,3 +78,5 @@ export interface LeaderboardEntry {
     points: number;
     rank: number;
 }
+
+    

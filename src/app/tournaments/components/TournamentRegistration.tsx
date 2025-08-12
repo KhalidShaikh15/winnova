@@ -140,6 +140,25 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     }
     
     try {
+      // Check for duplicate squad name (case-insensitive)
+      const registrationsRef = collection(firestore, 'registrations');
+      const squadNameLower = values.squad_name.toLowerCase();
+      const squadNameQuery = query(
+          registrationsRef,
+          where('tournament_id', '==', tournament.id),
+          where('squad_name_lowercase', '==', squadNameLower)
+      );
+      const squadNameSnapshot = await getDocs(squadNameQuery);
+      if (!squadNameSnapshot.empty) {
+          toast({
+              variant: "destructive",
+              title: "Registration Failed",
+              description: `A squad with the name "${values.squad_name}" is already registered for this tournament.`,
+          });
+          setLoading(false);
+          return;
+      }
+
       let player_ids: string[] = [];
        if ('player1_bgmi_id' in values) {
          player_ids = [
@@ -154,7 +173,6 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
 
       // Check if any player ID is already registered for this tournament
        if (player_ids.length > 0) {
-         const registrationsRef = collection(firestore, 'registrations');
          const q = query(
            registrationsRef,
            where('tournament_id', '==', tournament.id),
@@ -178,6 +196,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
 
       const docData = {
         ...values,
+        squad_name_lowercase: squadNameLower,
         player_ids,
         user_id: user.uid,
         username: user.displayName || user.email || 'Anonymous',
@@ -364,3 +383,5 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     </Card>
   )
 }
+
+    
