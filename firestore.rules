@@ -9,25 +9,22 @@ service cloud.firestore {
     }
 
     // ===== DEFAULT DENY =====
-    // Deny all reads and writes by default. We will open up collections
-    // one by one. This is more secure than a default allow.
     match /{document=**} {
       allow read, write: if false;
     }
 
     // ===== USERS =====
     match /users/{userId} {
-      // The signed-in user can read/update their own profile.
-      allow read, update: if request.auth != null && request.auth.uid == userId;
-      // Allow a user to create their own document.
+      // Signed-in user can fully manage their own profile
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
       allow create: if request.auth != null && request.auth.uid == userId;
-      // Only an admin can delete a user document.
-      allow delete: if isAdmin();
+      // Admin can read/write anyone's profile
+      allow read, write: if isAdmin();
     }
 
     // ===== GAMES (Public Read) =====
     match /games/{gameId} {
-      allow read: if true;
+      allow read: if true;              // Public can view
       allow write: if isAdmin();
     }
 
@@ -44,25 +41,36 @@ service cloud.firestore {
     }
 
     // ===== REGISTRATIONS =====
-    // The most sensitive collection.
     match /registrations/{registrationId} {
-      // Any logged-in user can create a registration.
-      // The validation is handled by a Cloud Function.
+      // Any logged-in user can create their own registration
       allow create: if request.auth != null;
-
-      // Only the user who created the registration or an admin can read it.
-      allow read: if isAdmin() || 
+      // User can read their own registration or admin can read all
+      allow read: if isAdmin() ||
                    (request.auth != null && request.auth.uid == resource.data.user_id);
-
-      // Only an admin can update or delete.
+      // Admin can update/delete
       allow update, delete: if isAdmin();
+    }
+
+    // ===== RESULTS (Public Read for Leaderboard) =====
+    match /results/{resultId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ===== LEADERBOARD =====
+    match /leaderboard/{entryId} {
+      allow read: if true; // Publicly viewable
+      allow write: if isAdmin();
+    }
+
+    // ===== PAYOUTS (Admin Only) =====
+    match /payouts/{payoutId} {
+      allow read, write: if isAdmin();
     }
 
     // ===== ADMINS (Private) =====
     match /admins/{adminId} {
-      // No one can read or write this collection from the client.
-      // This is for server-side checks only.
-      allow read, write: if false;
+      allow read, write: if false; // Fully private
     }
   }
 }
