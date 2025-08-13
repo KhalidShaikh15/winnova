@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, type ActionCodeSettings } from "firebase/auth";
 import { auth, firestore } from "@/lib/firebase";
-import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Logo from "@/components/shared/Logo";
 
@@ -57,22 +57,6 @@ export default function SignupPage() {
       return;
     }
     try {
-      // Check if username is already taken
-      const usersRef = collection(firestore, "users");
-      const q = query(usersRef, where("username", "==", username));
-      const querySnapshot = await getDocs(q);
-
-      if (!querySnapshot.empty) {
-        toast({
-            variant: "destructive",
-            title: "Signup Failed",
-            description: "Username is already taken. Please choose another one.",
-        });
-        setLoading(false);
-        return;
-      }
-
-
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       if (userCredential.user) {
         await updateProfile(userCredential.user, {
@@ -80,6 +64,8 @@ export default function SignupPage() {
         });
 
         // Create user document in firestore
+        // The username uniqueness should ideally be handled by a Cloud Function for robustness.
+        // For now, we rely on Firebase Auth email uniqueness and create the user doc.
         await setDoc(doc(firestore, "users", userCredential.user.uid), {
             uid: userCredential.user.uid,
             username: username,
@@ -100,7 +86,7 @@ export default function SignupPage() {
       if (error.code === 'auth/email-already-in-use') {
         description = "This email is already in use. Please try another one.";
       } else if (error.code === 'missing-or-insufficient-permissions') {
-        description = "We couldn't verify your username. Please check your network and try again.";
+        description = "We couldn't create your user document. Please check Firestore rules.";
       } else {
         description = error.message;
       }
