@@ -28,10 +28,10 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // ===== TOURNAMENTS (Public Read) =====
+    // ===== TOURNAMENTS =====
     match /tournaments/{tournamentId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read: if true;        // Anyone can view tournaments
+      allow write: if isAdmin();  // Only admins can create/edit
     }
 
     // ===== MATCHES (Public Read for Leaderboard) =====
