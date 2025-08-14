@@ -31,11 +31,11 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   const qrRef = useRef<HTMLDivElement>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [isClient, setIsClient] = useState(false)
-
+  
   useEffect(() => {
     setIsClient(true)
-  }, [])
-  
+  }, []);
+
   const registrationSchema = useMemo(() => {
     const baseFields = {
       squad_name: z.string().min(3, "Squad name must be at least 3 characters."),
