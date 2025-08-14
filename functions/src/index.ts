@@ -1,3 +1,4 @@
+
 /**
  * Import function triggers from their respective submodules:
  *
@@ -7,22 +8,21 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import {onCall} from "firebase-functions/v2/https";
+import {onCall, HttpsError} from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 
 admin.initializeApp();
 
 // This function checks for duplicate squad names before a registration is created.
-// It is triggered by a `beforeCreate` event on the `registrations` collection.
-exports.checkDuplicateRegistration = onCall({enforceAppCheck: true}, async (request) => {
+exports.checkDuplicateRegistration = onCall({enforceAppCheck: false}, async (request) => {
     if (!request.auth) {
-        throw new Error("User must be authenticated to register.");
+        throw new HttpsError("unauthenticated", "User must be authenticated to register.");
     }
 
     const { tournament_id, squad_name_lowercase } = request.data;
     if (!tournament_id || !squad_name_lowercase) {
-        throw new Error("Tournament ID and squad name are required.");
+        throw new HttpsError("invalid-argument", "Tournament ID and squad name are required.");
     }
     
     try {
@@ -33,27 +33,23 @@ exports.checkDuplicateRegistration = onCall({enforceAppCheck: true}, async (requ
             .limit(1)
             .get();
 
-        if (!snapshot.empty) {
-            throw new Error(`The squad name is already taken for this tournament.`);
-        }
-        
-        return { duplicateFound: false };
+        return { duplicateFound: !snapshot.empty };
 
     } catch (error) {
         logger.error("Error checking for duplicate registration:", error);
-        throw new Error("An error occurred while checking for duplicate registration.");
+        throw new HttpsError("internal", "An error occurred while checking for duplicate registration.");
     }
 });
 
 
-exports.checkDuplicatePlayerIds = onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new Error("User must be signed in.");
+exports.checkDuplicatePlayerIds = onCall({enforceAppCheck: false}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "User must be signed in.");
   }
 
-  const { tournamentId, playerIds } = data;
+  const { tournamentId, playerIds } = request.data;
   if (!tournamentId || !playerIds || !Array.isArray(playerIds)) {
-    throw new Error("Invalid parameters.");
+    throw new HttpsError("invalid-argument", "Invalid parameters: tournamentId and playerIds are required.");
   }
 
   try {
@@ -66,6 +62,6 @@ exports.checkDuplicatePlayerIds = onCall(async (data, context) => {
       return { duplicateFound: !snapshot.empty };
   } catch(error) {
     logger.error("Error checking for duplicate player IDs:", error);
-    throw new Error("An error occurred while checking for duplicate player IDs.");
+    throw new HttpsError("internal", "An error occurred while checking for duplicate player IDs.");
   }
 });
