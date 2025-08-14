@@ -2,6 +2,7 @@ import { initializeApp, getApps, getApp, type FirebaseOptions, type FirebaseApp 
 import { getAuth, type Auth } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getStorage, type FirebaseStorage } from 'firebase/storage';
+import { getFunctions } from 'firebase/functions';
 
 const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
@@ -20,6 +21,7 @@ let app: FirebaseApp | undefined;
 let auth: Auth | undefined;
 let firestore: Firestore | undefined;
 let storage: FirebaseStorage | undefined;
+let functions: ReturnType<typeof getFunctions> | undefined;
 
 // This check prevents server-side crashes when env vars are not set.
 // The app will continue to run, and components should handle the
@@ -29,6 +31,7 @@ if (firebaseConfig.apiKey && firebaseConfig.projectId) {
     auth = getAuth(app);
     firestore = getFirestore(app);
     storage = getStorage(app);
+    functions = getFunctions(app);
 }
 
-export { app, auth, firestore, storage };
+export { app, auth, firestore, storage, functions };

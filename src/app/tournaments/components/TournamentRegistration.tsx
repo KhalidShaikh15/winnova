@@ -12,13 +12,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
-import { firestore } from "@/lib/firebase"
+import { firestore, functions } from "@/lib/firebase"
 import { Award, Calendar, Gamepad2, Group, Loader2, Send, Clock, Download, ClipboardCopy, Check } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import { format } from "date-fns"
 import { QRCodeCanvas } from 'qrcode.react';
-import { getFunctions, httpsCallable } from "firebase/functions";
+import { httpsCallable } from "firebase/functions";
 
 const UPI_ID_REGEX = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
 
@@ -127,7 +127,14 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
 
 
   async function onSubmit(values: RegistrationFormValues) {
-    if (!firestore) return;
+    if (!firestore || !functions) {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Firebase services are not available. Please try again later.",
+        });
+        return;
+    }
     setLoading(true);
 
     if (!user || !user.email) {
@@ -141,36 +148,21 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     }
     
     try {
-      const functions = getFunctions();
-      
       // Check for duplicate squad name
-      const checkDuplicateSquadName = httpsCallable(functions, 'checkDuplicateRegistration');
-      try {
-        const squadNameResult: any = await checkDuplicateSquadName({
-            tournament_id: tournament.id,
-            squad_name_lowercase: values.squad_name.toLowerCase(),
-        });
-        if (squadNameResult.data.duplicateFound) {
-            toast({
-                variant: "destructive",
-                title: "Squad Name Taken",
-                description: `A squad with the name "${values.squad_name}" is already registered. Please choose another name.`,
-            });
-            setLoading(false);
-            return;
-        }
-      } catch (error: any) {
-         console.error("Error checking for duplicate squad name:", error);
-         const errorMessage = error.message || "An unexpected error occurred while checking squad name.";
-         toast({
-            variant: 'destructive',
-            title: "Registration Failed",
-            description: errorMessage,
-         });
-         setLoading(false);
-         return;
+      const checkDuplicateRegistration = httpsCallable(functions, 'checkDuplicateRegistration');
+      const squadNameResult: any = await checkDuplicateRegistration({
+          tournament_id: tournament.id,
+          squad_name_lowercase: values.squad_name.toLowerCase(),
+      });
+      if (squadNameResult.data.duplicateFound) {
+          toast({
+              variant: "destructive",
+              title: "Squad Name Taken",
+              description: `A squad with the name "${values.squad_name}" is already registered. Please choose another name.`,
+          });
+          setLoading(false);
+          return;
       }
-
 
        let player_ids: string[] = [];
        if ('player1_bgmi_id' in values) {
@@ -186,33 +178,20 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
 
       // Call the Cloud Function to check for duplicate player IDs
       const checkDuplicatePlayerIds = httpsCallable(functions, 'checkDuplicatePlayerIds');
-      try {
-        const result: any = await checkDuplicatePlayerIds({
-            tournamentId: tournament.id,
-            playerIds: player_ids,
-        });
+      const result: any = await checkDuplicatePlayerIds({
+          tournamentId: tournament.id,
+          playerIds: player_ids,
+      });
 
-        if (result.data.duplicateFound) {
-            toast({
-            variant: "destructive",
-            title: "Registration Failed",
-            description: "One or more of these Player IDs are already registered for this tournament.",
-            });
-            setLoading(false);
-            return;
-        }
-      } catch(error: any) {
-        console.error("Error checking for duplicate player IDs:", error);
-        const errorMessage = error.message || "An unexpected error occurred while checking player IDs.";
-        toast({
-           variant: 'destructive',
-           title: "Registration Failed",
-           description: errorMessage,
-        });
-        setLoading(false);
-        return;
+      if (result.data.duplicateFound) {
+          toast({
+          variant: "destructive",
+          title: "Registration Failed",
+          description: "One or more of these Player IDs are already registered for this tournament.",
+          });
+          setLoading(false);
+          return;
       }
-
 
       const docData = {
         ...values,
@@ -406,3 +385,4 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     
 
     
+
