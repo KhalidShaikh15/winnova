@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import { format } from "date-fns"
 import { QRCodeCanvas } from 'qrcode.react';
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 const UPI_ID_REGEX = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
 
@@ -66,7 +67,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
             const uniqueIds = new Set(ids);
             return uniqueIds.size === ids.length;
         }, {
-            message: "Player IDs must be unique.",
+            message: "Player IDs must be unique within your team.",
             path: ["player1_bgmi_id"],
         });
     }
@@ -140,8 +141,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     }
     
     try {
-      // The duplicate checks (for squad name and player IDs) are now handled by Cloud Functions for security.
-      let player_ids: string[] = [];
+       let player_ids: string[] = [];
        if ('player1_bgmi_id' in values) {
          player_ids = [
            values.player1_bgmi_id,
@@ -152,6 +152,24 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
        } else if ('clan_tag' in values) {
          player_ids = [values.clan_tag as string];
        }
+
+      // Call the Cloud Function to check for duplicates
+      const functions = getFunctions();
+      const checkDuplicatePlayerIds = httpsCallable(functions, 'checkDuplicatePlayerIds');
+      const result: any = await checkDuplicatePlayerIds({
+        tournamentId: tournament.id,
+        playerIds: player_ids,
+      });
+
+      if (result.data.duplicateFound) {
+        toast({
+          variant: "destructive",
+          title: "Registration Failed",
+          description: "One or more of these Player IDs are already registered for this tournament.",
+        });
+        setLoading(false);
+        return;
+      }
 
       const docData = {
         ...values,
@@ -180,7 +198,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     } catch (error: any) {
         console.error("Registration submission error:", error);
         // Handle specific error from Cloud Function
-        if (error.code === 'already-exists') {
+        if (error.code === 'functions/already-exists') {
              toast({
                 variant: "destructive",
                 title: "Squad Name Taken",
