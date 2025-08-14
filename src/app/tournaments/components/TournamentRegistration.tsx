@@ -1,3 +1,4 @@
+
 'use client'
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -139,8 +140,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     }
     
     try {
-      // The duplicate check is now handled by a Cloud Function.
-      // We still check for duplicate player IDs on the client for immediate feedback.
+      // The duplicate checks (for squad name and player IDs) are now handled by Cloud Functions for security.
       let player_ids: string[] = [];
        if ('player1_bgmi_id' in values) {
          player_ids = [
@@ -151,28 +151,6 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
          ].filter(Boolean) as string[];
        } else if ('clan_tag' in values) {
          player_ids = [values.clan_tag as string];
-       }
-
-      // Check if any player ID is already registered for this tournament
-       if (player_ids.length > 0) {
-         const q = query(
-           collection(firestore, 'registrations'),
-           where('tournament_id', '==', tournament.id),
-           where('player_ids', 'array-contains-any', player_ids)
-         );
-         const querySnapshot = await getDocs(q);
-
-         if (!querySnapshot.empty) {
-           const existingReg = querySnapshot.docs[0].data();
-           const duplicateId = player_ids.find(id => existingReg.player_ids.includes(id));
-           toast({
-             variant: "destructive",
-             title: "Registration Failed",
-             description: `Player ID "${duplicateId}" is already registered for this tournament in squad "${existingReg.squad_name}".`,
-           });
-           setLoading(false);
-           return;
-         }
        }
 
       const docData = {
@@ -373,4 +351,6 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     </Card>
   )
 }
+    
+
     
