@@ -2,6 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helper to check admin status
     function isAdmin() {
       return request.auth != null &&
              exists(/databases/$(database)/documents/admins/$(request.auth.uid));
@@ -14,11 +15,11 @@ service cloud.firestore {
 
     // ===== USERS =====
     match /users/{userId} {
-      // Allow signed-in users to create their own doc
-      allow create: if request.auth != null && (request.auth.uid == userId || isAdmin());
-      // Allow users to manage their own profile
+      // Create: user can create their own doc or admin can create for anyone
+      allow create: if request.auth != null &&
+                    (request.auth.uid == userId || isAdmin());
+      // Read/Update/Delete: only owner or admin
       allow read, update, delete: if request.auth != null && request.auth.uid == userId;
-      // Admin can read/write any profile
       allow read, write: if isAdmin();
     }
 
@@ -42,13 +43,13 @@ service cloud.firestore {
 
     // ===== REGISTRATIONS =====
     match /registrations/{registrationId} {
-      // Create: must be logged in and creating own registration
+      // Create: user can only register themselves, admins can register anyone
       allow create: if request.auth != null &&
-                    request.resource.data.user_id == request.auth.uid;
+                    (request.resource.data.user_id == request.auth.uid || isAdmin());
       // Read: owner or admin
       allow read: if isAdmin() ||
                   (request.auth != null && request.auth.uid == resource.data.user_id);
-      // Admin can update/delete
+      // Update/Delete: admin only
       allow update, delete: if isAdmin();
     }
 

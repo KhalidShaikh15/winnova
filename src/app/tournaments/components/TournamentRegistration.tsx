@@ -219,7 +219,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       form.reset();
     } catch (error: any) {
         console.error("Registration submission error:", error);
-        const errorMessage = error.message || "An unexpected error occurred. Please try again.";
+        const errorMessage = error.details?.message || error.message || "An unexpected error occurred. Please try again.";
         toast({
            variant: 'destructive',
            title: "Registration Failed",
@@ -385,4 +385,5 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     
 
     
+
 
