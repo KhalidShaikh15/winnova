@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
-import { addDoc, collection, doc, writeBatch } from "firebase/firestore"
+import { addDoc, collection, doc, writeBatch, query, where, getDocs } from "firebase/firestore"
 import { firestore } from "@/lib/firebase"
 import { Award, Calendar, Gamepad2, Group, Loader2, Send, Clock, Download, ClipboardCopy, Check } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
@@ -30,10 +30,6 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedUpiId, setSubmittedUpiId] = useState("");
   const qrRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setIsClient(true)
-  }, []);
 
   const registrationSchema = useMemo(() => {
     const baseFields = {
@@ -60,17 +56,6 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       ...paymentField,
     });
     
-    if (tournament.game_name !== "Clash of Clans") {
-       return combinedSchema.refine(data => {
-            const ids = [data.player1_bgmi_id, data.player2_bgmi_id, data.player3_bgmi_id, data.player4_bgmi_id];
-            const uniqueIds = new Set(ids);
-            return uniqueIds.size === ids.length;
-        }, {
-            message: "Player IDs must be unique within your team.",
-            path: ["player1_bgmi_id"],
-        });
-    }
-
     return combinedSchema;
   }, [tournament.game_name, tournament.entry_fee]);
   
@@ -93,6 +78,10 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         ),
     },
   });
+
+  useEffect(() => {
+    setIsClient(true)
+  }, []);
   
   const upiLink = useMemo(() => {
     if (tournament.entry_fee > 0) {
@@ -165,9 +154,9 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       const docData = {
         ...values,
         id: registrationRef.id,
+        user_id: user.uid, // This was the missing field
         squad_name_lowercase: values.squad_name.toLowerCase(),
         player_ids,
-        user_id: user.uid,
         username: user.displayName || user.email || 'Anonymous',
         user_email: user.email,
         tournament_id: tournament.id,
