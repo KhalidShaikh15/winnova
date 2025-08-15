@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
-import { addDoc, collection, getDocs, query, where, serverTimestamp } from "firebase/firestore"
+import { addDoc, collection, getDocs, query, where, writeBatch, doc } from "firebase/firestore"
 import { firestore } from "@/lib/firebase"
 import { Award, Calendar, Gamepad2, Group, Loader2, Send, Clock, Download, ClipboardCopy, Check } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
@@ -147,7 +147,6 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     }
     
     try {
-      // Check for duplicate squad name
       const squadNameQuery = query(
         collection(firestore, 'registrations'),
         where('tournament_id', '==', tournament.id),
@@ -176,27 +175,34 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
          player_ids = [values.clan_tag as string];
        }
 
-      // Check for duplicate player IDs
+      // Check for duplicate player IDs using the player_index collection
        if (player_ids.length > 0) {
-        const playerIdsQuery = query(
-          collection(firestore, 'registrations'),
+        const playerIndexQuery = query(
+          collection(firestore, 'player_index'),
           where('tournament_id', '==', tournament.id),
-          where('player_ids', 'array-contains-any', player_ids)
+          where('player_id', 'in', player_ids)
         );
-        const playerIdsSnapshot = await getDocs(playerIdsQuery);
-        if (!playerIdsSnapshot.empty) {
+        const playerIndexSnapshot = await getDocs(playerIndexQuery);
+        if (!playerIndexSnapshot.empty) {
+            const duplicatePlayer = playerIndexSnapshot.docs[0].data().player_id;
             toast({
               variant: "destructive",
               title: "Registration Failed",
-              description: "One or more of these Player IDs are already registered for this tournament.",
+              description: `Player ID "${duplicatePlayer}" is already registered for this tournament.`,
             });
             setLoading(false);
             return;
         }
       }
+      
+      // Use a batch to write to both registrations and player_index atomically
+      const batch = writeBatch(firestore);
 
+      const registrationRef = doc(collection(firestore, 'registrations'));
+      
       const docData = {
         ...values,
+        id: registrationRef.id,
         squad_name_lowercase: values.squad_name.toLowerCase(),
         player_ids,
         user_id: user.uid,
@@ -206,11 +212,23 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         tournament_title: tournament.title,
         game_name: tournament.game_name,
         status: 'pending' as const,
-        created_at: serverTimestamp(),
+        created_at: new Date(),
         slot: 'A',
       };
+      batch.set(registrationRef, docData);
+
+      // Add each player to the player_index
+      player_ids.forEach(playerId => {
+        const playerIndexRef = doc(firestore, 'player_index', `${tournament.id}_${playerId}`);
+        batch.set(playerIndexRef, {
+            player_id: playerId,
+            tournament_id: tournament.id,
+            user_id: user.uid,
+            squad_name: values.squad_name,
+        });
+      });
       
-      await addDoc(collection(firestore, 'registrations'), docData);
+      await batch.commit();
 
       toast({
         title: "Registration Submitted!",

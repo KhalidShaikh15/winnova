@@ -60,6 +60,19 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // --- PLAYER INDEX (for duplicate checks) ---
+    match /player_index/{docId} {
+      // Anyone can read to check if a player_id is taken
+      allow read: if true;
+
+      // Create: must be logged in and creating entry for themselves, or admin
+      allow create: if request.auth != null &&
+                    (request.resource.data.user_id == request.auth.uid || isAdmin());
+
+      // Delete/Update: admin only
+      allow update, delete: if isAdmin();
+    }
+
     // --- RESULTS ---
     match /results/{resultId} {
       allow read: if true;        // Public results
