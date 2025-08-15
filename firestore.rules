@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -47,9 +48,8 @@ service cloud.firestore {
       // Only logged-in users can register themselves
       allow create: if request.auth != null &&
                     request.resource.data.user_id == request.auth.uid;
-      // Read: only owner or admin
-      allow read: if isAdmin() ||
-                  (request.auth != null && request.auth.uid == resource.data.user_id);
+      // Read: logged in users can read to check for duplicates
+      allow read: if request.auth != null;
       // Update/Delete: admin only
       allow update, delete: if isAdmin();
     }
