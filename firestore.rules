@@ -1,79 +1,85 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper: check if user is admin
+    // --- Helper: Check if user is admin ---
     function isAdmin() {
       return request.auth != null &&
              exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
-    // ===== DEFAULT DENY =====
+    // --- DEFAULT DENY (anything not listed is blocked) ---
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // ===== USERS =====
+    // --- USERS ---
     match /users/{userId} {
-      // Create: user can create their own profile, or admin can create for anyone
+      // Create: user can create their own profile; admin can create for anyone
       allow create: if request.auth != null &&
                     (request.auth.uid == userId || isAdmin());
-      // Read/Update/Delete: only owner or admin
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
-      // Admin can read/write any profile
-      allow read, write: if isAdmin();
+
+      // Read: owner or admin
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow read: if isAdmin();
+
+      // Update/Delete: owner can update own profile; admin can update/delete any
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow update, delete: if isAdmin();
     }
 
-    // ===== GAMES =====
+    // --- GAMES ---
     match /games/{gameId} {
       allow read: if true;        // Public read
-      allow write: if isAdmin();  // Admin edit
+      allow write: if isAdmin();  // Admin only
     }
 
-    // ===== TOURNAMENTS =====
+    // --- TOURNAMENTS ---
     match /tournaments/{tournamentId} {
-      allow read: if true;        // Public read for anyone
-      allow write: if isAdmin();  // Only admin can create/edit
+      allow read: if true;        // Public read
+      allow write: if isAdmin();  // Admin only
     }
 
-    // ===== MATCHES =====
+    // --- MATCHES ---
     match /matches/{matchId} {
-      allow read: if true;        // Public read for leaderboard
-      allow write: if isAdmin();
+      allow read: if true;        // Public read
+      allow write: if isAdmin();  // Admin only
     }
 
-    // ===== REGISTRATIONS =====
+    // --- REGISTRATIONS ---
     match /registrations/{registrationId} {
-      // Only logged-in users can register themselves
+      // Users can create only for themselves
       allow create: if request.auth != null &&
                     request.resource.data.user_id == request.auth.uid;
-      // Read: logged in users can read to check for duplicates
-      allow read: if request.auth != null;
+
+      // Read: owner or admin
+      allow read: if isAdmin() ||
+                  (request.auth != null && request.auth.uid == resource.data.user_id);
+
       // Update/Delete: admin only
       allow update, delete: if isAdmin();
     }
 
-    // ===== RESULTS =====
+    // --- RESULTS ---
     match /results/{resultId} {
-      allow read: if true;        // Public leaderboard
-      allow write: if isAdmin();
+      allow read: if true;        // Public results
+      allow write: if isAdmin();  // Admin only
     }
 
-    // ===== LEADERBOARD =====
+    // --- LEADERBOARD ---
     match /leaderboard/{entryId} {
       allow read: if true;        // Public read
-      allow write: if isAdmin();
+      allow write: if isAdmin();  // Admin only
     }
 
-    // ===== PAYOUTS =====
+    // --- PAYOUTS ---
     match /payouts/{payoutId} {
-      allow read, write: if isAdmin();
+      allow read, write: if isAdmin(); // Fully private to admins
     }
 
-    // ===== ADMINS =====
+    // --- ADMINS ---
     match /admins/{adminId} {
-      allow read, write: if false; // Fully private
+      allow read, write: if false; // Managed only via console/server
     }
   }
 }
