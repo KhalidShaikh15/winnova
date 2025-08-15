@@ -9,13 +9,16 @@ export function useAdmin() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // This function will run when auth state is resolved.
     const checkAdminStatus = async () => {
+      // If there's no user, they can't be an admin.
       if (!user) {
         setIsAdmin(false);
         setLoading(false);
         return;
       }
       
+      // If firestore isn't configured, we can't check.
       if (!firestore) {
         console.warn("Firestore not initialized, cannot check admin status.");
         setIsAdmin(false);
@@ -23,6 +26,7 @@ export function useAdmin() {
         return;
       }
 
+      // If we have a user, check their admin status in the database.
       try {
         const adminDocRef = doc(firestore, 'admins', user.uid);
         const adminDocSnap = await getDoc(adminDocRef);
@@ -36,13 +40,20 @@ export function useAdmin() {
         console.error("Error checking admin status:", error);
         setIsAdmin(false);
       } finally {
+        // Mark loading as false only after the check is complete.
         setLoading(false);
       }
     };
 
-    if (!authLoading) {
-      checkAdminStatus();
+    // When the authentication is still loading, we do nothing and wait.
+    if (authLoading) {
+      setLoading(true);
+      return;
     }
+
+    // Once authentication is done, run the admin check.
+    checkAdminStatus();
+    
   }, [user, authLoading]);
 
   return { isAdmin, loading };

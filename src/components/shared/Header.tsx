@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, Loader2, ShieldCheck, Menu, Trophy, Wallet, BarChart2, Home } from "lucide-react";
+import { User, LogOut, Loader2, ShieldCheck, Menu, Trophy, Wallet, BarChart2, Home, UserCog } from "lucide-react";
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -101,7 +101,7 @@ export default function Header() {
                     {link.label}
                  </Link>
              ))}
-             {isAdmin && !isAnAdminPage && (
+             {!adminLoading && isAdmin && !isAnAdminPage && (
                 <Link
                   href="/admin"
                   className={cn(
@@ -116,7 +116,7 @@ export default function Header() {
         </div>
 
         <div className="flex flex-1 items-center justify-end space-x-2">
-          {loading ? (
+          {authLoading ? (
              <Loader2 className="h-6 w-6 animate-spin" />
           ) : user ? (
             <>
@@ -139,11 +139,15 @@ export default function Header() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {isAdmin && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile"><UserCog className="mr-2 h-4 w-4" />Profile</Link>
+                  </DropdownMenuItem>
+                  {!adminLoading && isAdmin && (
                     <DropdownMenuItem asChild>
-                      <Link href="/admin"><ShieldCheck className="mr-2 h-4 w-4" />Admin Dashboard</Link>
+                      <Link href="/admin"><ShieldCheck className="mr-2 h-4 w-4" />Admin</Link>
                     </DropdownMenuItem>
                   )}
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Log out
@@ -192,7 +196,7 @@ export default function Header() {
                         {index < navLinks.length -1 && <DropdownMenuSeparator />}
                       </React.Fragment>
                       ))}
-                      {isAdmin && (
+                      {!adminLoading && isAdmin && (
                         <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild className="justify-center py-2 text-base">
@@ -201,7 +205,7 @@ export default function Header() {
                         </>
                       )}
                       <DropdownMenuSeparator />
-                      {!user && !loading && (
+                      {!user && !authLoading && (
                         <DropdownMenuItem asChild className="justify-center py-2 text-base">
                             <Link href="/login">Login</Link>
                         </DropdownMenuItem>
