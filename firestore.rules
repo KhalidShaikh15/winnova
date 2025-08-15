@@ -2,84 +2,32 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- Helper: Check if user is admin ---
     function isAdmin() {
-      return request.auth != null &&
-             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+      return exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
-    // --- DEFAULT DENY (anything not listed is blocked) ---
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // --- USERS ---
-    match /users/{userId} {
-      // Create: user can create their own profile; admin can create for anyone
-      allow create: if request.auth != null &&
-                    (request.auth.uid == userId || isAdmin());
-
-      // Read: owner or admin
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow read: if isAdmin();
-
-      // Update/Delete: owner can update own profile; admin can update/delete any
-      allow update: if request.auth != null && request.auth.uid == userId;
-      allow update, delete: if isAdmin();
-    }
-
-    // --- GAMES ---
+    // === games collection
     match /games/{gameId} {
-      allow read: if true;        // Public read
-      allow write: if isAdmin();  // Admin only
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    // --- TOURNAMENTS ---
+    // === tournaments collection
     match /tournaments/{tournamentId} {
-      allow read: if true;        // Public read
-      allow write: if isAdmin();  // Admin only
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    // --- MATCHES ---
+    // === matches collection
     match /matches/{matchId} {
-      allow read: if true;        // Public read
-      allow write: if isAdmin();  // Admin only
+      allow read: if true;
+      allow write: if false; // No writes allowed
     }
 
-    // --- REGISTRATIONS ---
+    // === registrations collection
     match /registrations/{registrationId} {
-      // Users can create only for themselves
-      allow create: if request.auth != null &&
-                    request.resource.data.user_id == request.auth.uid;
-
-      // Read: owner or admin
-      allow read: if isAdmin() ||
-                  (request.auth != null && request.auth.uid == resource.data.user_id);
-
-      // Update/Delete: admin only
-      allow update, delete: if isAdmin();
-    }
-
-    // --- RESULTS ---
-    match /results/{resultId} {
-      allow read: if true;        // Public results
-      allow write: if isAdmin();  // Admin only
-    }
-
-    // --- LEADERBOARD ---
-    match /leaderboard/{entryId} {
-      allow read: if true;        // Public read
-      allow write: if isAdmin();  // Admin only
-    }
-
-    // --- PAYOUTS ---
-    match /payouts/{payoutId} {
-      allow read, write: if isAdmin(); // Fully private to admins
-    }
-
-    // --- ADMINS ---
-    match /admins/{adminId} {
-      allow read, write: if false; // Managed only via console/server
+      allow read: if true;
+      allow write: if false; // No writes allowed
     }
   }
 }
