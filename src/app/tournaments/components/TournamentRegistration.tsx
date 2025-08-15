@@ -23,13 +23,13 @@ const UPI_ID_REGEX = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
 
 export default function TournamentRegistration({ tournament }: { tournament: Tournament }) {
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
   const { user, loading: authLoading } = useAuth();
+  const [isCopied, setIsCopied] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedUpiId, setSubmittedUpiId] = useState("");
   const qrRef = useRef<HTMLDivElement>(null);
-  const [isCopied, setIsCopied] = useState(false);
-  const [isClient, setIsClient] = useState(false)
   
   useEffect(() => {
     setIsClient(true)
@@ -374,7 +374,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
                     <FormField control={form.control} name="player1_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 1 ID</FormLabel><FormControl><Input placeholder="Enter Player 1 ID" {...field} /></FormControl><FormMessage /></FormItem> )} />
                     <FormField control={form.control} name="player2_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 2 ID</FormLabel><FormControl><Input placeholder="Enter Player 2 ID" {...field} /></FormControl><FormMessage /></FormItem> )} />
                     <FormField control={form.control} name="player3_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 3 ID</FormLabel><FormControl><Input placeholder="Enter Player 3 ID" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                    <FormField control={form.control} name="player4_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 4 ID</FormLabel><FormControl><Input placeholder="Enter Player 4 ID" {...field} /></FormControl><FormMessage /></FormMessage> )} />
+                    <FormField control={form.control} name="player4_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 4 ID</FormLabel><FormControl><Input placeholder="Enter Player 4 ID" {...field} /></FormControl></FormMessage> )} />
                 </div>
             )}
             
