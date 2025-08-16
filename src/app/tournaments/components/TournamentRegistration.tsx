@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
-import { addDoc, collection, doc, writeBatch, query, where, getDocs } from "firebase/firestore"
+import { addDoc, collection, doc, writeBatch, query, where, getDocs, documentId } from "firebase/firestore"
 import { firestore } from "@/lib/firebase"
 import { Award, Calendar, Gamepad2, Group, Loader2, Send, Clock, Download, ClipboardCopy, Check } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
@@ -50,13 +50,11 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       ? { user_upi_id: z.string().regex(UPI_ID_REGEX, "Please enter a valid UPI ID (e.g., name@bank).") }
       : { user_upi_id: z.string().optional() };
 
-    const combinedSchema = z.object({
+    return z.object({
       ...baseFields,
       ...gameSpecificFields,
       ...paymentField,
     });
-    
-    return combinedSchema;
   }, [tournament.game_name, tournament.entry_fee]);
   
   type RegistrationFormValues = z.infer<typeof registrationSchema>;
@@ -135,18 +133,47 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         return;
     }
     
+    // --- DEDUPLICATION LOGIC ---
+    let player_ids: string[] = [];
+    if (tournament.game_name !== "Clash of Clans" && 'player1_bgmi_id' in values) {
+      player_ids = [
+        values.player1_bgmi_id,
+        values.player2_bgmi_id,
+        values.player3_bgmi_id,
+        values.player4_bgmi_id
+      ].filter(Boolean) as string[];
+    } else if ('clan_tag' in values) {
+      player_ids = [values.clan_tag as string];
+    }
+    
+    // 1. Intra-team duplicate check
+    const uniquePlayerIds = new Set(player_ids);
+    if (uniquePlayerIds.size !== player_ids.length) {
+      toast({
+        variant: "destructive",
+        title: "Duplicate Player IDs",
+        description: "You cannot enter the same player ID multiple times in one team.",
+      });
+      setLoading(false);
+      return;
+    }
+    
     try {
-      let player_ids: string[] = [];
-       if ('player1_bgmi_id' in values) {
-         player_ids = [
-           values.player1_bgmi_id,
-           values.player2_bgmi_id,
-           values.player3_bgmi_id,
-           values.player4_bgmi_id
-         ].filter(Boolean) as string[];
-       } else if ('clan_tag' in values) {
-         player_ids = [values.clan_tag as string];
-       }
+      // 2. Tournament-wide duplicate check using player_index
+      const playerIndexRef = collection(firestore, 'player_index');
+      const q = query(playerIndexRef, where('player_id', 'in', player_ids), where('tournament_id', '==', tournament.id));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const duplicateId = querySnapshot.docs[0].data().player_id;
+        toast({
+          variant: "destructive",
+          title: "Player Already Registered",
+          description: `Player ID "${duplicateId}" is already registered for this tournament in another team.`,
+        });
+        setLoading(false);
+        return;
+      }
       
       const batch = writeBatch(firestore);
       const registrationRef = doc(collection(firestore, 'registrations'));
@@ -154,7 +181,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       const docData = {
         ...values,
         id: registrationRef.id,
-        user_id: user.uid, // This was the missing field
+        user_id: user.uid,
         squad_name_lowercase: values.squad_name.toLowerCase(),
         player_ids,
         username: user.displayName || user.email || 'Anonymous',
@@ -167,6 +194,17 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         slot: 'A',
       };
       batch.set(registrationRef, docData);
+      
+      // Add entries to player_index
+      for (const playerId of player_ids) {
+        const indexDocRef = doc(playerIndexRef, `${tournament.id}_${playerId}`);
+        batch.set(indexDocRef, {
+          tournament_id: tournament.id,
+          player_id: playerId,
+          registration_id: registrationRef.id,
+          user_id: user.uid,
+        });
+      }
       
       await batch.commit();
 
@@ -341,3 +379,5 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     </Card>
   )
 }
+
+    
