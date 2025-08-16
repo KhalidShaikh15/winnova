@@ -202,7 +202,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
           tournament_id: tournament.id,
           player_id: playerId,
           registration_id: registrationRef.id,
-          user_id: user.uid,
+          user_id: user.uid, // This was the missing field
         });
       }
       
@@ -379,5 +379,3 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     </Card>
   )
 }
-
-    
