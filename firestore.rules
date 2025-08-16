@@ -31,7 +31,7 @@ service cloud.firestore {
     // ===== TOURNAMENTS (Public Read, Logged-in Write for registration) =====
     match /tournaments/{tournamentId} {
       allow read: if true;
-      allow write: if request.auth != null && (isAdmin() || request.auth != null);
+      allow write: if isAdmin();
     }
 
     // ===== MATCHES (Public Read for Leaderboard) =====
@@ -43,7 +43,7 @@ service cloud.firestore {
     // ===== REGISTRATIONS =====
     match /registrations/{registrationId} {
       // Any logged-in user can create their own registration
-      allow create: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
       // User can read their own registration or admin can read all
       allow read: if isAdmin() ||
                    (request.auth != null && request.auth.uid == resource.data.user_id);
@@ -70,7 +70,8 @@ service cloud.firestore {
 
     // ===== ADMINS (Private) =====
     match /admins/{adminId} {
-      allow read, write: if false; // Fully private
+      allow read: if request.auth != null && request.auth.uid == adminId;
+      allow write: if false; // Managed only via console/server
     }
   }
 }
