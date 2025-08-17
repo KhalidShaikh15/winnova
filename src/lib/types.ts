@@ -32,20 +32,16 @@ export interface Tournament {
 
 export interface Registration {
   id: string;
-  user_id: string;
-  username: string;
+  user_id: string; // The UID of the user who registered
+  username: string; // The display name of the user
   user_email: string;
   tournament_id: string;
   tournament_title?: string;
   game_name: string;
   squad_name: string;
   squad_name_lowercase: string;
-  player_ids: string[];
-  player1_bgmi_id?: string;
-  player2_bgmi_id?: string;
-  player3_bgmi_id?: string;
-  player4_bgmi_id?: string;
-  clan_tag?: string;
+  // This now represents the single player's in-game ID
+  player_game_id: string; 
   contact_number: string;
   slot?: string;
   user_upi_id?: string;
@@ -78,5 +74,3 @@ export interface LeaderboardEntry {
     points: number;
     rank: number;
 }
-
-    

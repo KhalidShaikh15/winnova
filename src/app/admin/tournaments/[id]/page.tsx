@@ -55,7 +55,7 @@ export default function ManageTournamentPage() {
         }
         setTournament({ id: tournamentSnap.id, ...tournamentSnap.data() } as Tournament);
 
-        const regsQuery = query(collection(firestore, 'registrations'), where('tournament_id', '==', params.id));
+        const regsQuery = query(collection(firestore, 'tournaments', params.id, 'registrations'));
         const regsSnapshot = await getDocs(regsQuery);
         const regsList = regsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Registration));
         
@@ -78,10 +78,10 @@ export default function ManageTournamentPage() {
   }, [params.id, toast]);
 
    const handleSlotChange = async (regId: string, slot: string) => {
-    if (!firestore) return;
+    if (!firestore || !tournament) return;
     setUpdatingSlotRegId(regId);
     try {
-      const regDocRef = doc(firestore, 'registrations', regId);
+      const regDocRef = doc(firestore, 'tournaments', tournament.id, 'registrations', regId);
       await updateDoc(regDocRef, { slot });
       setRegistrations(regs => regs.map(r => (r.id === regId ? { ...r, slot } : r)));
       toast({ title: 'Success', description: `Team slot updated to ${slot}.` });
@@ -94,7 +94,7 @@ export default function ManageTournamentPage() {
 
 
   const handleRegistrationStatus = async (regId: string, status: 'confirmed' | 'rejected') => {
-    if (!firestore) return;
+    if (!firestore || !tournament) return;
 
     const reg = registrations.find(r => r.id === regId);
     if (!reg) return;
@@ -104,7 +104,7 @@ export default function ManageTournamentPage() {
     }
 
     try {
-      const regDocRef = doc(firestore, 'registrations', regId);
+      const regDocRef = doc(firestore, 'tournaments', tournament.id, 'registrations', regId);
       await updateDoc(regDocRef, { status });
       
       setRegistrations(regs => regs.map(r => r.id === regId ? { ...r, status } : r));
@@ -144,31 +144,16 @@ The Winnova Team
   };
 
   const handleDeleteRegistration = async () => {
-    if (!selectedRegistration || !firestore) return;
+    if (!selectedRegistration || !firestore || !tournament) return;
     setIsDeleting(true);
     try {
-      const batch = writeBatch(firestore);
+      const regDocRef = doc(firestore, 'tournaments', tournament.id, 'registrations', selectedRegistration.id);
+      await deleteDoc(regDocRef);
 
-      // 1. Find all match results for this registration
-      const matchesQuery = query(collection(firestore, 'matches'), where('registration_id', '==', selectedRegistration.id));
-      const matchesSnapshot = await getDocs(matchesQuery);
-      
-      // 2. Add delete operations for each match result to the batch
-      matchesSnapshot.forEach(matchDoc => {
-        batch.delete(matchDoc.ref);
-      });
-
-      // 3. Add delete operation for the registration itself
-      const regDocRef = doc(firestore, 'registrations', selectedRegistration.id);
-      batch.delete(regDocRef);
-      
-      // 4. Commit the batch
-      await batch.commit();
-
-      toast({ title: 'Success', description: 'Registration and all associated match data deleted.' });
+      toast({ title: 'Success', description: 'Registration deleted.' });
       setRegistrations(regs => regs.filter(r => r.id !== selectedRegistration.id));
     } catch (error) {
-      console.error("Error deleting registration and matches:", error);
+      console.error("Error deleting registration:", error);
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete registration.' });
     } finally {
       setIsDeleting(false);
@@ -193,7 +178,7 @@ The Winnova Team
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Registrations</span>
-            <Badge variant="secondary">{registrations.length} / {tournament.max_teams} registered</Badge>
+            <Badge variant="secondary">{registrations.length} / {tournament.max_teams * (tournament.match_type === 'Squad' ? 4 : tournament.match_type === 'Duo' ? 2 : 1) } registered players</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -201,6 +186,7 @@ The Winnova Team
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Player</TableHead>
                   <TableHead>Squad Name</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead>Status</TableHead>
@@ -213,6 +199,7 @@ The Winnova Team
                 {registrations.length > 0 ? (
                   registrations.map(reg => (
                     <TableRow key={reg.id}>
+                      <TableCell>{reg.username} ({reg.player_game_id})</TableCell>
                       <TableCell>{reg.squad_name}</TableCell>
                       <TableCell>{reg.contact_number}</TableCell>
                       <TableCell><Badge variant={reg.status === 'pending' ? 'secondary' : reg.status === 'confirmed' ? 'default' : 'destructive'}>{reg.status}</Badge></TableCell>
@@ -264,7 +251,7 @@ The Winnova Team
                     </TableRow>
                   ))
                 ) : (
-                  <TableRow><TableCell colSpan={6} className="text-center">No registrations yet.</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={7} className="text-center">No registrations yet.</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>
@@ -277,7 +264,7 @@ The Winnova Team
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the registration for
-              <span className="font-bold"> &quot;{selectedRegistration?.squad_name}&quot;</span> and all associated match results.
+              <span className="font-bold"> &quot;{selectedRegistration?.username}&quot;</span> from the team <span className="font-bold">&quot;{selectedRegistration?.squad_name}&quot;</span>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

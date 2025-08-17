@@ -34,17 +34,9 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   const registrationSchema = useMemo(() => {
     const baseFields = {
       squad_name: z.string().min(3, "Squad name must be at least 3 characters."),
+      player_game_id: z.string().min(2, "Your In-Game ID is required."),
       contact_number: z.string().min(10, "A valid contact number is required."),
     };
-
-    const gameSpecificFields = tournament.game_name === "Clash of Clans"
-      ? { clan_tag: z.string().min(2, "Clan Tag is required.") }
-      : {
-          player1_bgmi_id: z.string().min(2, "Player 1 ID is required."),
-          player2_bgmi_id: z.string().min(2, "Player 2 ID is required."),
-          player3_bgmi_id: z.string().min(2, "Player 3 ID is required."),
-          player4_bgmi_id: z.string().min(2, "Player 4 ID is required."),
-        };
 
     const paymentField = tournament.entry_fee > 0
       ? { user_upi_id: z.string().regex(UPI_ID_REGEX, "Please enter a valid UPI ID (e.g., name@bank).") }
@@ -52,28 +44,19 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
 
     return z.object({
       ...baseFields,
-      ...gameSpecificFields,
       ...paymentField,
     });
-  }, [tournament.game_name, tournament.entry_fee]);
+  }, [tournament.entry_fee]);
   
   type RegistrationFormValues = z.infer<typeof registrationSchema>;
 
   const form = useForm<RegistrationFormValues>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
-        squad_name: "",
-        contact_number: "",
-        user_upi_id: "",
-        ...(tournament.game_name === "Clash of Clans" 
-            ? { clan_tag: "" } 
-            : { 
-                player1_bgmi_id: "",
-                player2_bgmi_id: "",
-                player3_bgmi_id: "",
-                player4_bgmi_id: "",
-              }
-        ),
+      squad_name: "",
+      player_game_id: "",
+      contact_number: "",
+      user_upi_id: "",
     },
   });
 
@@ -133,57 +116,14 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         return;
     }
     
-    // --- DEDUPLICATION LOGIC ---
-    let player_ids: string[] = [];
-    if (tournament.game_name !== "Clash of Clans" && 'player1_bgmi_id' in values) {
-      player_ids = [
-        values.player1_bgmi_id,
-        values.player2_bgmi_id,
-        values.player3_bgmi_id,
-        values.player4_bgmi_id
-      ].filter(Boolean) as string[];
-    } else if ('clan_tag' in values) {
-      player_ids = [values.clan_tag as string];
-    }
-    
-    // 1. Intra-team duplicate check
-    const uniquePlayerIds = new Set(player_ids);
-    if (uniquePlayerIds.size !== player_ids.length) {
-      toast({
-        variant: "destructive",
-        title: "Duplicate Player IDs",
-        description: "You cannot enter the same player ID multiple times in one team.",
-      });
-      setLoading(false);
-      return;
-    }
-    
     try {
-      // 2. Tournament-wide duplicate check using player_index
-      const playerIndexRef = collection(firestore, 'player_index');
-      const q = query(playerIndexRef, where('player_id', 'in', player_ids), where('tournament_id', '==', tournament.id));
-      const querySnapshot = await getDocs(q);
-
-      if (!querySnapshot.empty) {
-        const duplicateId = querySnapshot.docs[0].data().player_id;
-        toast({
-          variant: "destructive",
-          title: "Player Already Registered",
-          description: `Player ID "${duplicateId}" is already registered for this tournament in another team.`,
-        });
-        setLoading(false);
-        return;
-      }
-      
-      const batch = writeBatch(firestore);
-      const registrationRef = doc(collection(firestore, 'registrations'));
+      const registrationRef = doc(collection(firestore, 'tournaments', tournament.id, 'registrations'));
       
       const docData = {
         ...values,
         id: registrationRef.id,
         user_id: user.uid,
         squad_name_lowercase: values.squad_name.toLowerCase(),
-        player_ids,
         username: user.displayName || user.email || 'Anonymous',
         user_email: user.email,
         tournament_id: tournament.id,
@@ -193,20 +133,8 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         created_at: new Date(),
         slot: 'A',
       };
-      batch.set(registrationRef, docData);
       
-      // Add entries to player_index
-      for (const playerId of player_ids) {
-        const indexDocRef = doc(playerIndexRef, `${tournament.id}_${playerId}`);
-        batch.set(indexDocRef, {
-          tournament_id: tournament.id,
-          player_id: playerId,
-          registration_id: registrationRef.id,
-          user_id: user.uid, // This was the missing field
-        });
-      }
-      
-      await batch.commit();
+      await addDoc(collection(firestore, 'tournaments', tournament.id, 'registrations'), docData);
 
       toast({
         title: "Registration Submitted!",
@@ -336,25 +264,14 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField control={form.control} name="squad_name" render={({ field }) => (
-              <FormItem><FormLabel>Squad Name</FormLabel><FormControl><Input placeholder="Enter your squad name" {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem><FormLabel>Squad/Team Name</FormLabel><FormControl><Input placeholder="Enter your squad name" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="player_game_id" render={({ field }) => (
+              <FormItem><FormLabel>Your In-Game ID</FormLabel><FormControl><Input placeholder="Enter your in-game username or ID" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
              <FormField control={form.control} name="contact_number" render={({ field }) => (
               <FormItem><FormLabel>Contact Number (WhatsApp)</FormLabel><FormControl><Input type="tel" placeholder="Enter a contact number" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
-
-            {tournament.game_name === 'Clash of Clans' ? (
-                <FormField control={form.control} name="clan_tag" render={({ field }) => (
-                    <FormItem><FormLabel>Clan Tag</FormLabel><FormControl><Input placeholder="Enter your clan tag" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-            ) : (
-                <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Player In-Game IDs</h3>
-                    <FormField control={form.control} name="player1_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 1 ID</FormLabel><FormControl><Input placeholder="Enter Player 1 ID" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                    <FormField control={form.control} name="player2_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 2 ID</FormLabel><FormControl><Input placeholder="Enter Player 2 ID" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                    <FormField control={form.control} name="player3_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 3 ID</FormLabel><FormControl><Input placeholder="Enter Player 3 ID" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                    <FormField control={form.control} name="player4_bgmi_id" render={({ field }) => ( <FormItem><FormLabel>Player 4 ID</FormLabel><FormControl><Input placeholder="Enter Player 4 ID" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                </div>
-            )}
             
             {tournament.entry_fee > 0 && (
               <FormField control={form.control} name="user_upi_id" render={({ field }) => (

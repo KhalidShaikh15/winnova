@@ -3,87 +3,64 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper to check admin status
+    // === Helper function to check if user is admin
     function isAdmin() {
-      return request.auth != null &&
-             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+      // Check if the user's UID exists in the 'admins' collection
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
-
-    // ===== DEFAULT DENY =====
+    
+    // --- DEFAULT DENY (anything not listed is blocked) ---
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // ===== USERS =====
+    // --- ADMINS ---
+    match /admins/{adminId} {
+      // Only the user themselves can check if they are an admin. Nobody can list all admins.
+      allow read: if request.auth != null && request.auth.uid == adminId;
+      // Writes should be managed only via Firebase Console for security.
+      allow write: if false; 
+    }
+
+    // --- USERS ---
     match /users/{userId} {
-      // Signed-in user can fully manage their own profile
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      // A user can create their own document.
       allow create: if request.auth != null && request.auth.uid == userId;
-      // Admin can read/write anyone's profile
+      // A user can read, update, or delete their own document.
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      // An admin can read or write any user document.
       allow read, write: if isAdmin();
     }
 
-    // ===== GAMES (Public Read) =====
+
+    // === games collection
     match /games/{gameId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // ===== TOURNAMENTS (Public Read) =====
+    // === tournaments collection
     match /tournaments/{tournamentId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // ===== MATCHES (Public Read for Leaderboard) =====
+    // === matches collection
     match /matches/{matchId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // ===== REGISTRATIONS =====
+    // === registrations collection
     match /registrations/{registrationId} {
-      // User can create their own registration if logged in
+      // Any authenticated user can create a registration for themselves.
       allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
-      // User can read their own registration, or admin can read all
-      allow read: if isAdmin() || (request.auth != null && request.auth.uid == resource.data.user_id);
-      // Admin can update/delete
+      
+      // Admins can read all registrations. Users can only read their own.
+      allow read: if isAdmin() || (request.auth != null && resource.data.user_id == request.auth.uid);
+      
+      // Only admins can modify or delete registrations.
       allow update, delete: if isAdmin();
-    }
-
-    // --- PLAYER INDEX (for duplicate checks) ---
-    match /player_index/{docId} {
-      // Anyone can read to check if a player_id is taken
-      allow read: if true;
-      // Create: must be logged in and creating entry for themselves
-      allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
-      // Update/Delete: admin only
-      allow update, delete: if isAdmin();
-    }
-
-    // ===== RESULTS (Public Read for Leaderboard) =====
-    match /results/{resultId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // ===== LEADERBOARD =====
-    match /leaderboard/{entryId} {
-      allow read: if true; // Publicly viewable
-      allow write: if isAdmin();
-    }
-
-    // ===== PAYOUTS (Admin Only) =====
-    match /payouts/{payoutId} {
-      allow read, write: if isAdmin();
-    }
-
-    // ===== ADMINS (Private) =====
-    match /admins/{adminId} {
-      allow read: if request.auth != null && request.auth.uid == adminId;
-      allow write: if false;
     }
   }
 }
-
-    
