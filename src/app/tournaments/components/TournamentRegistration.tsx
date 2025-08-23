@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
-import { addDoc, collection, doc, updateDoc } from "firebase/firestore"
+import { addDoc, collection, doc, updateDoc, writeBatch } from "firebase/firestore"
 import { firestore } from "@/lib/firebase"
 import { Award, Calendar, Gamepad2, Group, Loader2, Send, Clock, Download, ClipboardCopy, Check } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
@@ -164,7 +164,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     } catch (error: any) {
         console.error("Registration submission error:", error);
         let description = "An unexpected error occurred. Please try again.";
-        if (error.code === 'permission-denied' || error.code === 'PERMISSION_DENIED') {
+        if (error.code === 'permission-denied' || error.code === 'PERMISSION_DENIED' || error.message.includes('permission-denied') || error.message.includes('insufficient permissions')) {
             description = "You do not have permission to perform this action. Please check your account and Firestore security rules.";
         } else if (error.message) {
             description = error.message;

@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -30,17 +31,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // === registrations collection
+    // === registrations collection ✅ FIXED
     match /registrations/{registrationId} {
       allow create: if request.auth != null;
-      allow read: if request.auth != null;
-      allow update, delete: if isAdmin();
-    }
-    
-    // === player_index collection
-    match /player_index/{docId} {
-      allow read: if true;
-      allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
+      allow read: if request.auth != null;         // ✅ any signed-in user can read
+      allow update, delete: if isAdmin();          // ✅ only admin can edit/delete
     }
 
     // === results collection
