@@ -164,7 +164,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     } catch (error: any) {
         console.error("Registration submission error:", error);
         let description = "An unexpected error occurred. Please try again.";
-        if (error.code === 'permission-denied' || error.code === 'PERMISSION_DENIED' || error.message.includes('permission-denied') || error.message.includes('insufficient permissions')) {
+        if (error.code === 'permission-denied' || error.code === 'PERMISSION_DENIED' || error.code === 'missing-or-insufficient-permissions') {
             description = "You do not have permission to perform this action. Please check your account and Firestore security rules.";
         } else if (error.message) {
             description = error.message;
