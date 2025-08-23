@@ -2,72 +2,83 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper to check admin status
     function isAdmin() {
-      return request.auth != null &&
-             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+      return exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
-    // ===== DEFAULT DENY =====
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // ===== USERS =====
-    match /users/{userId} {
-      // Signed-in user can fully manage their own profile
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      // Admin can read/write anyone's profile
-      allow read, write: if isAdmin();
-    }
-
-    // ===== GAMES (Public Read) =====
+    // === games collection
     match /games/{gameId} {
-      allow read: if true;              // Public can view
+      allow read: if true;
       allow write: if isAdmin();
     }
 
-    // ===== TOURNAMENTS (Public Read, Logged-in Write for registration) =====
+    // === tournaments collection
     match /tournaments/{tournamentId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // ===== MATCHES (Public Read for Leaderboard) =====
+    // === teams collection
+    match /teams/{teamId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // === matches collection
     match /matches/{matchId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // === registrations collection ✅ FIXED
+    // === registrations collection
     match /registrations/{registrationId} {
       allow create: if request.auth != null;
-      allow read: if request.auth != null;         // ✅ any signed-in user can read
-      allow update, delete: if isAdmin();          // ✅ only admin can edit/delete
+      allow read: if request.auth != null;
+      allow update, delete: if isAdmin();
+    }
+    
+    // === player_index collection
+    match /player_index/{docId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
     }
 
-    // ===== RESULTS (Public Read for Leaderboard) =====
+    // === results collection
     match /results/{resultId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // ===== LEADERBOARD =====
+    // === leaderboard collection
     match /leaderboard/{entryId} {
-      allow read: if true; // Publicly viewable
+      allow read: if true;
       allow write: if isAdmin();
     }
 
-    // ===== PAYOUTS (Admin Only) =====
+    // === payouts collection
     match /payouts/{payoutId} {
       allow read, write: if isAdmin();
     }
 
-    // ===== ADMINS (Private) =====
+    // === admins collection
     match /admins/{adminId} {
       allow read: if request.auth != null && request.auth.uid == adminId;
-      allow write: if false; // Managed only via console/server
+      allow create, update, delete: if isAdmin();
+    }
+
+    // === users collection (new rules)
+    match /users/{userId} {
+      // Allow unauthenticated reads (needed for username availability check during signup)
+      allow read: if true;
+
+      // Allow a signed-in user to create their own profile document
+      allow create: if request.auth != null && request.auth.uid == userId;
+
+      // Allow signed-in users to update their own document
+      allow update: if request.auth != null && request.auth.uid == userId;
+
+      // Allow only admin to delete any user document
+      allow delete: if isAdmin();
     }
   }
 }
