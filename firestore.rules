@@ -1,57 +1,61 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helper to check admin status
     function isAdmin() {
       return request.auth != null &&
              exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
-    match /users/{userId} {
-      allow read: if true;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && request.auth.uid == userId;
-      allow delete: if isAdmin();
+    // ===== DEFAULT DENY =====
+    // All paths must be explicitly allowed
+    match /{document=**} {
+      allow read, write: if false;
     }
 
+    // ===== USERS =====
+    match /users/{userId} {
+      // Signed-in user can fully manage their own profile
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      // Any authenticated user can create their own user document
+      allow create: if request.auth != null && request.auth.uid == userId;
+      // Admin can read/write anyone's profile
+      allow read, write: if isAdmin();
+    }
+
+    // ===== GAMES (Public Read) =====
     match /games/{gameId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
+    // ===== TOURNAMENTS (Public Read) =====
     match /tournaments/{tournamentId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
+    // ===== MATCHES (Public Read for Leaderboard) =====
     match /matches/{matchId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-
+    
+    // ===== REGISTRATIONS (Root Collection) =====
     match /registrations/{registrationId} {
+      // Any logged-in user can create their own registration
       allow create: if request.auth != null;
+      // An authenticated user can read any registration
       allow read: if request.auth != null;
-      // Allow user to update their own registration, or an admin to update any.
+      // User can update their own registration, or admin can update any
       allow update: if (request.auth != null && request.auth.uid == resource.data.user_id) || isAdmin();
+      // Only an admin can delete a registration
       allow delete: if isAdmin();
     }
 
-    match /results/{resultId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /leaderboard/{entryId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /payouts/{payoutId} {
-      allow read, write: if isAdmin();
-    }
-
+    // ===== ADMINS (Private) =====
+    // Users can only check if their own admin document exists.
     match /admins/{adminId} {
       allow read: if request.auth != null && request.auth.uid == adminId;
       allow write: if false; // Managed only via console/server
