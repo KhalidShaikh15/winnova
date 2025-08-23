@@ -32,23 +32,21 @@ export interface Tournament {
 
 export interface Registration {
   id: string;
-  user_id: string; // The UID of the user who registered
-  username: string; // The display name of the user
+  user_id: string;
+  username: string;
   user_email: string;
   tournament_id: string;
-  tournament_title?: string;
-  game_name: string;
   squad_name: string;
-  squad_name_lowercase: string;
-  // This now represents the single player's in-game ID
-  player_game_id: string; 
   contact_number: string;
-  slot?: string;
+  players: {
+      game_id: string;
+  }[];
   user_upi_id?: string;
   status: 'pending' | 'confirmed' | 'rejected';
   created_at: Timestamp;
-  payment_screenshot_url?: string;
+  slot?: string;
 }
+
 
 export interface MatchResult {
     match_id: string;

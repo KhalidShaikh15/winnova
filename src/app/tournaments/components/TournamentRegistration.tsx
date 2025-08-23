@@ -34,7 +34,10 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   const registrationSchema = useMemo(() => {
     const baseFields = {
       squad_name: z.string().min(3, "Squad name must be at least 3 characters."),
-      player_game_id: z.string().min(2, "Your In-Game ID is required."),
+      player1_id: z.string().min(2, "Player 1 ID is required."),
+      player2_id: z.string().min(2, "Player 2 ID is required."),
+      player3_id: z.string().min(2, "Player 3 ID is required."),
+      player4_id: z.string().min(2, "Player 4 ID is required."),
       contact_number: z.string().min(10, "A valid contact number is required."),
     };
 
@@ -54,7 +57,10 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     resolver: zodResolver(registrationSchema),
     defaultValues: {
       squad_name: "",
-      player_game_id: "",
+      player1_id: "",
+      player2_id: "",
+      player3_id: "",
+      player4_id: "",
       contact_number: "",
       user_upi_id: "",
     },
@@ -115,20 +121,33 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         setLoading(false);
         return;
     }
+
+    const playerIds = [values.player1_id, values.player2_id, values.player3_id, values.player4_id];
+    const uniquePlayerIds = new Set(playerIds);
+
+    if (uniquePlayerIds.size !== playerIds.length) {
+        toast({
+            variant: "destructive",
+            title: "Duplicate Player IDs",
+            description: "Each player in a team must have a unique In-Game ID. Please check your entries.",
+        });
+        setLoading(false);
+        return;
+    }
     
     try {
       const registrationRef = doc(collection(firestore, 'tournaments', tournament.id, 'registrations'));
       
       const docData = {
-        ...values,
         id: registrationRef.id,
         user_id: user.uid,
-        squad_name_lowercase: values.squad_name.toLowerCase(),
-        username: user.displayName || user.email || 'Anonymous',
+        username: user.displayName || user.email,
         user_email: user.email,
         tournament_id: tournament.id,
-        tournament_title: tournament.title,
-        game_name: tournament.game_name,
+        squad_name: values.squad_name,
+        contact_number: values.contact_number,
+        user_upi_id: values.user_upi_id,
+        players: playerIds.map(id => ({ game_id: id })),
         status: 'pending' as const,
         created_at: new Date(),
         slot: 'A',
@@ -266,10 +285,23 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
             <FormField control={form.control} name="squad_name" render={({ field }) => (
               <FormItem><FormLabel>Squad/Team Name</FormLabel><FormControl><Input placeholder="Enter your squad name" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
-            <FormField control={form.control} name="player_game_id" render={({ field }) => (
-              <FormItem><FormLabel>Your In-Game ID</FormLabel><FormControl><Input placeholder="Enter your in-game username or ID" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-             <FormField control={form.control} name="contact_number" render={({ field }) => (
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField control={form.control} name="player1_id" render={({ field }) => (
+                    <FormItem><FormLabel>Player 1 In-Game ID</FormLabel><FormControl><Input placeholder="Enter Player 1 ID" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="player2_id" render={({ field }) => (
+                    <FormItem><FormLabel>Player 2 In-Game ID</FormLabel><FormControl><Input placeholder="Enter Player 2 ID" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="player3_id" render={({ field }) => (
+                    <FormItem><FormLabel>Player 3 In-Game ID</FormLabel><FormControl><Input placeholder="Enter Player 3 ID" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="player4_id" render={({ field }) => (
+                    <FormItem><FormLabel>Player 4 In-Game ID</FormLabel><FormControl><Input placeholder="Enter Player 4 ID" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+            </div>
+
+            <FormField control={form.control} name="contact_number" render={({ field }) => (
               <FormItem><FormLabel>Contact Number (WhatsApp)</FormLabel><FormControl><Input type="tel" placeholder="Enter a contact number" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
             

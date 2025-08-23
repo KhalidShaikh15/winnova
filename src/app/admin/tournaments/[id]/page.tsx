@@ -178,7 +178,7 @@ The Winnova Team
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Registrations</span>
-            <Badge variant="secondary">{registrations.length} / {tournament.max_teams * (tournament.match_type === 'Squad' ? 4 : tournament.match_type === 'Duo' ? 2 : 1) } registered players</Badge>
+            <Badge variant="secondary">{registrations.length} / {tournament.max_teams} registered</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -186,8 +186,8 @@ The Winnova Team
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Player</TableHead>
                   <TableHead>Squad Name</TableHead>
+                  <TableHead>Player IDs</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Slot</TableHead>
@@ -199,8 +199,12 @@ The Winnova Team
                 {registrations.length > 0 ? (
                   registrations.map(reg => (
                     <TableRow key={reg.id}>
-                      <TableCell>{reg.username} ({reg.player_game_id})</TableCell>
                       <TableCell>{reg.squad_name}</TableCell>
+                      <TableCell>
+                        <ul className="list-disc list-inside">
+                            {reg.players.map(p => <li key={p.game_id}>{p.game_id}</li>)}
+                        </ul>
+                      </TableCell>
                       <TableCell>{reg.contact_number}</TableCell>
                       <TableCell><Badge variant={reg.status === 'pending' ? 'secondary' : reg.status === 'confirmed' ? 'default' : 'destructive'}>{reg.status}</Badge></TableCell>
                       <TableCell>
@@ -264,7 +268,7 @@ The Winnova Team
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the registration for
-              <span className="font-bold"> &quot;{selectedRegistration?.username}&quot;</span> from the team <span className="font-bold">&quot;{selectedRegistration?.squad_name}&quot;</span>.
+              <span className="font-bold"> &quot;{selectedRegistration?.squad_name}&quot;</span>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

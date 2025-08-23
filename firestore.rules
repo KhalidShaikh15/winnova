@@ -5,33 +5,8 @@ service cloud.firestore {
 
     // === Helper function to check if user is admin
     function isAdmin() {
-      // Check if the user's UID exists in the 'admins' collection
       return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
-    
-    // --- DEFAULT DENY (anything not listed is blocked) ---
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // --- ADMINS ---
-    match /admins/{adminId} {
-      // Only the user themselves can check if they are an admin. Nobody can list all admins.
-      allow read: if request.auth != null && request.auth.uid == adminId;
-      // Writes should be managed only via Firebase Console for security.
-      allow write: if false; 
-    }
-
-    // --- USERS ---
-    match /users/{userId} {
-      // A user can create their own document.
-      allow create: if request.auth != null && request.auth.uid == userId;
-      // A user can read, update, or delete their own document.
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
-      // An admin can read or write any user document.
-      allow read, write: if isAdmin();
-    }
-
 
     // === games collection
     match /games/{gameId} {
@@ -43,24 +18,34 @@ service cloud.firestore {
     match /tournaments/{tournamentId} {
       allow read: if true;
       allow write: if isAdmin();
+
+      // === registrations subcollection
+      match /registrations/{registrationId} {
+        // Logged in users can create their own registration
+        allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
+        
+        // Admins and the user who created it can read
+        allow read: if isAdmin() || (request.auth != null && resource.data.user_id == request.auth.uid);
+
+        // Admins can update/delete
+        allow update, delete: if isAdmin();
+      }
     }
 
     // === matches collection
     match /matches/{matchId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isAdmin(); 
+    }
+    
+    match /admins/{adminId} {
+      allow read: if request.auth != null && request.auth.uid == adminId;
+      allow write: if false; // Should only be managed from the console
+    }
+    
+    match /users/{userId} {
+      allow read, update: if request.auth != null && request.auth.uid == userId;
     }
 
-    // === registrations collection
-    match /registrations/{registrationId} {
-      // Any authenticated user can create a registration for themselves.
-      allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
-      
-      // Admins can read all registrations. Users can only read their own.
-      allow read: if isAdmin() || (request.auth != null && resource.data.user_id == request.auth.uid);
-      
-      // Only admins can modify or delete registrations.
-      allow update, delete: if isAdmin();
-    }
   }
 }
