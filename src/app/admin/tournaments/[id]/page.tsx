@@ -55,17 +55,15 @@ export default function ManageTournamentPage() {
         }
         setTournament({ id: tournamentSnap.id, ...tournamentSnap.data() } as Tournament);
 
-        const regsQuery = query(collection(firestore, 'tournaments', params.id, 'registrations'));
+        const regsQuery = query(
+            collection(firestore, 'registrations'), 
+            where('tournament_id', '==', params.id),
+            orderBy('created_at', 'desc')
+        );
+
         const regsSnapshot = await getDocs(regsQuery);
         const regsList = regsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Registration));
         
-        // Sort on the client to avoid needing a composite index
-        regsList.sort((a, b) => {
-          const aTimestamp = a.created_at?.toMillis() || 0;
-          const bTimestamp = b.created_at?.toMillis() || 0;
-          return bTimestamp - aTimestamp;
-        });
-
         setRegistrations(regsList);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -81,7 +79,7 @@ export default function ManageTournamentPage() {
     if (!firestore || !tournament) return;
     setUpdatingSlotRegId(regId);
     try {
-      const regDocRef = doc(firestore, 'tournaments', tournament.id, 'registrations', regId);
+      const regDocRef = doc(firestore, 'registrations', regId);
       await updateDoc(regDocRef, { slot });
       setRegistrations(regs => regs.map(r => (r.id === regId ? { ...r, slot } : r)));
       toast({ title: 'Success', description: `Team slot updated to ${slot}.` });
@@ -104,7 +102,7 @@ export default function ManageTournamentPage() {
     }
 
     try {
-      const regDocRef = doc(firestore, 'tournaments', tournament.id, 'registrations', regId);
+      const regDocRef = doc(firestore, 'registrations', regId);
       await updateDoc(regDocRef, { status });
       
       setRegistrations(regs => regs.map(r => r.id === regId ? { ...r, status } : r));
@@ -144,10 +142,10 @@ The Winnova Team
   };
 
   const handleDeleteRegistration = async () => {
-    if (!selectedRegistration || !firestore || !tournament) return;
+    if (!selectedRegistration || !firestore) return;
     setIsDeleting(true);
     try {
-      const regDocRef = doc(firestore, 'tournaments', tournament.id, 'registrations', selectedRegistration.id);
+      const regDocRef = doc(firestore, 'registrations', selectedRegistration.id);
       await deleteDoc(regDocRef);
 
       toast({ title: 'Success', description: 'Registration deleted.' });

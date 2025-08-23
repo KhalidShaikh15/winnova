@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
-import { addDoc, collection, doc } from "firebase/firestore"
+import { addDoc, collection, doc, updateDoc } from "firebase/firestore"
 import { firestore } from "@/lib/firebase"
 import { Award, Calendar, Gamepad2, Group, Loader2, Send, Clock, Download, ClipboardCopy, Check } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
@@ -136,10 +136,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
     }
     
     try {
-      const registrationRef = doc(collection(firestore, 'tournaments', tournament.id, 'registrations'));
-      
       const docData = {
-        id: registrationRef.id,
         user_id: user.uid,
         username: user.displayName || user.email,
         user_email: user.email,
@@ -153,7 +150,9 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         slot: 'A',
       };
       
-      await addDoc(collection(firestore, 'tournaments', tournament.id, 'registrations'), docData);
+      const registrationRef = await addDoc(collection(firestore, 'registrations'), docData);
+      await updateDoc(registrationRef, { id: registrationRef.id });
+
 
       toast({
         title: "Registration Submitted!",
