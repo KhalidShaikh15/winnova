@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
-import { addDoc, collection, doc, updateDoc, writeBatch } from "firebase/firestore"
+import { addDoc, collection, doc, writeBatch, getDocs, query, where, updateDoc } from "firebase/firestore"
 import { firestore } from "@/lib/firebase"
 import { Award, Calendar, Gamepad2, Group, Loader2, Send, Clock, Download, ClipboardCopy, Check } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
@@ -143,16 +143,20 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         tournament_id: tournament.id,
         squad_name: values.squad_name,
         contact_number: values.contact_number,
-        user_upi_id: values.user_upi_id,
+        user_upi_id: values.user_upi_id || "",
         players: playerIds.map(id => ({ game_id: id })),
         status: 'pending' as const,
         created_at: new Date(),
         slot: 'A',
       };
       
-      const registrationRef = await addDoc(collection(firestore, 'registrations'), docData);
-      await updateDoc(registrationRef, { id: registrationRef.id });
+      const registrationCollectionRef = collection(firestore, 'registrations');
+      const registrationRef = await addDoc(registrationCollectionRef, docData);
 
+      // Now update the document with its own ID for easier reference
+      await updateDoc(doc(firestore, 'registrations', registrationRef.id), {
+        id: registrationRef.id,
+      });
 
       toast({
         title: "Registration Submitted!",
@@ -165,7 +169,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
         console.error("Registration submission error:", error);
         let description = "An unexpected error occurred. Please try again.";
         if (error.code === 'permission-denied' || error.code === 'PERMISSION_DENIED' || error.code === 'missing-or-insufficient-permissions') {
-            description = "You do not have permission to perform this action. Please check your account and Firestore security rules.";
+            description = "You do not have permission to perform this action. This could be due to Firestore security rules. Please contact support if this issue persists.";
         } else if (error.message) {
             description = error.message;
         }
