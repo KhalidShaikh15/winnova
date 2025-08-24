@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useEffect } from 'react';
-import { doc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc, writeBatch, orderBy } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Registration } from '@/lib/types';
 import { notFound, useParams } from 'next/navigation';
@@ -54,14 +54,17 @@ export default function ManageTournamentPage() {
         }
         setTournament({ id: tournamentSnap.id, ...tournamentSnap.data() } as Tournament);
 
+        // Simplified query: Only filter by tournament_id
         const regsQuery = query(
             collection(firestore, 'registrations'), 
-            where('tournament_id', '==', params.id),
-            orderBy('created_at', 'desc')
+            where('tournament_id', '==', params.id)
         );
 
         const regsSnapshot = await getDocs(regsQuery);
         const regsList = regsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Registration));
+        
+        // Sort the results on the client-side
+        regsList.sort((a, b) => b.created_at.toMillis() - a.created_at.toMillis());
         
         setRegistrations(regsList);
       } catch (error) {
