@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -11,75 +12,61 @@ service cloud.firestore {
     match /{document=**} {
       allow read, write: if false;
     }
-    
-    // === games collection
-    match /games/{gameId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
 
-    // === tournaments collection
-    match /tournaments/{tournamentId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // === teams collection
-    match /teams/{teamId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // === matches collection
-    match /matches/{matchId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // === registrations collection
-    match /registrations/{registrationId} {
-      // Any signed-in user can create a registration.
-      allow create: if request.auth != null;
-      
-      // Any signed-in user can read registrations (e.g., to check for duplicates in future).
-      allow read: if request.auth != null;
-      
-      // A user can update their own registration, or an admin can update any.
-      allow update: if (request.auth != null && request.auth.uid == resource.data.user_id) || isAdmin();
-
-      // Only an admin can delete a registration.
-      allow delete: if isAdmin();
-    }
-
-    // === results collection
-    match /results/{resultId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // === leaderboard collection
-    match /leaderboard/{entryId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // === payouts collection
-    match /payouts/{payoutId} {
-      allow read, write: if isAdmin();
-    }
-
-    // === admins collection
-    match /admins/{adminId} {
-      allow read: if request.auth != null && request.auth.uid == adminId;
-      allow create, update, delete: if isAdmin();
-    }
-
-    // === users collection (new rules)
+    // ===== USERS =====
     match /users/{userId} {
       allow read: if true;
       allow create: if request.auth != null && request.auth.uid == userId;
       allow update: if request.auth != null && request.auth.uid == userId;
       allow delete: if isAdmin();
+    }
+
+    // ===== GAMES (Public Read) =====
+    match /games/{gameId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ===== TOURNAMENTS (Public Read) =====
+    match /tournaments/{tournamentId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ===== MATCHES (Public Read for Leaderboard) =====
+    match /matches/{matchId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ===== REGISTRATIONS =====
+    match /registrations/{registrationId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null;
+      allow update, delete: if isAdmin();
+    }
+
+    // ===== RESULTS (Public Read for Leaderboard) =====
+    match /results/{resultId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ===== LEADERBOARD =====
+    match /leaderboard/{entryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ===== PAYOUTS (Admin Only) =====
+    match /payouts/{payoutId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ===== ADMINS (Private) =====
+    match /admins/{adminId} {
+      allow read: if request.auth != null && request.auth.uid == adminId;
+      allow create, update, delete: if isAdmin();
     }
   }
 }
