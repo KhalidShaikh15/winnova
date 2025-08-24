@@ -12,7 +12,7 @@ import Link from 'next/link';
 import CreateTournamentDialog from './CreateTournamentDialog';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
-import { Pencil, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +24,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function AdminDashboardPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -135,7 +136,7 @@ export default function AdminDashboardPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Title</TableHead>
-                  <TableHead className="hidden md:table-cell">Game</TableHead>
+                  <TableHead className="hidden sm:table-cell">Game</TableHead>
                   <TableHead className="hidden md:table-cell">Date</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -154,7 +155,7 @@ export default function AdminDashboardPage() {
                   tournaments.map(t => (
                     <TableRow key={t.id}>
                       <TableCell className="font-medium">{t.title}</TableCell>
-                      <TableCell className="hidden md:table-cell">{t.game_name}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{t.game_name}</TableCell>
                       <TableCell className="hidden md:table-cell">{format(t.tournament_date.toDate(), 'PPP')}</TableCell>
                       <TableCell>
                         <Badge variant={t.status === 'upcoming' ? 'default' : t.status === 'completed' ? 'secondary' : 'destructive'}>
@@ -162,29 +163,56 @@ export default function AdminDashboardPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right space-x-1 whitespace-nowrap">
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={`/admin/tournaments/${t.id}`}>Manage</Link>
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="hidden sm:inline-flex"
-                          onClick={() => openEditDialog(t)}
-                        >
-                          <Pencil className="h-4 w-4 md:mr-1" />
-                          <span className="hidden md:inline">Edit</span>
-                        </Button>
-                        <Button 
-                          variant="destructive" 
-                          size="icon"
-                          className="h-9 w-9"
-                          onClick={() => {
-                            setSelectedTournament(t);
-                            setIsDeleteDialogOpen(true);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                         <div className="hidden sm:inline-flex items-center gap-1">
+                            <Button asChild variant="outline" size="sm">
+                              <Link href={`/admin/tournaments/${t.id}`}>Manage</Link>
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => openEditDialog(t)}
+                            >
+                              <Pencil className="h-4 w-4 md:mr-1" />
+                              <span className="hidden md:inline">Edit</span>
+                            </Button>
+                            <Button 
+                              variant="destructive" 
+                              size="icon"
+                              className="h-9 w-9"
+                              onClick={() => {
+                                setSelectedTournament(t);
+                                setIsDeleteDialogOpen(true);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                         </div>
+                         <div className="sm:hidden">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem asChild>
+                                        <Link href={`/admin/tournaments/${t.id}`}>Manage</Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => openEditDialog(t)}>
+                                        Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                        className="text-destructive"
+                                        onClick={() => {
+                                            setSelectedTournament(t);
+                                            setIsDeleteDialogOpen(true);
+                                        }}
+                                    >
+                                        Delete
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                         </div>
                       </TableCell>
                     </TableRow>
                   ))

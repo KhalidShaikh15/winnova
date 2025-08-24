@@ -54,7 +54,6 @@ export default function ManageTournamentPage() {
         }
         setTournament({ id: tournamentSnap.id, ...tournamentSnap.data() } as Tournament);
 
-        // Simplified query: Only filter by tournament_id
         const regsQuery = query(
             collection(firestore, 'registrations'), 
             where('tournament_id', '==', params.id)
@@ -63,8 +62,7 @@ export default function ManageTournamentPage() {
         const regsSnapshot = await getDocs(regsQuery);
         const regsList = regsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Registration));
         
-        // Sort the results on the client-side
-        regsList.sort((a, b) => b.created_at.toMillis() - a.created_at.toMillis());
+        regsList.sort((a, b) => (b.created_at?.toMillis() || 0) - (a.created_at?.toMillis() || 0));
         
         setRegistrations(regsList);
       } catch (error) {
@@ -99,9 +97,7 @@ export default function ManageTournamentPage() {
     const reg = registrations.find(r => r.id === regId);
     if (!reg) return;
 
-    if (status === 'confirmed') {
-      setConfirmingRegId(regId);
-    }
+    setConfirmingRegId(regId);
 
     try {
       const regDocRef = doc(firestore, 'registrations', regId);
@@ -113,9 +109,7 @@ export default function ManageTournamentPage() {
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to update registration status.' });
     } finally {
-      if (status === 'confirmed') {
-        setConfirmingRegId(null);
-      }
+      setConfirmingRegId(null);
     }
   };
 
@@ -149,10 +143,10 @@ export default function ManageTournamentPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold">Manage: {tournament.title}</h1>
+      <h1 className="text-2xl md:text-3xl font-bold">Manage: {tournament.title}</h1>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <span>Registrations</span>
             <Badge variant="secondary">{registrations.length} / {tournament.max_teams} registered</Badge>
           </CardTitle>
@@ -163,11 +157,11 @@ export default function ManageTournamentPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Squad Name</TableHead>
-                  <TableHead>Player IDs</TableHead>
-                  <TableHead>Contact</TableHead>
+                  <TableHead className="hidden md:table-cell">Player IDs</TableHead>
+                  <TableHead className="hidden lg:table-cell">Contact</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Slot</TableHead>
-                  <TableHead>User UPI ID</TableHead>
+                  <TableHead className="hidden lg:table-cell">User UPI ID</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -175,13 +169,13 @@ export default function ManageTournamentPage() {
                 {registrations.length > 0 ? (
                   registrations.map(reg => (
                     <TableRow key={reg.id}>
-                      <TableCell>{reg.squad_name}</TableCell>
-                      <TableCell>
+                      <TableCell className="font-medium whitespace-nowrap">{reg.squad_name}</TableCell>
+                      <TableCell className="hidden md:table-cell">
                         <ul className="list-disc list-inside">
                             {Array.isArray(reg.players) ? reg.players.map(p => <li key={p.game_id}>{p.game_id}</li>) : <li>No players listed</li>}
                         </ul>
                       </TableCell>
-                      <TableCell>{reg.contact_number}</TableCell>
+                      <TableCell className="hidden lg:table-cell">{reg.contact_number}</TableCell>
                       <TableCell><Badge variant={reg.status === 'pending' ? 'secondary' : reg.status === 'confirmed' ? 'default' : 'destructive'}>{reg.status}</Badge></TableCell>
                       <TableCell>
                         {updatingSlotRegId === reg.id ? (
@@ -203,17 +197,17 @@ export default function ManageTournamentPage() {
                           </Select>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden lg:table-cell">
                         <span className="font-mono text-xs">{reg.user_upi_id || 'N/A'}</span>
                       </TableCell>
                       <TableCell className="text-right space-x-1">
                         <Button size="sm" variant="outline" disabled={reg.status === 'confirmed' || confirmingRegId === reg.id} onClick={() => handleRegistrationStatus(reg.id, 'confirmed')}>
-                          {confirmingRegId === reg.id ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-1" />}
-                          Confirm
+                          {confirmingRegId === reg.id ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CheckCircle className="h-4 w-4 md:mr-1" />}
+                          <span className="hidden md:inline">Confirm</span>
                         </Button>
                         <Button size="sm" variant="destructive" disabled={reg.status === 'rejected'} onClick={() => handleRegistrationStatus(reg.id, 'rejected')}>
-                          <XCircle className="h-4 w-4 mr-1" />
-                          Reject
+                          <XCircle className="h-4 w-4 md:mr-1" />
+                          <span className="hidden md:inline">Reject</span>
                         </Button>
                         <Button 
                           variant="destructive" 
