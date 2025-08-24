@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useEffect } from 'react';
-import { doc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Registration } from '@/lib/types';
 import { notFound, useParams } from 'next/navigation';
@@ -47,40 +47,41 @@ export default function ManageTournamentPage() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   useEffect(() => {
-    if (!params.id) return;
+    if (!params.id || !firestore) return;
 
-    const fetchTournamentAndRegistrations = async () => {
-      if (!firestore) return;
-      setLoading(true);
-      try {
-        const tournamentDocRef = doc(firestore, 'tournaments', params.id);
-        const tournamentSnap = await getDoc(tournamentDocRef);
-
+    setLoading(true);
+    // Fetch static tournament data once
+    const tournamentDocRef = doc(firestore, 'tournaments', params.id);
+    getDoc(tournamentDocRef).then(tournamentSnap => {
         if (!tournamentSnap.exists()) {
-          notFound();
-          return;
+            notFound();
+            return;
         }
         setTournament({ id: tournamentSnap.id, ...tournamentSnap.data() } as Tournament);
-
-        const regsQuery = query(
-            collection(firestore, 'registrations'), 
-            where('tournament_id', '==', params.id)
-        );
-
-        const regsSnapshot = await getDocs(regsQuery);
-        let regsList = regsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Registration));
-        
-        regsList = regsList.sort((a, b) => (b.created_at?.toMillis() || 0) - (a.created_at?.toMillis() || 0));
-        
-        setRegistrations(regsList);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+    }).catch(error => {
+        console.error("Error fetching tournament data:", error);
         toast({ variant: 'destructive', title: 'Error', description: 'Failed to fetch tournament data.' });
-      } finally {
+    });
+
+    // Set up real-time listener for registrations
+    const regsQuery = query(
+        collection(firestore, 'registrations'), 
+        where('tournament_id', '==', params.id)
+    );
+
+    const unsubscribe = onSnapshot(regsQuery, (querySnapshot) => {
+        let regsList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Registration));
+        regsList = regsList.sort((a, b) => (b.created_at?.toMillis() || 0) - (a.created_at?.toMillis() || 0));
+        setRegistrations(regsList);
         setLoading(false);
-      }
-    };
-    fetchTournamentAndRegistrations();
+    }, (error) => {
+        console.error("Error fetching registrations:", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Failed to fetch registrations.' });
+        setLoading(false);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, [params.id, toast]);
 
    const handleSlotChange = async (regId: string, slot: string) => {
@@ -89,6 +90,7 @@ export default function ManageTournamentPage() {
     try {
       const regDocRef = doc(firestore, 'registrations', regId);
       await updateDoc(regDocRef, { slot });
+      // State will update via the onSnapshot listener, but we can optimistically update UI
       const updatedRegs = regs => regs.map(r => (r.id === regId ? { ...r, slot } : r));
       setRegistrations(updatedRegs);
       setSelectedRegistration(prev => prev ? {...prev, slot} : null);
@@ -112,9 +114,7 @@ export default function ManageTournamentPage() {
     try {
       const regDocRef = doc(firestore, 'registrations', regId);
       await updateDoc(regDocRef, { status });
-      
-      const updatedRegs = regs => regs.map(r => r.id === regId ? { ...r, status } : r);
-      setRegistrations(updatedRegs);
+      // State will update via the onSnapshot listener
       setSelectedRegistration(prev => prev ? {...prev, status} : null);
       toast({ title: 'Success', description: `Registration has been ${status}.` });
 
@@ -133,7 +133,7 @@ export default function ManageTournamentPage() {
       await deleteDoc(regDocRef);
 
       toast({ title: 'Success', description: 'Registration deleted.' });
-      setRegistrations(regs => regs.filter(r => r.id !== selectedRegistration.id));
+      // State will update via the onSnapshot listener
     } catch (error) {
       console.error("Error deleting registration:", error);
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete registration.' });
@@ -314,7 +314,7 @@ export default function ManageTournamentPage() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     {SLOTS.map(slot => (
-                                    <SelectItem key={slot} value={slot}>Slot {slot}</SelectItem>
+                                    <SelectItem key={slot} value={slot}>{slot}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
