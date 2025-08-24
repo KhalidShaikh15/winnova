@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { collection, getDocs, orderBy, query, deleteDoc, doc, where, writeBatch } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { type Tournament, type Game } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -131,13 +131,13 @@ export default function AdminDashboardPage() {
           <CardTitle>All Tournaments</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <div className="hidden md:block">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Title</TableHead>
-                  <TableHead className="hidden sm:table-cell">Game</TableHead>
-                  <TableHead className="hidden md:table-cell">Date</TableHead>
+                  <TableHead>Game</TableHead>
+                  <TableHead>Date</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -155,16 +155,68 @@ export default function AdminDashboardPage() {
                   tournaments.map(t => (
                     <TableRow key={t.id}>
                       <TableCell className="font-medium">{t.title}</TableCell>
-                      <TableCell className="hidden sm:table-cell">{t.game_name}</TableCell>
-                      <TableCell className="hidden md:table-cell">{format(t.tournament_date.toDate(), 'PPP')}</TableCell>
+                      <TableCell>{t.game_name}</TableCell>
+                      <TableCell>{format(t.tournament_date.toDate(), 'PPP')}</TableCell>
                       <TableCell>
                         <Badge variant={t.status === 'upcoming' ? 'default' : t.status === 'completed' ? 'secondary' : 'destructive'}>
                           {t.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right space-x-1 whitespace-nowrap">
-                         <div className="hidden sm:inline-flex items-center gap-1">
-                            <Button asChild variant="outline" size="sm">
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/admin/tournaments/${t.id}`}>Manage</Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => openEditDialog(t)}>
+                                    Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                    className="text-destructive"
+                                    onClick={() => {
+                                        setSelectedTournament(t);
+                                        setIsDeleteDialogOpen(true);
+                                    }}
+                                >
+                                    Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="md:hidden space-y-4">
+             {loading ? (
+                <p className="text-center">Loading tournaments...</p>
+             ) : tournaments.length === 0 ? (
+                <p className="text-center">No tournaments found.</p>
+             ) : (
+                tournaments.map(t => (
+                    <Card key={t.id} className="bg-muted/30">
+                        <CardHeader>
+                            <CardTitle>{t.title}</CardTitle>
+                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <span>{t.game_name}</span>
+                                &middot;
+                                <span>{format(t.tournament_date.toDate(), 'PPP')}</span>
+                             </div>
+                        </CardHeader>
+                        <CardContent>
+                             <Badge variant={t.status === 'upcoming' ? 'default' : t.status === 'completed' ? 'secondary' : 'destructive'}>
+                                {t.status}
+                             </Badge>
+                        </CardContent>
+                        <CardFooter className="flex justify-end gap-2">
+                             <Button asChild variant="outline" size="sm">
                               <Link href={`/admin/tournaments/${t.id}`}>Manage</Link>
                             </Button>
                             <Button 
@@ -172,53 +224,24 @@ export default function AdminDashboardPage() {
                               size="sm"
                               onClick={() => openEditDialog(t)}
                             >
-                              <Pencil className="h-4 w-4 md:mr-1" />
-                              <span className="hidden md:inline">Edit</span>
+                              <Pencil className="h-4 w-4 mr-1" />
+                              Edit
                             </Button>
                             <Button 
                               variant="destructive" 
-                              size="icon"
-                              className="h-9 w-9"
+                              size="sm"
                               onClick={() => {
                                 setSelectedTournament(t);
                                 setIsDeleteDialogOpen(true);
                               }}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Delete
                             </Button>
-                         </div>
-                         <div className="sm:hidden">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem asChild>
-                                        <Link href={`/admin/tournaments/${t.id}`}>Manage</Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => openEditDialog(t)}>
-                                        Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem 
-                                        className="text-destructive"
-                                        onClick={() => {
-                                            setSelectedTournament(t);
-                                            setIsDeleteDialogOpen(true);
-                                        }}
-                                    >
-                                        Delete
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                         </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                        </CardFooter>
+                    </Card>
+                ))
+             )}
           </div>
         </CardContent>
       </Card>
