@@ -11,7 +11,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -107,30 +106,6 @@ export default function ManageTournamentPage() {
       
       setRegistrations(regs => regs.map(r => r.id === regId ? { ...r, status } : r));
       toast({ title: 'Success', description: `Registration has been ${status}.` });
-
-
-      if (status === 'confirmed' && tournament && reg.user_email) {
-          const subject = `Your Registration for "${tournament.title}" is Confirmed!`;
-          const body = `
-Hi ${reg.username},
-
-Congratulations! Your registration for the "${tournament.title}" tournament is confirmed.
-
-Match Details:
-- Date: ${format(tournament.tournament_date.toDate(), 'PPP')}
-- Time: ${tournament.tournament_time}
-- Entry Fee Paid: ₹${tournament.entry_fee}
-
-We're excited to see you in the arena! The total prize pool is ₹${tournament.prize_pool.toLocaleString()}.
-
-Good luck!
-
-The Winnova Team
-          `.trim().replace(/\n/g, '%0D%0A');
-
-          const mailtoLink = `mailto:${reg.user_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-          window.open(mailtoLink, '_blank');
-      }
 
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to update registration status.' });
