@@ -178,7 +178,7 @@ export default function ManageTournamentPage() {
                       <TableCell>{reg.squad_name}</TableCell>
                       <TableCell>
                         <ul className="list-disc list-inside">
-                            {reg.players.map(p => <li key={p.game_id}>{p.game_id}</li>)}
+                            {Array.isArray(reg.players) ? reg.players.map(p => <li key={p.game_id}>{p.game_id}</li>) : <li>No players listed</li>}
                         </ul>
                       </TableCell>
                       <TableCell>{reg.contact_number}</TableCell>
