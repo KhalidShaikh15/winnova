@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import type { Tournament } from "@/lib/types"
-import { addDoc, collection } from "firebase/firestore"
+import { addDoc, collection, doc, setDoc } from "firebase/firestore"
 import { firestore } from "@/lib/firebase"
 import { Award, Calendar, Gamepad2, Group, Loader2, Send, Clock, Download, ClipboardCopy, Check } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
@@ -28,7 +28,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   const [isClient, setIsClient] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submittedUpiId, setSubmittedUpiId] = useState("");
+  const [submittedData, setSubmittedData] = useState<any>(null);
   const qrRef = useRef<HTMLDivElement>(null);
 
   const registrationSchema = useMemo(() => {
@@ -151,13 +151,13 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
       };
       
       const registrationCollectionRef = collection(firestore, 'registrations');
-      await addDoc(registrationCollectionRef, docData);
+      const docRef = await addDoc(registrationCollectionRef, docData);
 
       toast({
         title: "Registration Submitted!",
         description: "Your team registration has been submitted for review.",
       });
-      setSubmittedUpiId(values.user_upi_id || "");
+      setSubmittedData(values);
       setIsSubmitted(true);
       form.reset();
     } catch (error: any) {
@@ -179,8 +179,26 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
   }
 
   const handleContactOrganizer = () => {
-    if (!submittedUpiId || !tournament.allow_whatsapp || !tournament.whatsapp_number) return;
-    const message = `Hey, I have registered for ${tournament.title} with UPI ID ${submittedUpiId}`;
+    if (!submittedData || !tournament.allow_whatsapp || !tournament.whatsapp_number) return;
+    
+    const uids = [
+        submittedData.player1_id,
+        submittedData.player2_id,
+        submittedData.player3_id,
+        submittedData.player4_id
+    ].join(', ');
+    
+    const message = `
+Hello Winnova,
+
+I have successfully registered for the ${tournament.title} tournament. Please find my registration details below:
+
+Player Name: ${user?.displayName || 'N/A'}
+Team Name: ${submittedData.squad_name}
+Game UIDs: ${uids}
+UPI ID for Payment: ${submittedData.user_upi_id || 'N/A'}
+    `.trim();
+
     const whatsappUrl = `https://wa.me/91${tournament.whatsapp_number}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -219,7 +237,7 @@ export default function TournamentRegistration({ tournament }: { tournament: Tou
               Your registration has been submitted! You will be notified once it is confirmed.
             </CardDescription>
           </CardHeader>
-           {tournament.allow_whatsapp && submittedUpiId && (
+           {tournament.allow_whatsapp && submittedData?.user_upi_id && (
                 <CardContent className="text-center">
                     <Button size="lg" onClick={handleContactOrganizer}>
                         <Send className="mr-2 h-4 w-4"/>
